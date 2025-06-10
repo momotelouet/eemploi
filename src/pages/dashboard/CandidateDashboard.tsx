@@ -17,62 +17,99 @@ import {
   Award,
   Settings,
   Upload,
-  Search
+  Search,
+  Loader2
 } from "lucide-react";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserPoints } from "@/hooks/useUserPoints";
+import { useApplications } from "@/hooks/useApplications";
+import { useJobs } from "@/hooks/useJobs";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const CandidateDashboard = () => {
-  const [profileCompletion] = useState(75);
+  const { profile } = useUserProfile();
+  const { userPoints } = useUserPoints();
+  const { applications, loading: applicationsLoading } = useApplications();
+  const { jobs } = useJobs();
 
-  // Mock data
+  // Calculate profile completion
+  const calculateProfileCompletion = () => {
+    if (!profile) return 0;
+    let completion = 30; // Base for having an account
+    if (profile.first_name) completion += 35;
+    if (profile.last_name) completion += 35;
+    return completion;
+  };
+
+  const profileCompletion = calculateProfileCompletion();
+
+  // Calculate stats from real data
   const stats = [
-    { label: "Candidatures envoyées", value: "23", icon: <Send className="w-4 h-4" />, change: "+5 cette semaine" },
-    { label: "Vues de profil", value: "156", icon: <Eye className="w-4 h-4" />, change: "+12 cette semaine" },
-    { label: "Réponses reçues", value: "8", icon: <Bell className="w-4 h-4" />, change: "+3 nouvelles" },
-    { label: "Points de fidélité", value: "1,250", icon: <Star className="w-4 h-4" />, change: "+100 cette semaine" }
-  ];
-
-  const recentApplications = [
-    {
-      job: "Développeur Full Stack",
-      company: "TechCorp Maroc",
-      date: "Il y a 2 jours",
-      status: "En cours",
-      statusColor: "bg-yellow-500"
+    { 
+      label: "Candidatures envoyées", 
+      value: applications.length.toString(), 
+      icon: <Send className="w-4 h-4" />, 
+      change: "+5 cette semaine" 
     },
-    {
-      job: "UX Designer",
-      company: "Creative Agency", 
-      date: "Il y a 1 semaine",
-      status: "Acceptée",
-      statusColor: "bg-green-500"
+    { 
+      label: "Vues de profil", 
+      value: "156", 
+      icon: <Eye className="w-4 h-4" />, 
+      change: "+12 cette semaine" 
     },
-    {
-      job: "Chef de Projet",
-      company: "Innovation Labs",
-      date: "Il y a 2 semaines", 
-      status: "Rejetée",
-      statusColor: "bg-red-500"
+    { 
+      label: "Réponses reçues", 
+      value: applications.filter(app => app.status !== 'pending').length.toString(), 
+      icon: <Bell className="w-4 h-4" />, 
+      change: "+3 nouvelles" 
+    },
+    { 
+      label: "Points de fidélité", 
+      value: userPoints?.points?.toString() || "0", 
+      icon: <Star className="w-4 h-4" />, 
+      change: "+100 cette semaine" 
     }
   ];
 
-  const recommendations = [
-    {
-      title: "Développeur Frontend React",
-      company: "WebAgency",
-      location: "Casablanca",
-      match: "95%",
-      salary: "25,000 - 35,000 MAD"
-    },
-    {
-      title: "Designer UX/UI",
-      company: "StartupTech",
-      location: "Rabat", 
-      match: "88%",
-      salary: "22,000 - 30,000 MAD"
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return 'En cours';
+      case 'reviewed': return 'Examinée';
+      case 'interview': return 'Entretien';
+      case 'accepted': return 'Acceptée';
+      case 'rejected': return 'Rejetée';
+      default: return status;
     }
-  ];
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-500';
+      case 'reviewed': return 'bg-blue-500';
+      case 'interview': return 'bg-purple-500';
+      case 'accepted': return 'bg-green-500';
+      case 'rejected': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  // Get job recommendations (first 2 active jobs that user hasn't applied to)
+  const appliedJobIds = applications.map(app => app.job_id);
+  const recommendations = jobs
+    .filter(job => !appliedJobIds.includes(job.id))
+    .slice(0, 2)
+    .map(job => ({
+      title: job.title,
+      company: job.companies.name,
+      location: job.location || 'Non spécifié',
+      match: "95%", // This could be calculated based on various factors
+      salary: job.salary_min && job.salary_max 
+        ? `${job.salary_min} - ${job.salary_max} MAD`
+        : "Salaire à négocier"
+    }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,7 +118,9 @@ const CandidateDashboard = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Bonjour, Ahmed! 👋</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            Bonjour, {profile?.first_name || 'Candidat'}! 👋
+          </h1>
           <p className="text-muted-foreground">Voici un aperçu de votre activité récente</p>
         </div>
 
@@ -149,54 +188,86 @@ const CandidateDashboard = () => {
                   </div>
 
                   <TabsContent value="applications" className="p-6 space-y-4">
-                    {recentApplications.map((app, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                        <div className="flex-1">
-                          <h4 className="font-medium">{app.job}</h4>
-                          <p className="text-sm text-muted-foreground">{app.company}</p>
-                          <p className="text-xs text-muted-foreground">{app.date}</p>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${app.statusColor}`}></div>
-                            <span className="text-sm">{app.status}</span>
-                          </div>
-                          <Button variant="ghost" size="sm">
-                            Voir détails
-                          </Button>
-                        </div>
+                    {applicationsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-6 h-6 animate-spin" />
                       </div>
-                    ))}
-                    <div className="text-center pt-4">
-                      <Button variant="outline">
-                        Voir toutes mes candidatures
-                      </Button>
-                    </div>
+                    ) : applications.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <h3 className="font-medium mb-2">Aucune candidature envoyée</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Commencez votre recherche d'emploi en postulant à des offres
+                        </p>
+                        <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+                          <Search className="w-4 h-4 mr-2" />
+                          Rechercher des emplois
+                        </Button>
+                      </div>
+                    ) : (
+                      applications.slice(0, 5).map((app, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{app.jobs.title}</h4>
+                            <p className="text-sm text-muted-foreground">{app.jobs.companies.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(app.applied_at), { addSuffix: true, locale: fr })}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-2 h-2 rounded-full ${getStatusColor(app.status)}`}></div>
+                              <span className="text-sm">{getStatusText(app.status)}</span>
+                            </div>
+                            <Button variant="ghost" size="sm">
+                              Voir détails
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {applications.length > 5 && (
+                      <div className="text-center pt-4">
+                        <Button variant="outline">
+                          Voir toutes mes candidatures
+                        </Button>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="recommendations" className="p-6 space-y-4">
-                    {recommendations.map((rec, index) => (
-                      <div key={index} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{rec.title}</h4>
-                            <p className="text-sm text-muted-foreground">{rec.company} • {rec.location}</p>
-                            <p className="text-sm text-eemploi-primary font-medium">{rec.salary}</p>
-                          </div>
-                          <Badge className="bg-green-100 text-green-800">
-                            {rec.match} match
-                          </Badge>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" className="bg-eemploi-primary hover:bg-eemploi-primary/90">
-                            Postuler
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            Voir détails
-                          </Button>
-                        </div>
+                    {recommendations.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <h3 className="font-medium mb-2">Aucune recommandation disponible</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Complétez votre profil pour recevoir des recommandations personnalisées
+                        </p>
                       </div>
-                    ))}
+                    ) : (
+                      recommendations.map((rec, index) => (
+                        <div key={index} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{rec.title}</h4>
+                              <p className="text-sm text-muted-foreground">{rec.company} • {rec.location}</p>
+                              <p className="text-sm text-eemploi-primary font-medium">{rec.salary}</p>
+                            </div>
+                            <Badge className="bg-green-100 text-green-800">
+                              {rec.match} match
+                            </Badge>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button size="sm" className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+                              Postuler
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              Voir détails
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </TabsContent>
 
                   <TabsContent value="alerts" className="p-6">
@@ -251,7 +322,9 @@ const CandidateDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-4">
-                  <div className="text-3xl font-bold text-eemploi-accent">1,250</div>
+                  <div className="text-3xl font-bold text-eemploi-accent">
+                    {userPoints?.points || 0}
+                  </div>
                   <div className="text-sm text-muted-foreground">Points disponibles</div>
                 </div>
                 <div className="space-y-3">
@@ -299,7 +372,7 @@ const CandidateDashboard = () => {
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm">Vous avez gagné 50 points de fidélité</p>
+                      <p className="text-sm">Vous avez gagné {userPoints?.points || 0} points de fidélité</p>
                       <p className="text-xs text-muted-foreground">Il y a 3 jours</p>
                     </div>
                   </div>
