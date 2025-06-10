@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { fr } from "date-fns/locale";
 import type { Tables } from "@/integrations/supabase/types";
 
 type JobWithCompany = Tables<'jobs'> & {
-  companies?: Tables<'companies'] | null;
+  companies?: Tables<'companies'> | null;
 };
 
 // Support both the database job structure and the mock data structure
