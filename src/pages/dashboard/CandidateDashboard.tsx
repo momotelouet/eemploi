@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,8 @@ import {
 } from "lucide-react";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
+import CVUpload from "@/components/cv/CVUpload";
+import CoverLetterGenerator from "@/components/cover-letter/CoverLetterGenerator";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { useApplications } from "@/hooks/useApplications";
@@ -53,20 +54,6 @@ const CandidateDashboard = () => {
   // Handle button clicks
   const handleSearchJobs = () => {
     navigate('/emplois');
-  };
-
-  const handleUploadCV = () => {
-    toast({
-      title: "Fonctionnalité à venir",
-      description: "La mise à jour du CV sera bientôt disponible.",
-    });
-  };
-
-  const handleGenerateCoverLetter = () => {
-    toast({
-      title: "Fonctionnalité à venir",
-      description: "La génération de lettres de motivation sera bientôt disponible.",
-    });
   };
 
   const handleCompleteProfile = () => {
@@ -371,14 +358,8 @@ const CandidateDashboard = () => {
                   <Search className="w-4 h-4 mr-2" />
                   Rechercher des emplois
                 </Button>
-                <Button variant="outline" className="w-full" onClick={handleUploadCV}>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Mettre à jour mon CV
-                </Button>
-                <Button variant="outline" className="w-full" onClick={handleGenerateCoverLetter}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Générer une lettre de motivation
-                </Button>
+                <CVUpload />
+                <CoverLetterGenerator />
               </CardContent>
             </Card>
 
