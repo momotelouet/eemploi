@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,25 @@ interface JobCardProps {
 }
 
 const JobCard = ({ job, id, title, company, location, type, salary, description, postedAt }: JobCardProps) => {
+  const formatSalary = (min: number | null, max: number | null) => {
+    if (!min && !max) return "Salaire à négocier";
+    if (min && max) return `${min} - ${max} MAD`;
+    if (min) return `À partir de ${min} MAD`;
+    if (max) return `Jusqu'à ${max} MAD`;
+    return "Salaire à négocier";
+  };
+
+  const getJobTypeLabel = (type: string) => {
+    switch (type) {
+      case 'full-time': return 'Temps plein';
+      case 'part-time': return 'Temps partiel';
+      case 'contract': return 'Contrat';
+      case 'internship': return 'Stage';
+      case 'CDI': return 'CDI';
+      default: return type;
+    }
+  };
+
   // Handle both database job and mock data
   const jobData = job ? {
     id: job.id,
@@ -47,25 +67,6 @@ const JobCard = ({ job, id, title, company, location, type, salary, description,
     description: description || '',
     postedAt: postedAt || '',
     companyLogo: null
-  };
-
-  const formatSalary = (min: number | null, max: number | null) => {
-    if (!min && !max) return "Salaire à négocier";
-    if (min && max) return `${min} - ${max} MAD`;
-    if (min) return `À partir de ${min} MAD`;
-    if (max) return `Jusqu'à ${max} MAD`;
-    return "Salaire à négocier";
-  };
-
-  const getJobTypeLabel = (type: string) => {
-    switch (type) {
-      case 'full-time': return 'Temps plein';
-      case 'part-time': return 'Temps partiel';
-      case 'contract': return 'Contrat';
-      case 'internship': return 'Stage';
-      case 'CDI': return 'CDI';
-      default: return type;
-    }
   };
 
   return (
