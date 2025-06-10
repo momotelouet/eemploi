@@ -28,8 +28,12 @@ import { useApplications } from "@/hooks/useApplications";
 import { useJobs } from "@/hooks/useJobs";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const CandidateDashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const { profile } = useUserProfile();
   const { userPoints } = useUserPoints();
   const { applications, loading: applicationsLoading } = useApplications();
@@ -45,6 +49,71 @@ const CandidateDashboard = () => {
   };
 
   const profileCompletion = calculateProfileCompletion();
+
+  // Handle button clicks
+  const handleSearchJobs = () => {
+    navigate('/emplois');
+  };
+
+  const handleUploadCV = () => {
+    toast({
+      title: "Fonctionnalité à venir",
+      description: "La mise à jour du CV sera bientôt disponible.",
+    });
+  };
+
+  const handleGenerateCoverLetter = () => {
+    toast({
+      title: "Fonctionnalité à venir",
+      description: "La génération de lettres de motivation sera bientôt disponible.",
+    });
+  };
+
+  const handleCompleteProfile = () => {
+    toast({
+      title: "Fonctionnalité à venir",
+      description: "La page de modification du profil sera bientôt disponible.",
+    });
+  };
+
+  const handleCreateAlert = () => {
+    toast({
+      title: "Fonctionnalité à venir",
+      description: "La création d'alertes emploi sera bientôt disponible.",
+    });
+  };
+
+  const handleViewAllApplications = () => {
+    toast({
+      title: "Toutes vos candidatures",
+      description: `Vous avez envoyé ${applications.length} candidature(s) au total.`,
+    });
+  };
+
+  const handleViewJobDetails = (jobId: string) => {
+    navigate(`/emplois/${jobId}`);
+  };
+
+  const handleApplyToJob = (jobTitle: string) => {
+    toast({
+      title: "Candidature envoyée",
+      description: `Votre candidature pour le poste "${jobTitle}" a été envoyée avec succès.`,
+    });
+  };
+
+  const handleUsePoints = () => {
+    toast({
+      title: "Boutique de récompenses",
+      description: "La boutique de points sera bientôt disponible.",
+    });
+  };
+
+  const handleViewApplicationDetails = (applicationId: string) => {
+    toast({
+      title: "Détails de la candidature",
+      description: "La page de détails des candidatures sera bientôt disponible.",
+    });
+  };
 
   // Calculate stats from real data
   const stats = [
@@ -102,6 +171,7 @@ const CandidateDashboard = () => {
     .filter(job => !appliedJobIds.includes(job.id))
     .slice(0, 2)
     .map(job => ({
+      id: job.id,
       title: job.title,
       company: job.companies?.name || 'Entreprise non spécifiée',
       location: job.location || 'Non spécifié',
@@ -167,7 +237,7 @@ const CandidateDashboard = () => {
                   <div className="text-sm text-muted-foreground">
                     Complétez votre profil pour augmenter vos chances d'être recruté
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" onClick={handleCompleteProfile}>
                     <Settings className="w-4 h-4 mr-2" />
                     Compléter mon profil
                   </Button>
@@ -199,7 +269,7 @@ const CandidateDashboard = () => {
                         <p className="text-sm text-muted-foreground mb-4">
                           Commencez votre recherche d'emploi en postulant à des offres
                         </p>
-                        <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+                        <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={handleSearchJobs}>
                           <Search className="w-4 h-4 mr-2" />
                           Rechercher des emplois
                         </Button>
@@ -219,7 +289,7 @@ const CandidateDashboard = () => {
                               <div className={`w-2 h-2 rounded-full ${getStatusColor(app.status || 'pending')}`}></div>
                               <span className="text-sm">{getStatusText(app.status || 'pending')}</span>
                             </div>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" onClick={() => handleViewApplicationDetails(app.id)}>
                               Voir détails
                             </Button>
                           </div>
@@ -228,7 +298,7 @@ const CandidateDashboard = () => {
                     )}
                     {applications.length > 5 && (
                       <div className="text-center pt-4">
-                        <Button variant="outline">
+                        <Button variant="outline" onClick={handleViewAllApplications}>
                           Voir toutes mes candidatures
                         </Button>
                       </div>
@@ -258,10 +328,10 @@ const CandidateDashboard = () => {
                             </Badge>
                           </div>
                           <div className="flex space-x-2">
-                            <Button size="sm" className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+                            <Button size="sm" className="bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={() => handleApplyToJob(rec.title)}>
                               Postuler
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => handleViewJobDetails(rec.id)}>
                               Voir détails
                             </Button>
                           </div>
@@ -277,7 +347,7 @@ const CandidateDashboard = () => {
                       <p className="text-sm text-muted-foreground mb-4">
                         Créez des alertes pour recevoir les nouvelles offres correspondant à vos critères
                       </p>
-                      <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+                      <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={handleCreateAlert}>
                         <Search className="w-4 h-4 mr-2" />
                         Créer une alerte
                       </Button>
@@ -297,15 +367,15 @@ const CandidateDashboard = () => {
                 <CardTitle className="text-lg">Actions rapides</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90">
+                <Button className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={handleSearchJobs}>
                   <Search className="w-4 h-4 mr-2" />
                   Rechercher des emplois
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handleUploadCV}>
                   <Upload className="w-4 h-4 mr-2" />
                   Mettre à jour mon CV
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handleGenerateCoverLetter}>
                   <FileText className="w-4 h-4 mr-2" />
                   Générer une lettre de motivation
                 </Button>
@@ -341,7 +411,7 @@ const CandidateDashboard = () => {
                     <span className="font-medium">300 pts</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full mt-4">
+                <Button variant="outline" className="w-full mt-4" onClick={handleUsePoints}>
                   <Award className="w-4 h-4 mr-2" />
                   Utiliser mes points
                 </Button>
