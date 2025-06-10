@@ -103,7 +103,7 @@ const CandidateDashboard = () => {
     .slice(0, 2)
     .map(job => ({
       title: job.title,
-      company: job.companies.name,
+      company: job.companies?.name || 'Entreprise non spécifiée',
       location: job.location || 'Non spécifié',
       match: "95%", // This could be calculated based on various factors
       salary: job.salary_min && job.salary_max 
@@ -115,8 +115,8 @@ const CandidateDashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
+      {/* Welcome Section */}
       <div className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
             Bonjour, {profile?.first_name || 'Candidat'}! 👋
@@ -208,16 +208,16 @@ const CandidateDashboard = () => {
                       applications.slice(0, 5).map((app, index) => (
                         <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                           <div className="flex-1">
-                            <h4 className="font-medium">{app.jobs.title}</h4>
-                            <p className="text-sm text-muted-foreground">{app.jobs.companies.name}</p>
+                            <h4 className="font-medium">{app.jobs?.title || 'Poste non spécifié'}</h4>
+                            <p className="text-sm text-muted-foreground">{app.jobs?.companies?.name || 'Entreprise non spécifiée'}</p>
                             <p className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(app.applied_at), { addSuffix: true, locale: fr })}
                             </p>
                           </div>
                           <div className="flex items-center space-x-3">
                             <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${getStatusColor(app.status)}`}></div>
-                              <span className="text-sm">{getStatusText(app.status)}</span>
+                              <div className={`w-2 h-2 rounded-full ${getStatusColor(app.status || 'pending')}`}></div>
+                              <span className="text-sm">{getStatusText(app.status || 'pending')}</span>
                             </div>
                             <Button variant="ghost" size="sm">
                               Voir détails

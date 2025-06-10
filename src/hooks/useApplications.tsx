@@ -5,9 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
 type ApplicationWithJob = Tables<'applications'> & {
-  jobs: Tables<'jobs'> & {
-    companies: Tables<'companies'>;
-  };
+  jobs?: (Tables<'jobs'> & {
+    companies?: Tables<'companies'> | null;
+  }) | null;
 };
 
 export const useApplications = () => {
@@ -36,10 +36,16 @@ export const useApplications = () => {
           .eq('candidate_id', user.id)
           .order('applied_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('Fetched applications data:', data);
         setApplications(data || []);
       } catch (err) {
         console.error('Error fetching applications:', err);
+        setApplications([]); // Set empty array on error
       } finally {
         setLoading(false);
       }

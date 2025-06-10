@@ -9,7 +9,7 @@ import { fr } from "date-fns/locale";
 import type { Tables } from "@/integrations/supabase/types";
 
 type JobWithCompany = Tables<'jobs'> & {
-  companies: Tables<'companies'>;
+  companies?: Tables<'companies'> | null;
 };
 
 interface JobCardProps {
@@ -35,25 +35,29 @@ const JobCard = ({ job }: JobCardProps) => {
     }
   };
 
+  // Safe access to company data
+  const companyName = job.companies?.name || 'Entreprise non spécifiée';
+  const companyLogo = job.companies?.logo_url;
+
   return (
     <Card className="hover-lift border-l-4 border-l-eemploi-primary">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-eemploi-primary to-eemploi-secondary rounded-lg flex items-center justify-center text-white font-bold">
-              {job.companies.logo_url ? (
+              {companyLogo ? (
                 <img 
-                  src={job.companies.logo_url} 
-                  alt={job.companies.name} 
+                  src={companyLogo} 
+                  alt={companyName} 
                   className="w-full h-full object-cover rounded-lg" 
                 />
               ) : (
-                job.companies.name[0]
+                companyName[0] || 'E'
               )}
             </div>
             <div>
               <h3 className="font-semibold text-lg leading-tight">{job.title}</h3>
-              <p className="text-muted-foreground">{job.companies.name}</p>
+              <p className="text-muted-foreground">{companyName}</p>
             </div>
           </div>
           <Badge variant="secondary">{getJobTypeLabel(job.job_type || 'full-time')}</Badge>

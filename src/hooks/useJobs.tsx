@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
 type JobWithCompany = Tables<'jobs'> & {
-  companies: Tables<'companies'>;
+  companies?: Tables<'companies'> | null;
 };
 
 export const useJobs = () => {
@@ -23,10 +23,16 @@ export const useJobs = () => {
           .eq('status', 'active')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('Fetched jobs data:', data);
         setJobs(data || []);
       } catch (err) {
         console.error('Error fetching jobs:', err);
+        setJobs([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
