@@ -23,6 +23,7 @@ import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import CVUpload from "@/components/cv/CVUpload";
 import CoverLetterGenerator from "@/components/cover-letter/CoverLetterGenerator";
+import ProfileForm from "@/components/profile/ProfileForm";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { useApplications } from "@/hooks/useApplications";
@@ -224,10 +225,7 @@ const CandidateDashboard = () => {
                   <div className="text-sm text-muted-foreground">
                     Complétez votre profil pour augmenter vos chances d'être recruté
                   </div>
-                  <Button size="sm" variant="outline" onClick={handleCompleteProfile}>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Compléter mon profil
-                  </Button>
+                  <ProfileForm />
                 </div>
               </CardContent>
             </Card>
