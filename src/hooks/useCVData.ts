@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from './useUserProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CVData {
   personalInfo: {
@@ -12,6 +13,7 @@ interface CVData {
     address: string;
     professionalTitle: string;
     summary: string;
+    photoUrl?: string;
   };
   experience: Array<{
     id: string;
@@ -45,36 +47,80 @@ export const useCVData = () => {
 
   useEffect(() => {
     if (user && profile) {
-      // Initialize CV data from user profile with safe property access
-      const initialCVData: CVData = {
-        personalInfo: {
-          firstName: profile.first_name || '',
-          lastName: profile.last_name || '',
-          email: user.email || '',
-          phone: (profile as any).phone || '',
-          address: `${(profile as any).city || ''}, ${(profile as any).country || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
-          professionalTitle: (profile as any).professional_title || '',
-          summary: (profile as any).bio || ''
-        },
-        experience: [],
-        education: [],
-        skills: []
-      };
-      
-      setCVData(initialCVData);
-      setLoading(false);
+      loadOrInitializeCVData();
     } else if (!user) {
       setLoading(false);
     }
   }, [user, profile]);
 
-  const saveCVData = (data: CVData) => {
-    setCVData(data);
-    // Here you could save to localStorage or send to backend
-    localStorage.setItem('cvData', JSON.stringify(data));
+  const loadOrInitializeCVData = async () => {
+    try {
+      // Try to load existing CV data from database
+      const { data: existingCV, error } = await supabase
+        .from('cv_data')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (existingCV && !error) {
+        setCVData(existingCV.data);
+      } else {
+        // Initialize CV data from user profile
+        const initialCVData: CVData = {
+          personalInfo: {
+            firstName: profile.first_name || '',
+            lastName: profile.last_name || '',
+            email: user?.email || '',
+            phone: (profile as any).phone || '',
+            address: `${(profile as any).city || ''}, ${(profile as any).country || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
+            professionalTitle: (profile as any).professional_title || '',
+            summary: (profile as any).bio || '',
+            photoUrl: (profile as any).avatar_url || ''
+          },
+          experience: [],
+          education: [],
+          skills: []
+        };
+        setCVData(initialCVData);
+      }
+    } catch (error) {
+      console.error('Error loading CV data:', error);
+      // Fallback to localStorage
+      loadCVDataFromLocal();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loadCVData = () => {
+  const saveCVData = async (data: CVData) => {
+    setCVData(data);
+    
+    if (user) {
+      try {
+        // Save to database
+        const { error } = await supabase
+          .from('cv_data')
+          .upsert({
+            user_id: user.id,
+            data: data,
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error('Error saving CV to database:', error);
+          // Fallback to localStorage
+          localStorage.setItem('cvData', JSON.stringify(data));
+        }
+      } catch (error) {
+        console.error('Error saving CV data:', error);
+        localStorage.setItem('cvData', JSON.stringify(data));
+      }
+    } else {
+      localStorage.setItem('cvData', JSON.stringify(data));
+    }
+  };
+
+  const loadCVDataFromLocal = () => {
     try {
       const saved = localStorage.getItem('cvData');
       if (saved) {
@@ -83,21 +129,14 @@ export const useCVData = () => {
         return parsedData;
       }
     } catch (error) {
-      console.error('Error loading CV data:', error);
+      console.error('Error loading CV data from localStorage:', error);
     }
     return null;
   };
 
-  useEffect(() => {
-    if (!cvData) {
-      loadCVData();
-    }
-  }, []);
-
   return {
     cvData,
     saveCVData,
-    loadCVData,
     loading
   };
 };

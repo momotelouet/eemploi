@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Mail, Phone, Briefcase, GraduationCap } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface CVData {
   personalInfo: {
@@ -13,6 +14,7 @@ interface CVData {
     address: string;
     professionalTitle: string;
     summary: string;
+    photoUrl?: string;
   };
   experience: Array<{
     id: string;
@@ -59,39 +61,73 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data }) => {
     }
   };
 
+  const renderFormattedText = (html: string) => {
+    return <div dangerouslySetInnerHTML={{ __html: html }} className="formatted-content" />;
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
+      <style jsx>{`
+        .formatted-content ul, .formatted-content ol {
+          margin-left: 20px;
+          margin-bottom: 10px;
+        }
+        .formatted-content li {
+          margin-bottom: 5px;
+        }
+        .formatted-content strong, .formatted-content b {
+          font-weight: bold;
+        }
+        .formatted-content em, .formatted-content i {
+          font-style: italic;
+        }
+        .formatted-content u {
+          text-decoration: underline;
+        }
+      `}</style>
+
       {/* En-tête */}
-      <div className="text-center mb-8 pb-6 border-b-2 border-eemploi-primary">
-        <h1 className="text-4xl font-bold text-foreground mb-2">
-          {data.personalInfo.firstName} {data.personalInfo.lastName}
-        </h1>
-        {data.personalInfo.professionalTitle && (
-          <h2 className="text-xl text-eemploi-primary font-medium mb-4">
-            {data.personalInfo.professionalTitle}
-          </h2>
-        )}
-        
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-          {data.personalInfo.email && (
-            <div className="flex items-center">
-              <Mail className="w-4 h-4 mr-1" />
-              {data.personalInfo.email}
-            </div>
+      <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-eemploi-primary">
+        <div className="flex-1">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            {data.personalInfo.firstName} {data.personalInfo.lastName}
+          </h1>
+          {data.personalInfo.professionalTitle && (
+            <h2 className="text-xl text-eemploi-primary font-medium mb-4">
+              {data.personalInfo.professionalTitle}
+            </h2>
           )}
-          {data.personalInfo.phone && (
-            <div className="flex items-center">
-              <Phone className="w-4 h-4 mr-1" />
-              {data.personalInfo.phone}
-            </div>
-          )}
-          {data.personalInfo.address && (
-            <div className="flex items-center">
-              <MapPin className="w-4 h-4 mr-1" />
-              {data.personalInfo.address}
-            </div>
-          )}
+          
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            {data.personalInfo.email && (
+              <div className="flex items-center">
+                <Mail className="w-4 h-4 mr-1" />
+                {data.personalInfo.email}
+              </div>
+            )}
+            {data.personalInfo.phone && (
+              <div className="flex items-center">
+                <Phone className="w-4 h-4 mr-1" />
+                {data.personalInfo.phone}
+              </div>
+            )}
+            {data.personalInfo.address && (
+              <div className="flex items-center">
+                <MapPin className="w-4 h-4 mr-1" />
+                {data.personalInfo.address}
+              </div>
+            )}
+          </div>
         </div>
+        
+        {data.personalInfo.photoUrl && (
+          <Avatar className="w-32 h-32 ml-6">
+            <AvatarImage src={data.personalInfo.photoUrl} />
+            <AvatarFallback className="text-2xl">
+              {data.personalInfo.firstName?.charAt(0)}{data.personalInfo.lastName?.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+        )}
       </div>
 
       {/* Résumé professionnel */}
@@ -100,9 +136,9 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data }) => {
           <h3 className="text-xl font-semibold text-foreground mb-3 border-b border-gray-300 pb-1">
             Profil professionnel
           </h3>
-          <p className="text-muted-foreground leading-relaxed">
-            {data.personalInfo.summary}
-          </p>
+          <div className="text-muted-foreground leading-relaxed">
+            {renderFormattedText(data.personalInfo.summary)}
+          </div>
         </div>
       )}
 
@@ -126,9 +162,9 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data }) => {
                   </div>
                 </div>
                 {exp.description && (
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {exp.description}
-                  </p>
+                  <div className="text-muted-foreground text-sm leading-relaxed">
+                    {renderFormattedText(exp.description)}
+                  </div>
                 )}
               </div>
             ))}
@@ -156,9 +192,9 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data }) => {
                   </div>
                 </div>
                 {edu.description && (
-                  <p className="text-muted-foreground text-sm">
-                    {edu.description}
-                  </p>
+                  <div className="text-muted-foreground text-sm">
+                    {renderFormattedText(edu.description)}
+                  </div>
                 )}
               </div>
             ))}

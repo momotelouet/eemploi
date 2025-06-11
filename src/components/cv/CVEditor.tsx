@@ -1,13 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, Save, Eye } from 'lucide-react';
+import { Plus, Trash2, Save, Eye, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { RichTextEditor } from './RichTextEditor';
+import { useCVImages } from '@/hooks/useCVImages';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface CVData {
   personalInfo: {
@@ -18,6 +19,7 @@ interface CVData {
     address: string;
     professionalTitle: string;
     summary: string;
+    photoUrl?: string;
   };
   experience: Array<{
     id: string;
@@ -51,6 +53,7 @@ interface CVEditorProps {
 
 const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) => {
   const { toast } = useToast();
+  const { uploadImage } = useCVImages();
   
   const [cvData, setCVData] = useState<CVData>(initialData || {
     personalInfo: {
@@ -60,7 +63,8 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
       phone: '',
       address: '',
       professionalTitle: '',
-      summary: ''
+      summary: '',
+      photoUrl: ''
     },
     experience: [],
     education: [],
@@ -72,6 +76,23 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
       ...prev,
       personalInfo: { ...prev.personalInfo, [field]: value }
     }));
+  };
+
+  const handlePhotoUpload = async (file: File) => {
+    try {
+      const photoUrl = await uploadImage(file);
+      updatePersonalInfo('photoUrl', photoUrl);
+      toast({
+        title: 'Photo ajoutée',
+        description: 'Votre photo de profil a été ajoutée avec succès.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'ajouter la photo.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const addExperience = () => {
@@ -193,6 +214,39 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
               <CardTitle>Informations personnelles</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={cvData.personalInfo.photoUrl} />
+                  <AvatarFallback>
+                    {cvData.personalInfo.firstName?.charAt(0)}{cvData.personalInfo.lastName?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <Label htmlFor="photo">Photo de profil</Label>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handlePhotoUpload(file);
+                      }}
+                      className="hidden"
+                      id="photo-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('photo-upload')?.click()}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Ajouter une photo
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Prénom</Label>
@@ -253,12 +307,10 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
 
               <div className="space-y-2">
                 <Label htmlFor="summary">Résumé professionnel</Label>
-                <Textarea
-                  id="summary"
+                <RichTextEditor
                   value={cvData.personalInfo.summary}
-                  onChange={(e) => updatePersonalInfo('summary', e.target.value)}
+                  onChange={(value) => updatePersonalInfo('summary', value)}
                   placeholder="Décrivez votre parcours et vos objectifs..."
-                  rows={4}
                 />
               </div>
             </CardContent>
@@ -341,11 +393,10 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
 
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea
+                    <RichTextEditor
                       value={exp.description}
-                      onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
+                      onChange={(value) => updateExperience(exp.id, 'description', value)}
                       placeholder="Décrivez vos responsabilités et réalisations..."
-                      rows={3}
                     />
                   </div>
                 </div>
@@ -425,11 +476,10 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
 
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea
+                    <RichTextEditor
                       value={edu.description}
-                      onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
+                      onChange={(value) => updateEducation(edu.id, 'description', value)}
                       placeholder="Spécialisation, projets, mentions..."
-                      rows={2}
                     />
                   </div>
                 </div>
