@@ -1,17 +1,25 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, Edit } from 'lucide-react';
+import { Download, FileText, Edit, Eye } from 'lucide-react';
 import { useCVPDF } from '@/hooks/useCVPDF';
+import { useCVData } from '@/hooks/useCVData';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import CVEditor from './CVEditor';
+import CVPreview from './CVPreview';
+import { useState } from 'react';
 
 const CVManager = () => {
   const { generatePDF } = useCVPDF();
+  const { cvData, saveCVData, loading: cvLoading } = useCVData();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { profile, loading } = useUserProfile();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const [showEditor, setShowEditor] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleGeneratePDF = () => {
     if (!user) {
@@ -23,17 +31,17 @@ const CVManager = () => {
       return;
     }
 
-    if (!profile) {
+    if (!cvData) {
       toast({
-        title: 'Profil incomplet',
-        description: 'Veuillez compléter votre profil avant de générer votre CV.',
+        title: 'Données manquantes',
+        description: 'Veuillez d\'abord remplir votre CV avant de le générer.',
         variant: 'destructive'
       });
       return;
     }
 
     try {
-      generatePDF();
+      generatePDF(cvData);
       toast({
         title: 'CV généré',
         description: 'Votre CV a été généré et téléchargé avec succès.',
@@ -48,14 +56,29 @@ const CVManager = () => {
     }
   };
 
-  const handleEditCV = () => {
+  const handleSaveCVData = (data: any) => {
+    saveCVData(data);
+    setShowEditor(false);
     toast({
-      title: 'Édition du CV',
-      description: 'L\'éditeur de CV sera bientôt disponible.',
+      title: 'CV sauvegardé',
+      description: 'Votre CV a été sauvegardé avec succès.',
     });
   };
 
-  const isDisabled = !user || !profile || loading;
+  const handlePreviewCVData = (data: any) => {
+    saveCVData(data);
+    setShowEditor(false);
+    setShowPreview(true);
+  };
+
+  const isLoading = profileLoading || cvLoading;
+  const isDisabled = !user || isLoading;
+  const hasData = cvData && (
+    cvData.personalInfo.firstName || 
+    cvData.experience.length > 0 || 
+    cvData.education.length > 0 || 
+    cvData.skills.length > 0
+  );
 
   return (
     <Card>
@@ -67,25 +90,55 @@ const CVManager = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
-          Créez et gérez votre CV professionnel. Générez une version PDF à jour de votre profil.
+          Créez et gérez votre CV professionnel. Remplissez vos informations et générez une version PDF.
         </div>
         
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
+          <Dialog open={showEditor} onOpenChange={setShowEditor}>
+            <DialogTrigger asChild>
+              <Button variant="outline" disabled={isDisabled}>
+                <Edit className="w-4 h-4 mr-2" />
+                {hasData ? 'Modifier mon CV' : 'Créer mon CV'}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Éditeur de CV</DialogTitle>
+              </DialogHeader>
+              {cvData && (
+                <CVEditor
+                  initialData={cvData}
+                  onSave={handleSaveCVData}
+                  onPreview={handlePreviewCVData}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {hasData && (
+            <Dialog open={showPreview} onOpenChange={setShowPreview}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Prévisualiser
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Aperçu de votre CV</DialogTitle>
+                </DialogHeader>
+                {cvData && <CVPreview data={cvData} />}
+              </DialogContent>
+            </Dialog>
+          )}
+          
           <Button 
             onClick={handleGeneratePDF}
-            disabled={isDisabled}
+            disabled={isDisabled || !hasData}
             className="bg-eemploi-primary hover:bg-eemploi-primary/90 disabled:opacity-50"
           >
             <Download className="w-4 h-4 mr-2" />
-            {loading ? 'Chargement...' : 'Générer PDF'}
-          </Button>
-          
-          <Button 
-            variant="outline"
-            onClick={handleEditCV}
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Éditer CV
+            {isLoading ? 'Chargement...' : 'Générer PDF'}
           </Button>
         </div>
 
@@ -93,22 +146,37 @@ const CVManager = () => {
           <div className="p-3 border rounded-lg bg-yellow-50 border-yellow-200">
             <p className="text-sm text-yellow-800">
               {!user 
-                ? 'Connectez-vous pour générer votre CV.' 
-                : !profile 
-                  ? 'Complétez votre profil pour générer votre CV.'
-                  : 'Chargement de votre profil...'
+                ? 'Connectez-vous pour gérer votre CV.' 
+                : 'Chargement de votre profil...'
               }
             </p>
           </div>
         )}
 
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <h4 className="font-medium mb-2">Aperçu de votre CV</h4>
-          <p className="text-sm text-muted-foreground">
-            Votre CV inclut automatiquement les informations de votre profil, 
-            votre expérience professionnelle et vos compétences.
-          </p>
-        </div>
+        {user && !hasData && !isLoading && (
+          <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
+            <h4 className="font-medium mb-2 text-blue-900">Commencez votre CV</h4>
+            <p className="text-sm text-blue-800 mb-3">
+              Créez votre CV professionnel en remplissant vos informations personnelles, 
+              votre expérience et vos compétences.
+            </p>
+            <Button 
+              onClick={() => setShowEditor(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Commencer mon CV
+            </Button>
+          </div>
+        )}
+
+        {hasData && (
+          <div className="p-4 border rounded-lg bg-green-50 border-green-200">
+            <h4 className="font-medium mb-2 text-green-900">Votre CV est prêt ✓</h4>
+            <p className="text-sm text-green-800">
+              Votre CV contient vos informations. Vous pouvez le modifier, le prévisualiser ou le télécharger en PDF.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
