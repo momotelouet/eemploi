@@ -18,35 +18,45 @@ import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 
-const queryClient = new QueryClient();
+// Initialize QueryClient outside of component to avoid recreation
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/emplois" element={<Jobs />} />
-            <Route path="/emplois/:id" element={<JobDetails />} />
-            <Route path="/entreprises" element={<Companies />} />
-            <Route path="/entreprises/:id" element={<CompanyDetails />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/connexion" element={<Auth />} />
-            <Route path="/inscription" element={<Auth />} />
-            <Route path="/dashboard/candidat" element={<CandidateDashboard />} />
-            <Route path="/dashboard/recruteur" element={<RecruiterDashboard />} />
-            <Route path="/dashboard/admin" element={<AdminDashboard />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/a-propos" element={<About />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/emplois" element={<Jobs />} />
+              <Route path="/emplois/:id" element={<JobDetails />} />
+              <Route path="/entreprises" element={<Companies />} />
+              <Route path="/entreprises/:id" element={<CompanyDetails />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/connexion" element={<Auth />} />
+              <Route path="/inscription" element={<Auth />} />
+              <Route path="/dashboard/candidat" element={<CandidateDashboard />} />
+              <Route path="/dashboard/recruteur" element={<RecruiterDashboard />} />
+              <Route path="/dashboard/admin" element={<AdminDashboard />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/a-propos" element={<About />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
