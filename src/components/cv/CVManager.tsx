@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, FileText, Edit } from 'lucide-react';
 import { useCVPDF } from '@/hooks/useCVPDF';
-import { useToast } = '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const CVManager = () => {
   const { generatePDF } = useCVPDF();
