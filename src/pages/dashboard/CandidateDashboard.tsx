@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,10 @@ import {
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import CVUpload from "@/components/cv/CVUpload";
+import CVManager from "@/components/cv/CVManager";
 import CoverLetterGenerator from "@/components/cover-letter/CoverLetterGenerator";
 import ProfileForm from "@/components/profile/ProfileForm";
+import ApplicationsList from "@/components/applications/ApplicationsList";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { useApplications } from "@/hooks/useApplications";
@@ -235,59 +238,16 @@ const CandidateDashboard = () => {
               <CardContent className="p-0">
                 <Tabs defaultValue="applications" className="w-full">
                   <div className="border-b">
-                    <TabsList className="grid w-full grid-cols-3 bg-transparent">
-                      <TabsTrigger value="applications">Mes candidatures</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-4 bg-transparent">
+                      <TabsTrigger value="applications">Candidatures</TabsTrigger>
                       <TabsTrigger value="recommendations">Recommandations</TabsTrigger>
-                      <TabsTrigger value="alerts">Alertes emploi</TabsTrigger>
+                      <TabsTrigger value="cv">Mon CV</TabsTrigger>
+                      <TabsTrigger value="alerts">Alertes</TabsTrigger>
                     </TabsList>
                   </div>
 
-                  <TabsContent value="applications" className="p-6 space-y-4">
-                    {applicationsLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      </div>
-                    ) : applications.length === 0 ? (
-                      <div className="text-center py-8">
-                        <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="font-medium mb-2">Aucune candidature envoyée</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Commencez votre recherche d'emploi en postulant à des offres
-                        </p>
-                        <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={handleSearchJobs}>
-                          <Search className="w-4 h-4 mr-2" />
-                          Rechercher des emplois
-                        </Button>
-                      </div>
-                    ) : (
-                      applications.slice(0, 5).map((app, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{app.jobs?.title || 'Poste non spécifié'}</h4>
-                            <p className="text-sm text-muted-foreground">{app.jobs?.companies?.name || 'Entreprise non spécifiée'}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(app.applied_at), { addSuffix: true, locale: fr })}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${getStatusColor(app.status || 'pending')}`}></div>
-                              <span className="text-sm">{getStatusText(app.status || 'pending')}</span>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => handleViewApplicationDetails(app.id)}>
-                              Voir détails
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                    {applications.length > 5 && (
-                      <div className="text-center pt-4">
-                        <Button variant="outline" onClick={handleViewAllApplications}>
-                          Voir toutes mes candidatures
-                        </Button>
-                      </div>
-                    )}
+                  <TabsContent value="applications" className="p-6">
+                    <ApplicationsList />
                   </TabsContent>
 
                   <TabsContent value="recommendations" className="p-6 space-y-4">
@@ -323,6 +283,10 @@ const CandidateDashboard = () => {
                         </div>
                       ))
                     )}
+                  </TabsContent>
+
+                  <TabsContent value="cv" className="p-6">
+                    <CVManager />
                   </TabsContent>
 
                   <TabsContent value="alerts" className="p-6">
