@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from './useUserProfile';
-import { supabase } from '@/integrations/supabase/client';
 
 interface CVData {
   personalInfo: {
@@ -53,29 +52,27 @@ export const useCVData = () => {
     }
   }, [user, profile]);
 
-  const loadOrInitializeCVData = async () => {
+  const loadOrInitializeCVData = () => {
     try {
-      // Try to load existing CV data from database
-      const { data: existingCV, error } = await supabase
-        .from('cv_data')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (existingCV && !error) {
-        setCVData(existingCV.data);
+      // Try to load existing CV data from localStorage
+      const saved = localStorage.getItem(`cvData_${user?.id}`);
+      
+      if (saved) {
+        const parsedData = JSON.parse(saved);
+        setCVData(parsedData);
       } else {
         // Initialize CV data from user profile
+        const profileData = profile as any;
         const initialCVData: CVData = {
           personalInfo: {
-            firstName: profile.first_name || '',
-            lastName: profile.last_name || '',
+            firstName: profile?.first_name || '',
+            lastName: profile?.last_name || '',
             email: user?.email || '',
-            phone: (profile as any).phone || '',
-            address: `${(profile as any).city || ''}, ${(profile as any).country || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
-            professionalTitle: (profile as any).professional_title || '',
-            summary: (profile as any).bio || '',
-            photoUrl: (profile as any).avatar_url || ''
+            phone: profileData?.phone || '',
+            address: `${profileData?.city || ''}, ${profileData?.country || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
+            professionalTitle: profileData?.professional_title || '',
+            summary: profileData?.bio || '',
+            photoUrl: profileData?.avatar_url || ''
           },
           experience: [],
           education: [],
@@ -85,53 +82,41 @@ export const useCVData = () => {
       }
     } catch (error) {
       console.error('Error loading CV data:', error);
-      // Fallback to localStorage
-      loadCVDataFromLocal();
+      // Fallback to basic data
+      const initialCVData: CVData = {
+        personalInfo: {
+          firstName: '',
+          lastName: '',
+          email: user?.email || '',
+          phone: '',
+          address: '',
+          professionalTitle: '',
+          summary: '',
+          photoUrl: ''
+        },
+        experience: [],
+        education: [],
+        skills: []
+      };
+      setCVData(initialCVData);
     } finally {
       setLoading(false);
     }
   };
 
-  const saveCVData = async (data: CVData) => {
+  const saveCVData = (data: CVData) => {
     setCVData(data);
     
-    if (user) {
-      try {
-        // Save to database
-        const { error } = await supabase
-          .from('cv_data')
-          .upsert({
-            user_id: user.id,
-            data: data,
-            updated_at: new Date().toISOString()
-          });
-
-        if (error) {
-          console.error('Error saving CV to database:', error);
-          // Fallback to localStorage
-          localStorage.setItem('cvData', JSON.stringify(data));
-        }
-      } catch (error) {
-        console.error('Error saving CV data:', error);
+    try {
+      // Save to localStorage with user-specific key
+      if (user) {
+        localStorage.setItem(`cvData_${user.id}`, JSON.stringify(data));
+      } else {
         localStorage.setItem('cvData', JSON.stringify(data));
       }
-    } else {
-      localStorage.setItem('cvData', JSON.stringify(data));
-    }
-  };
-
-  const loadCVDataFromLocal = () => {
-    try {
-      const saved = localStorage.getItem('cvData');
-      if (saved) {
-        const parsedData = JSON.parse(saved);
-        setCVData(parsedData);
-        return parsedData;
-      }
     } catch (error) {
-      console.error('Error loading CV data from localStorage:', error);
+      console.error('Error saving CV data:', error);
     }
-    return null;
   };
 
   return {
