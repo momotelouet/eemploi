@@ -45,16 +45,16 @@ export const useCVData = () => {
 
   useEffect(() => {
     if (user && profile) {
-      // Initialize CV data from user profile
+      // Initialize CV data from user profile with safe property access
       const initialCVData: CVData = {
         personalInfo: {
           firstName: profile.first_name || '',
           lastName: profile.last_name || '',
           email: user.email || '',
-          phone: profile.phone || '',
-          address: `${profile.city || ''}, ${profile.country || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
-          professionalTitle: profile.professional_title || '',
-          summary: profile.bio || ''
+          phone: (profile as any).phone || '',
+          address: `${(profile as any).city || ''}, ${(profile as any).country || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
+          professionalTitle: (profile as any).professional_title || '',
+          summary: (profile as any).bio || ''
         },
         experience: [],
         education: [],
