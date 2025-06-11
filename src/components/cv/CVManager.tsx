@@ -4,12 +4,34 @@ import { Button } from '@/components/ui/button';
 import { Download, FileText, Edit } from 'lucide-react';
 import { useCVPDF } from '@/hooks/useCVPDF';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 const CVManager = () => {
   const { generatePDF } = useCVPDF();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { profile, loading } = useUserProfile();
 
   const handleGeneratePDF = () => {
+    if (!user) {
+      toast({
+        title: 'Erreur d\'authentification',
+        description: 'Vous devez être connecté pour générer votre CV.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!profile) {
+      toast({
+        title: 'Profil incomplet',
+        description: 'Veuillez compléter votre profil avant de générer votre CV.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     try {
       generatePDF();
       toast({
@@ -17,9 +39,10 @@ const CVManager = () => {
         description: 'Votre CV a été généré et téléchargé avec succès.',
       });
     } catch (error) {
+      console.error('Erreur lors de la génération du CV:', error);
       toast({
         title: 'Erreur',
-        description: 'Une erreur est survenue lors de la génération du CV.',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la génération du CV.',
         variant: 'destructive'
       });
     }
@@ -31,6 +54,8 @@ const CVManager = () => {
       description: 'L\'éditeur de CV sera bientôt disponible.',
     });
   };
+
+  const isDisabled = !user || !profile || loading;
 
   return (
     <Card>
@@ -48,10 +73,11 @@ const CVManager = () => {
         <div className="flex space-x-2">
           <Button 
             onClick={handleGeneratePDF}
-            className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+            disabled={isDisabled}
+            className="bg-eemploi-primary hover:bg-eemploi-primary/90 disabled:opacity-50"
           >
             <Download className="w-4 h-4 mr-2" />
-            Générer PDF
+            {loading ? 'Chargement...' : 'Générer PDF'}
           </Button>
           
           <Button 
@@ -62,6 +88,19 @@ const CVManager = () => {
             Éditer CV
           </Button>
         </div>
+
+        {isDisabled && (
+          <div className="p-3 border rounded-lg bg-yellow-50 border-yellow-200">
+            <p className="text-sm text-yellow-800">
+              {!user 
+                ? 'Connectez-vous pour générer votre CV.' 
+                : !profile 
+                  ? 'Complétez votre profil pour générer votre CV.'
+                  : 'Chargement de votre profil...'
+              }
+            </p>
+          </div>
+        )}
 
         <div className="p-4 border rounded-lg bg-gray-50">
           <h4 className="font-medium mb-2">Aperçu de votre CV</h4>
