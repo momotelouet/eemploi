@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bold, Italic, Underline, List, ListOrdered, Image } from 'lucide-react';
 
@@ -18,17 +18,35 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (editorRef.current && value && !isInitialized) {
+      editorRef.current.innerHTML = value;
+      setIsInitialized(true);
+    }
+  }, [value, isInitialized]);
 
   const executeCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
+    updateContent();
+  };
+
+  const updateContent = () => {
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
   };
 
-  const handleInput = () => {
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    updateContent();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Allow normal typing
+    if (e.key === 'Enter') {
+      // Let the browser handle Enter key naturally
+      setTimeout(updateContent, 0);
     }
   };
 
@@ -40,6 +58,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const file = event.target.files?.[0];
     if (file && onImageUpload) {
       onImageUpload(file);
+    }
+  };
+
+  const handleFocus = () => {
+    if (editorRef.current && editorRef.current.innerHTML === '') {
+      editorRef.current.innerHTML = '';
     }
   };
 
@@ -100,13 +124,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <div
         ref={editorRef}
         contentEditable
-        className="min-h-[100px] p-3 focus:outline-none"
+        className="min-h-[100px] p-3 focus:outline-none focus:ring-2 focus:ring-eemploi-primary focus:ring-offset-1"
         onInput={handleInput}
-        dangerouslySetInnerHTML={{ __html: value }}
+        onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
         data-placeholder={placeholder}
         style={{
-          minHeight: '100px'
+          minHeight: '100px',
+          direction: 'ltr',
+          textAlign: 'left'
         }}
+        suppressContentEditableWarning={true}
       />
       <input
         ref={fileInputRef}
@@ -115,6 +143,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         className="hidden"
         onChange={handleImageUpload}
       />
+      
+      <style>{`
+        [contenteditable]:empty:before {
+          content: attr(data-placeholder);
+          color: #9ca3af;
+          pointer-events: none;
+        }
+      `}</style>
     </div>
   );
 };
