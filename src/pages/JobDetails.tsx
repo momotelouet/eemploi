@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Header from "@/components/Layout/Header";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import ApplicationModal from "@/components/applications/ApplicationModal";
 import { 
   MapPin, 
   Clock, 
@@ -20,6 +20,8 @@ import {
   DollarSign
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useJobApplication } from "@/hooks/useJobApplication";
 import type { Tables } from "@/integrations/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -30,9 +32,13 @@ type JobWithCompany = Tables<'jobs'> & {
 
 const JobDetails = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [job, setJob] = useState<JobWithCompany | null>(null);
   const [loading, setLoading] = useState(true);
   const [similarJobs, setSimilarJobs] = useState<JobWithCompany[]>([]);
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const { applyToJob, isApplying } = useJobApplication();
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -52,6 +58,18 @@ const JobDetails = () => {
 
         if (error) throw error;
         setJob(data);
+
+        // Check if user has already applied
+        if (user) {
+          const { data: application } = await supabase
+            .from('applications')
+            .select('id')
+            .eq('job_id', id)
+            .eq('candidate_id', user.id)
+            .single();
+          
+          setHasApplied(!!application);
+        }
 
         // Fetch similar jobs (same company or similar industry)
         if (data) {
@@ -75,7 +93,20 @@ const JobDetails = () => {
     };
 
     fetchJob();
-  }, [id]);
+  }, [id, user]);
+
+  const handleQuickApply = async () => {
+    if (!job) return;
+    const success = await applyToJob(job.id);
+    if (success) {
+      setHasApplied(true);
+    }
+  };
+
+  const handleApplicationSubmit = () => {
+    setHasApplied(true);
+    setIsApplicationModalOpen(false);
+  };
 
   if (loading) {
     return (
@@ -290,13 +321,40 @@ const JobDetails = () => {
             <Card className="sticky top-24">
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <Button size="lg" className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90">
-                    Postuler maintenant
-                  </Button>
-                  
-                  <Button variant="outline" size="lg" className="w-full">
-                    Postuler avec mon CV
-                  </Button>
+                  {hasApplied ? (
+                    <div className="text-center py-4">
+                      <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                      <p className="text-green-600 font-medium">Candidature envoyée</p>
+                      <p className="text-sm text-muted-foreground mt-1">Votre candidature a été transmise à l'entreprise</p>
+                    </div>
+                  ) : (
+                    <>
+                      <Button 
+                        size="lg" 
+                        className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90"
+                        onClick={handleQuickApply}
+                        disabled={isApplying || !user}
+                      >
+                        {isApplying ? 'Envoi en cours...' : 'Postuler maintenant'}
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="lg" 
+                        className="w-full"
+                        onClick={() => setIsApplicationModalOpen(true)}
+                        disabled={!user}
+                      >
+                        Postuler avec mon CV
+                      </Button>
+
+                      {!user && (
+                        <p className="text-xs text-muted-foreground text-center">
+                          Vous devez être connecté pour postuler
+                        </p>
+                      )}
+                    </>
+                  )}
 
                   <Separator />
 
@@ -368,6 +426,14 @@ const JobDetails = () => {
           </div>
         </div>
       </div>
+
+      <ApplicationModal
+        isOpen={isApplicationModalOpen}
+        onClose={() => setIsApplicationModalOpen(false)}
+        jobId={job.id}
+        jobTitle={job.title}
+        companyName={job.companies?.name || 'Entreprise non spécifiée'}
+      />
 
       <Footer />
     </div>

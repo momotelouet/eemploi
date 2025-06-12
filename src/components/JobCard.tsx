@@ -6,6 +6,8 @@ import { MapPin, Clock, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useJobApplication } from "@/hooks/useJobApplication";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 
 type JobWithCompany = Tables<'jobs'> & {
@@ -27,6 +29,9 @@ interface JobCardProps {
 }
 
 const JobCard = ({ job, id, title, company, location, type, salary, description, postedAt }: JobCardProps) => {
+  const { user } = useAuth();
+  const { applyToJob, isApplying } = useJobApplication();
+
   const formatSalary = (min: number | null, max: number | null) => {
     if (!min && !max) return "Salaire à négocier";
     if (min && max) return `${min} - ${max} MAD`;
@@ -67,6 +72,18 @@ const JobCard = ({ job, id, title, company, location, type, salary, description,
     description: description || '',
     postedAt: postedAt || '',
     companyLogo: null
+  };
+
+  const handleQuickApply = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      alert('Vous devez être connecté pour postuler');
+      return;
+    }
+    
+    await applyToJob(jobData.id);
   };
 
   return (
@@ -117,8 +134,13 @@ const JobCard = ({ job, id, title, company, location, type, salary, description,
           <Button variant="outline" size="sm" asChild>
             <Link to={`/emplois/${jobData.id}`}>Voir plus</Link>
           </Button>
-          <Button size="sm" className="bg-eemploi-primary hover:bg-eemploi-primary/90">
-            Postuler
+          <Button 
+            size="sm" 
+            className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+            onClick={handleQuickApply}
+            disabled={isApplying || !user}
+          >
+            {isApplying ? 'Envoi...' : 'Postuler'}
           </Button>
         </div>
       </CardFooter>
