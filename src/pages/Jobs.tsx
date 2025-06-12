@@ -14,11 +14,11 @@ import { useJobs } from "@/hooks/useJobs";
 const Jobs = () => {
   const { jobs, loading } = useJobs();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-  const [selectedSalary, setSelectedSalary] = useState("");
-  const [selectedExperience, setSelectedExperience] = useState("");
-  const [selectedSector, setSelectedSector] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
+  const [selectedSalary, setSelectedSalary] = useState("all");
+  const [selectedExperience, setSelectedExperience] = useState("all");
+  const [selectedSector, setSelectedSector] = useState("all");
 
   // Filter jobs based on search criteria
   const filteredJobs = useMemo(() => {
@@ -28,12 +28,12 @@ const Jobs = () => {
         job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (job.companies?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesLocation = !selectedLocation || 
+      const matchesLocation = selectedLocation === "all" || 
         (job.location && job.location.toLowerCase().includes(selectedLocation.toLowerCase()));
       
-      const matchesType = !selectedType || job.job_type === selectedType;
+      const matchesType = selectedType === "all" || job.job_type === selectedType;
       
-      const matchesSalary = !selectedSalary || (() => {
+      const matchesSalary = selectedSalary === "all" || (() => {
         if (!job.salary_min) return false;
         switch (selectedSalary) {
           case '0-10000': return job.salary_min >= 0 && job.salary_min <= 10000;
@@ -45,9 +45,9 @@ const Jobs = () => {
         }
       })();
       
-      const matchesExperience = !selectedExperience || job.experience_level === selectedExperience;
+      const matchesExperience = selectedExperience === "all" || job.experience_level === selectedExperience;
       
-      const matchesSector = !selectedSector || 
+      const matchesSector = selectedSector === "all" || 
         (job.companies?.industry && job.companies.industry === selectedSector);
 
       return matchesSearch && matchesLocation && matchesType && 
@@ -123,9 +123,9 @@ const Jobs = () => {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les villes</SelectItem>
+                    <SelectItem value="all">Toutes les villes</SelectItem>
                     {locations.map((location) => (
-                      <SelectItem key={location} value={location || ''}>
+                      <SelectItem key={location} value={location || 'unknown'}>
                         {location}
                       </SelectItem>
                     ))}
@@ -142,7 +142,7 @@ const Jobs = () => {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les types</SelectItem>
+                    <SelectItem value="all">Tous les types</SelectItem>
                     <SelectItem value="full-time">Temps plein</SelectItem>
                     <SelectItem value="part-time">Temps partiel</SelectItem>
                     <SelectItem value="contract">Contrat</SelectItem>
@@ -206,7 +206,7 @@ const Jobs = () => {
                           <SelectValue placeholder="Choisir une fourchette" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Tous les salaires</SelectItem>
+                          <SelectItem value="all">Tous les salaires</SelectItem>
                           <SelectItem value="0-10000">0 - 10,000 MAD</SelectItem>
                           <SelectItem value="10000-20000">10,000 - 20,000 MAD</SelectItem>
                           <SelectItem value="20000-30000">20,000 - 30,000 MAD</SelectItem>
@@ -223,7 +223,7 @@ const Jobs = () => {
                           <SelectValue placeholder="Sélectionner" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Tous les niveaux</SelectItem>
+                          <SelectItem value="all">Tous les niveaux</SelectItem>
                           <SelectItem value="entry">Débutant</SelectItem>
                           <SelectItem value="mid">Intermédiaire</SelectItem>
                           <SelectItem value="senior">Senior</SelectItem>
@@ -239,7 +239,7 @@ const Jobs = () => {
                           <SelectValue placeholder="Tous les secteurs" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Tous les secteurs</SelectItem>
+                          <SelectItem value="all">Tous les secteurs</SelectItem>
                           <SelectItem value="tech">Technologie</SelectItem>
                           <SelectItem value="finance">Finance</SelectItem>
                           <SelectItem value="healthcare">Santé</SelectItem>
