@@ -1,4 +1,3 @@
-
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import SearchSection from "@/components/SearchSection";
@@ -9,41 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Star, CheckCircle, Zap, Shield, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useJobs } from "@/hooks/useJobs";
 
 const Index = () => {
-  // Mock data for featured jobs
-  const featuredJobs = [
-    {
-      id: "1",
-      title: "Développeur Full Stack",
-      company: "TechCorp Maroc",
-      location: "Casablanca",
-      type: "CDI",
-      salary: "25,000 - 35,000 MAD",
-      description: "Nous recherchons un développeur passionné pour rejoindre notre équipe dynamique et travailler sur des projets innovants.",
-      postedAt: "Il y a 2 jours"
-    },
-    {
-      id: "2", 
-      title: "Responsable Marketing Digital",
-      company: "Digital Agency",
-      location: "Rabat",
-      type: "CDI",
-      salary: "20,000 - 30,000 MAD",
-      description: "Poste stratégique pour développer notre présence digitale et gérer nos campagnes marketing.",
-      postedAt: "Il y a 1 jour"
-    },
-    {
-      id: "3",
-      title: "Chef de Projet IT",
-      company: "Innovate Solutions",
-      location: "Marrakech",
-      type: "CDI", 
-      salary: "30,000 - 40,000 MAD",
-      description: "Leadership d'équipes techniques sur des projets complexes dans un environnement agile.",
-      postedAt: "Il y a 3 heures"
-    }
-  ];
+  const { jobs, loading } = useJobs();
+  
+  // Get first 3 jobs for featured section
+  const featuredJobs = jobs.slice(0, 3);
 
   const features = [
     {
@@ -96,11 +67,25 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {featuredJobs.map((job) => (
-              <JobCard key={job.id} {...job} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p>Chargement des offres...</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {featuredJobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+
+              {featuredJobs.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Aucune offre d'emploi disponible pour le moment.</p>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="text-center md:hidden">
             <Button asChild>

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, MapPin, Briefcase, Star, Eye, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Profile = Tables<'profiles'>;
 
 const ProfileSearch = () => {
   const { user } = useAuth();
@@ -18,49 +21,49 @@ const ProfileSearch = () => {
     experience: '',
     skills: ''
   });
-  const [profiles, setProfiles] = useState([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Load initial candidate profiles
+    loadProfiles();
+  }, []);
+
+  const loadProfiles = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_type', 'candidat')
+        .limit(20);
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des profils:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const searchProfiles = async () => {
     setLoading(true);
     try {
-      // Simuler une recherche de profils
-      const mockProfiles = [
-        {
-          id: '1',
-          first_name: 'Ahmed',
-          last_name: 'Benali',
-          professional_title: 'Développeur React Senior',
-          location: 'Casablanca, Maroc',
-          experience: '5 ans',
-          skills: ['React', 'TypeScript', 'Node.js'],
-          match_score: 95,
-          avatar_url: null
-        },
-        {
-          id: '2',
-          first_name: 'Fatima',
-          last_name: 'El Amrani',
-          professional_title: 'UX/UI Designer',
-          location: 'Rabat, Maroc',
-          experience: '3 ans',
-          skills: ['Figma', 'Adobe XD', 'Prototyping'],
-          match_score: 88,
-          avatar_url: null
-        },
-        {
-          id: '3',
-          first_name: 'Youssef',
-          last_name: 'Tazi',
-          professional_title: 'Chef de Projet Digital',
-          location: 'Marrakech, Maroc',
-          experience: '7 ans',
-          skills: ['Gestion de projet', 'Scrum', 'Digital Marketing'],
-          match_score: 82,
-          avatar_url: null
-        }
-      ];
-      setProfiles(mockProfiles);
+      let query = supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_type', 'candidat');
+
+      // Apply search filters
+      if (searchTerm) {
+        query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
+      }
+
+      const { data, error } = await query.limit(20);
+
+      if (error) throw error;
+      setProfiles(data || []);
     } catch (error) {
       console.error('Erreur lors de la recherche:', error);
     } finally {
@@ -81,7 +84,7 @@ const ProfileSearch = () => {
           <div className="flex gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Rechercher par compétences, titre de poste..."
+                placeholder="Rechercher par nom, prénom..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -135,7 +138,6 @@ const ProfileSearch = () => {
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
                   <Avatar className="w-16 h-16">
-                    <AvatarImage src={profile.avatar_url} />
                     <AvatarFallback className="bg-eemploi-primary text-white">
                       {profile.first_name?.[0]}{profile.last_name?.[0]}
                     </AvatarFallback>
@@ -145,35 +147,17 @@ const ProfileSearch = () => {
                       {profile.first_name} {profile.last_name}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-2">
-                      {profile.professional_title}
+                      Candidat
                     </p>
                     <div className="flex items-center text-xs text-muted-foreground mb-3">
                       <MapPin className="w-3 h-3 mr-1" />
-                      {profile.location}
+                      Non spécifié
                       <span className="mx-2">•</span>
                       <Briefcase className="w-3 h-3 mr-1" />
-                      {profile.experience}
-                    </div>
-                    
-                    <div className="flex items-center mb-3">
-                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                      <span className="text-sm font-medium">{profile.match_score}% compatible</span>
+                      Profil {profile.user_type}
                     </div>
 
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {profile.skills.slice(0, 3).map((skill, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {profile.skills.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{profile.skills.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 mt-4">
                       <Button size="sm" variant="outline" className="flex-1">
                         <Eye className="w-3 h-3 mr-1" />
                         Voir profil
@@ -199,6 +183,14 @@ const ProfileSearch = () => {
             <p className="text-sm text-muted-foreground">
               Utilisez les filtres ci-dessus pour trouver les profils qui correspondent à vos besoins
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {loading && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <p>Chargement des profils...</p>
           </CardContent>
         </Card>
       )}

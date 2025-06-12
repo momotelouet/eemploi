@@ -1,5 +1,6 @@
 
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -18,66 +19,119 @@ import {
   Calendar,
   DollarSign
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
+
+type JobWithCompany = Tables<'jobs'> & {
+  companies?: Tables<'companies'> | null;
+};
 
 const JobDetails = () => {
   const { id } = useParams();
+  const [job, setJob] = useState<JobWithCompany | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [similarJobs, setSimilarJobs] = useState<JobWithCompany[]>([]);
 
-  // Mock job data - in real app this would come from API
-  const job = {
-    id: "1",
-    title: "Développeur Full Stack React/Node.js",
-    company: "TechCorp Maroc",
-    location: "Casablanca, Maroc",
-    type: "CDI",
-    salary: "25,000 - 35,000 MAD",
-    experience: "3-5 ans",
-    education: "Bac+3 minimum",
-    postedAt: "Il y a 2 jours",
-    deadline: "31 Décembre 2024",
-    description: `
-Nous recherchons un développeur Full Stack passionné pour rejoindre notre équipe dynamique et travailler sur des projets innovants.
+  useEffect(() => {
+    const fetchJob = async () => {
+      if (!id) return;
 
-## À propos du poste
+      try {
+        // Fetch the specific job
+        const { data, error } = await supabase
+          .from('jobs')
+          .select(`
+            *,
+            companies (*)
+          `)
+          .eq('id', id)
+          .eq('status', 'active')
+          .single();
 
-Vous intégrerez une équipe de 8 développeurs dans un environnement startup en pleine croissance. Nous développons des solutions SaaS pour des clients internationaux.
+        if (error) throw error;
+        setJob(data);
 
-## Responsabilités
+        // Fetch similar jobs (same company or similar industry)
+        if (data) {
+          const { data: similar } = await supabase
+            .from('jobs')
+            .select(`
+              *,
+              companies (*)
+            `)
+            .neq('id', id)
+            .eq('status', 'active')
+            .limit(3);
 
-• Développer et maintenir des applications web avec React.js et Node.js
-• Concevoir et implémenter des APIs RESTful
-• Collaborer avec l'équipe UX/UI pour créer des interfaces utilisateur intuitives
-• Participer aux code reviews et respecter les bonnes pratiques
-• Optimiser les performances des applications
-• Participer aux réunions agiles (Scrum)
+          setSimilarJobs(similar || []);
+        }
+      } catch (error) {
+        console.error('Error fetching job:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-## Compétences requises
+    fetchJob();
+  }, [id]);
 
-• **Frontend**: React.js, TypeScript, HTML5/CSS3, TailwindCSS
-• **Backend**: Node.js, Express.js, MongoDB/PostgreSQL
-• **Outils**: Git, Docker, CI/CD
-• **Méthodologies**: Agile/Scrum
-• Excellente communication en français et anglais
-• Esprit d'équipe et autonomie
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <p>Chargement de l'offre d'emploi...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
-## Ce que nous offrons
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Offre d'emploi non trouvée</h1>
+            <p className="text-muted-foreground">Cette offre d'emploi n'existe pas ou a été supprimée.</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
-• Salaire compétitif selon profil
-• Télétravail hybride (2-3 jours en remote)
-• Formation continue et certifications
-• Assurance santé complète
-• Tickets restaurant
-• Environnement de travail moderne
-• Équipe jeune et dynamique
-    `,
-    company_description: "TechCorp Maroc est une entreprise technologique leader au Maroc, spécialisée dans le développement de solutions digitales innovantes pour les entreprises.",
-    skills: ["React.js", "Node.js", "TypeScript", "MongoDB", "Docker", "Git", "Agile"],
-    benefits: [
-      "Assurance santé",
-      "Télétravail hybride", 
-      "Formation continue",
-      "Tickets restaurant",
-      "13ème mois"
-    ]
+  const formatSalary = (min: number | null, max: number | null) => {
+    if (!min && !max) return "Salaire à négocier";
+    if (min && max) return `${min} - ${max} MAD`;
+    if (min) return `À partir de ${min} MAD`;
+    if (max) return `Jusqu'à ${max} MAD`;
+    return "Salaire à négocier";
+  };
+
+  const getJobTypeLabel = (type: string) => {
+    switch (type) {
+      case 'full-time': return 'Temps plein';
+      case 'part-time': return 'Temps partiel';
+      case 'contract': return 'Contrat';
+      case 'internship': return 'Stage';
+      default: return type;
+    }
+  };
+
+  const getExperienceLabel = (level: string) => {
+    switch (level) {
+      case 'entry': return 'Débutant (0-2 ans)';
+      case 'mid': return 'Intermédiaire (2-5 ans)';
+      case 'senior': return 'Senior (5+ ans)';
+      case 'lead': return 'Lead/Manager';
+      default: return level;
+    }
   };
 
   return (
@@ -96,11 +150,19 @@ Vous intégrerez une équipe de 8 développeurs dans un environnement startup en
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="w-16 h-16 bg-gradient-to-br from-eemploi-primary to-eemploi-secondary rounded-xl flex items-center justify-center text-white font-bold text-xl">
-                      {job.company[0]}
+                      {job.companies?.logo_url ? (
+                        <img 
+                          src={job.companies.logo_url} 
+                          alt={job.companies.name} 
+                          className="w-full h-full object-cover rounded-xl" 
+                        />
+                      ) : (
+                        (job.companies?.name?.[0] || 'E')
+                      )}
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold">{job.title}</h1>
-                      <p className="text-lg text-muted-foreground">{job.company}</p>
+                      <p className="text-lg text-muted-foreground">{job.companies?.name || 'Entreprise non spécifiée'}</p>
                     </div>
                   </div>
                   
@@ -115,34 +177,28 @@ Vous intégrerez une équipe de 8 développeurs dans un environnement startup en
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 mt-6 text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <MapPin className="w-4 h-4" />
-                    <span>{job.location}</span>
-                  </div>
+                  {job.location && (
+                    <div className="flex items-center space-x-1">
+                      <MapPin className="w-4 h-4" />
+                      <span>{job.location}</span>
+                    </div>
+                  )}
                   <div className="flex items-center space-x-1">
                     <Building className="w-4 h-4" />
-                    <span>{job.type}</span>
+                    <span>{getJobTypeLabel(job.job_type || 'full-time')}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <DollarSign className="w-4 h-4" />
-                    <span>{job.salary}</span>
+                    <span>{formatSalary(job.salary_min, job.salary_max)}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <User className="w-4 h-4" />
-                    <span>{job.experience}</span>
+                    <span>{getExperienceLabel(job.experience_level || 'mid')}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Clock className="w-4 h-4" />
-                    <span>{job.postedAt}</span>
+                    <span>{formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}</span>
                   </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {job.skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
                 </div>
               </CardHeader>
             </Card>
@@ -154,31 +210,77 @@ Vous intégrerez une équipe de 8 développeurs dans un environnement startup en
               </CardHeader>
               <CardContent>
                 <div className="prose max-w-none">
-                  {job.description.split('\n').map((paragraph, index) => {
-                    if (paragraph.startsWith('##')) {
-                      return <h3 key={index} className="text-lg font-semibold mt-6 mb-3">{paragraph.replace('## ', '')}</h3>;
-                    }
-                    if (paragraph.startsWith('•')) {
-                      return <li key={index} className="ml-4">{paragraph.replace('• ', '')}</li>;
-                    }
-                    if (paragraph.trim()) {
-                      return <p key={index} className="mb-4">{paragraph}</p>;
-                    }
-                    return null;
-                  })}
+                  <div className="whitespace-pre-wrap">{job.description}</div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Requirements */}
+            {job.requirements && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exigences du poste</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose max-w-none">
+                    <div className="whitespace-pre-wrap">{job.requirements}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Company Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>À propos de l'entreprise</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{job.company_description}</p>
-              </CardContent>
-            </Card>
+            {job.companies && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>À propos de l'entreprise</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold">{job.companies.name}</h3>
+                      {job.companies.description && (
+                        <p className="text-muted-foreground mt-2">{job.companies.description}</p>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {job.companies.industry && (
+                        <div>
+                          <span className="font-medium">Secteur:</span>
+                          <span className="ml-2 text-muted-foreground">{job.companies.industry}</span>
+                        </div>
+                      )}
+                      {job.companies.size && (
+                        <div>
+                          <span className="font-medium">Taille:</span>
+                          <span className="ml-2 text-muted-foreground">{job.companies.size}</span>
+                        </div>
+                      )}
+                      {job.companies.location && (
+                        <div>
+                          <span className="font-medium">Localisation:</span>
+                          <span className="ml-2 text-muted-foreground">{job.companies.location}</span>
+                        </div>
+                      )}
+                      {job.companies.website && (
+                        <div>
+                          <span className="font-medium">Site web:</span>
+                          <a 
+                            href={job.companies.website} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="ml-2 text-eemploi-primary hover:underline"
+                          >
+                            {job.companies.website}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -199,17 +301,17 @@ Vous intégrerez une équipe de 8 développeurs dans un environnement startup en
                   <Separator />
 
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Date limite:</span>
-                      <span className="font-medium">{job.deadline}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Candidatures:</span>
-                      <span className="font-medium">23 postulants</span>
-                    </div>
+                    {job.expires_at && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Date limite:</span>
+                        <span className="font-medium">
+                          {new Date(job.expires_at).toLocaleDateString('fr-FR')}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Vues:</span>
-                      <span className="font-medium">156 vues</span>
+                      <span className="font-medium">{job.views || 0} vues</span>
                     </div>
                   </div>
                 </div>
@@ -224,58 +326,45 @@ Vous intégrerez une équipe de 8 développeurs dans un environnement startup en
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Type de contrat:</span>
-                  <Badge>{job.type}</Badge>
+                  <Badge>{getJobTypeLabel(job.job_type || 'full-time')}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Expérience:</span>
-                  <span className="font-medium">{job.experience}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Éducation:</span>
-                  <span className="font-medium">{job.education}</span>
+                  <span className="font-medium">{getExperienceLabel(job.experience_level || 'mid')}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Salaire:</span>
-                  <span className="font-medium text-eemploi-primary">{job.salary}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Benefits */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Avantages</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {job.benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <CheckCircle className="w-4 h-4 text-eemploi-success" />
-                      <span className="text-sm">{benefit}</span>
-                    </div>
-                  ))}
+                  <span className="font-medium text-eemploi-primary">
+                    {formatSalary(job.salary_min, job.salary_max)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Similar Jobs */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Offres similaires</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                    <h4 className="font-medium text-sm">Développeur Frontend React</h4>
-                    <p className="text-xs text-muted-foreground">WebAgency • Rabat</p>
-                    <div className="flex items-center mt-2">
-                      <Star className="w-3 h-3 text-yellow-500 mr-1" />
-                      <span className="text-xs">4.8</span>
+            {similarJobs.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Offres similaires</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {similarJobs.map((similarJob) => (
+                    <div key={similarJob.id} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                      <h4 className="font-medium text-sm">{similarJob.title}</h4>
+                      <p className="text-xs text-muted-foreground">
+                        {similarJob.companies?.name} • {similarJob.location}
+                      </p>
+                      <div className="flex items-center mt-2">
+                        <Star className="w-3 h-3 text-yellow-500 mr-1" />
+                        <span className="text-xs">
+                          {formatSalary(similarJob.salary_min, similarJob.salary_max)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

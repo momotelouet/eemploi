@@ -8,84 +8,85 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, MapPin, Briefcase, Clock, Building } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useJobs } from "@/hooks/useJobs";
 
 const Jobs = () => {
+  const { jobs, loading } = useJobs();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedType, setSelectedType] = useState("");
+  const [selectedSalary, setSelectedSalary] = useState("");
+  const [selectedExperience, setSelectedExperience] = useState("");
+  const [selectedSector, setSelectedSector] = useState("");
 
-  // Mock data for jobs
-  const jobs = [
-    {
-      id: "1",
-      title: "Développeur Full Stack React/Node.js",
-      company: "TechCorp Maroc",
-      location: "Casablanca",
-      type: "CDI",
-      salary: "25,000 - 35,000 MAD",
-      description: "Nous recherchons un développeur passionné pour rejoindre notre équipe dynamique et travailler sur des projets innovants utilisant React, Node.js et MongoDB.",
-      postedAt: "Il y a 2 jours"
-    },
-    {
-      id: "2",
-      title: "Responsable Marketing Digital",
-      company: "Digital Agency",
-      location: "Rabat",
-      type: "CDI",
-      salary: "20,000 - 30,000 MAD",
-      description: "Poste stratégique pour développer notre présence digitale, gérer nos campagnes SEA/SEO et optimiser notre ROI marketing.",
-      postedAt: "Il y a 1 jour"
-    },
-    {
-      id: "3",
-      title: "Chef de Projet IT",
-      company: "Innovate Solutions",
-      location: "Marrakech",
-      type: "CDI",
-      salary: "30,000 - 40,000 MAD",
-      description: "Leadership d'équipes techniques sur des projets complexes dans un environnement agile. Expertise en gestion de projet Scrum requise.",
-      postedAt: "Il y a 3 heures"
-    },
-    {
-      id: "4",
-      title: "Designer UX/UI Senior",
-      company: "Creative Studio",
-      location: "Casablanca",
-      type: "CDI",
-      salary: "22,000 - 32,000 MAD",
-      description: "Création d'expériences utilisateur exceptionnelles pour nos clients. Maîtrise de Figma, Adobe Creative Suite et design thinking.",
-      postedAt: "Il y a 1 semaine"
-    },
-    {
-      id: "5",
-      title: "Ingénieur DevOps",
-      company: "CloudTech",
-      location: "Tanger",
-      type: "CDI",
-      salary: "35,000 - 45,000 MAD",
-      description: "Automatisation des déploiements et gestion de l'infrastructure cloud. Expertise AWS, Docker, Kubernetes souhaitée.",
-      postedAt: "Il y a 4 jours"
-    },
-    {
-      id: "6",
-      title: "Consultant Business Intelligence",
-      company: "Data Analytics Pro",
-      location: "Fès",
-      type: "CDD",
-      salary: "28,000 - 38,000 MAD",
-      description: "Analyse de données complexes et création de tableaux de bord pour l'aide à la décision. Power BI, Tableau, SQL requis.",
-      postedAt: "Il y a 2 jours"
-    }
-  ];
+  // Filter jobs based on search criteria
+  const filteredJobs = useMemo(() => {
+    return jobs.filter(job => {
+      const matchesSearch = !searchTerm || 
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (job.companies?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesLocation = !selectedLocation || 
+        (job.location && job.location.toLowerCase().includes(selectedLocation.toLowerCase()));
+      
+      const matchesType = !selectedType || job.job_type === selectedType;
+      
+      const matchesSalary = !selectedSalary || (() => {
+        if (!job.salary_min) return false;
+        switch (selectedSalary) {
+          case '0-10000': return job.salary_min >= 0 && job.salary_min <= 10000;
+          case '10000-20000': return job.salary_min >= 10000 && job.salary_min <= 20000;
+          case '20000-30000': return job.salary_min >= 20000 && job.salary_min <= 30000;
+          case '30000-50000': return job.salary_min >= 30000 && job.salary_min <= 50000;
+          case '50000+': return job.salary_min >= 50000;
+          default: return true;
+        }
+      })();
+      
+      const matchesExperience = !selectedExperience || job.experience_level === selectedExperience;
+      
+      const matchesSector = !selectedSector || 
+        (job.companies?.industry && job.companies.industry === selectedSector);
+
+      return matchesSearch && matchesLocation && matchesType && 
+             matchesSalary && matchesExperience && matchesSector;
+    });
+  }, [jobs, searchTerm, selectedLocation, selectedType, selectedSalary, selectedExperience, selectedSector]);
+
+  // Get unique locations from jobs for filter
+  const locations = useMemo(() => {
+    const locationSet = new Set(jobs.map(job => job.location).filter(Boolean));
+    return Array.from(locationSet);
+  }, [jobs]);
 
   const quickFilters = [
-    { label: "Développement", count: 245 },
-    { label: "Marketing", count: 132 },
-    { label: "Commercial", count: 189 },
-    { label: "Finance", count: 98 },
-    { label: "RH", count: 76 },
-    { label: "Design", count: 54 }
+    { label: "Développement", count: jobs.filter(job => 
+      job.title.toLowerCase().includes('développeur') || 
+      job.title.toLowerCase().includes('dev') ||
+      job.title.toLowerCase().includes('programmeur')
+    ).length },
+    { label: "Marketing", count: jobs.filter(job => 
+      job.title.toLowerCase().includes('marketing')
+    ).length },
+    { label: "Commercial", count: jobs.filter(job => 
+      job.title.toLowerCase().includes('commercial') ||
+      job.title.toLowerCase().includes('vente')
+    ).length },
+    { label: "Finance", count: jobs.filter(job => 
+      job.title.toLowerCase().includes('finance') ||
+      job.title.toLowerCase().includes('comptable')
+    ).length },
+    { label: "RH", count: jobs.filter(job => 
+      job.title.toLowerCase().includes('rh') ||
+      job.title.toLowerCase().includes('ressources humaines')
+    ).length },
+    { label: "Design", count: jobs.filter(job => 
+      job.title.toLowerCase().includes('design') ||
+      job.title.toLowerCase().includes('ux') ||
+      job.title.toLowerCase().includes('ui')
+    ).length }
   ];
 
   return (
@@ -122,13 +123,12 @@ const Jobs = () => {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes les villes</SelectItem>
-                    <SelectItem value="casablanca">Casablanca</SelectItem>
-                    <SelectItem value="rabat">Rabat</SelectItem>
-                    <SelectItem value="marrakech">Marrakech</SelectItem>
-                    <SelectItem value="fes">Fès</SelectItem>
-                    <SelectItem value="tanger">Tanger</SelectItem>
-                    <SelectItem value="agadir">Agadir</SelectItem>
+                    <SelectItem value="">Toutes les villes</SelectItem>
+                    {locations.map((location) => (
+                      <SelectItem key={location} value={location || ''}>
+                        {location}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -142,12 +142,11 @@ const Jobs = () => {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les types</SelectItem>
-                    <SelectItem value="cdi">CDI</SelectItem>
-                    <SelectItem value="cdd">CDD</SelectItem>
-                    <SelectItem value="stage">Stage</SelectItem>
-                    <SelectItem value="freelance">Freelance</SelectItem>
-                    <SelectItem value="temps-partiel">Temps partiel</SelectItem>
+                    <SelectItem value="">Tous les types</SelectItem>
+                    <SelectItem value="full-time">Temps plein</SelectItem>
+                    <SelectItem value="part-time">Temps partiel</SelectItem>
+                    <SelectItem value="contract">Contrat</SelectItem>
+                    <SelectItem value="internship">Stage</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -156,7 +155,7 @@ const Jobs = () => {
             <div className="mt-4 flex justify-center">
               <Button size="lg" className="bg-eemploi-primary hover:bg-eemploi-primary/90">
                 <Search className="w-4 h-4 mr-2" />
-                Rechercher
+                {filteredJobs.length} offres trouvées
               </Button>
             </div>
           </div>
@@ -168,7 +167,13 @@ const Jobs = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap gap-3 justify-center">
             {quickFilters.map((filter, index) => (
-              <Button key={index} variant="outline" size="sm" className="h-9">
+              <Button 
+                key={index} 
+                variant="outline" 
+                size="sm" 
+                className="h-9"
+                onClick={() => setSearchTerm(filter.label)}
+              >
                 {filter.label}
                 <Badge variant="secondary" className="ml-2 text-xs">
                   {filter.count}
@@ -196,11 +201,12 @@ const Jobs = () => {
                   <div className="space-y-6">
                     <div>
                       <label className="text-sm font-medium mb-3 block">Salaire mensuel</label>
-                      <Select>
+                      <Select value={selectedSalary} onValueChange={setSelectedSalary}>
                         <SelectTrigger>
                           <SelectValue placeholder="Choisir une fourchette" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="">Tous les salaires</SelectItem>
                           <SelectItem value="0-10000">0 - 10,000 MAD</SelectItem>
                           <SelectItem value="10000-20000">10,000 - 20,000 MAD</SelectItem>
                           <SelectItem value="20000-30000">20,000 - 30,000 MAD</SelectItem>
@@ -212,46 +218,33 @@ const Jobs = () => {
 
                     <div>
                       <label className="text-sm font-medium mb-3 block">Niveau d'expérience</label>
-                      <Select>
+                      <Select value={selectedExperience} onValueChange={setSelectedExperience}>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="junior">Junior (0-2 ans)</SelectItem>
-                          <SelectItem value="intermediate">Intermédiaire (2-5 ans)</SelectItem>
-                          <SelectItem value="senior">Senior (5+ ans)</SelectItem>
-                          <SelectItem value="lead">Lead/Manager</SelectItem>
+                          <SelectItem value="">Tous les niveaux</SelectItem>
+                          <SelectItem value="entry">Débutant</SelectItem>
+                          <SelectItem value="mid">Intermédiaire</SelectItem>
+                          <SelectItem value="senior">Senior</SelectItem>
+                          <SelectItem value="lead">Lead</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
                       <label className="text-sm font-medium mb-3 block">Secteur d'activité</label>
-                      <Select>
+                      <Select value={selectedSector} onValueChange={setSelectedSector}>
                         <SelectTrigger>
                           <SelectValue placeholder="Tous les secteurs" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="">Tous les secteurs</SelectItem>
                           <SelectItem value="tech">Technologie</SelectItem>
                           <SelectItem value="finance">Finance</SelectItem>
                           <SelectItem value="healthcare">Santé</SelectItem>
                           <SelectItem value="education">Éducation</SelectItem>
                           <SelectItem value="retail">Commerce</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-3 block">Date de publication</label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Toutes les dates" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="today">Aujourd'hui</SelectItem>
-                          <SelectItem value="week">Cette semaine</SelectItem>
-                          <SelectItem value="month">Ce mois</SelectItem>
-                          <SelectItem value="all">Toutes les dates</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -266,7 +259,7 @@ const Jobs = () => {
                 <div className="flex items-center space-x-2">
                   <Building className="w-5 h-5 text-eemploi-primary" />
                   <h2 className="text-xl font-semibold">
-                    {jobs.length} offres trouvées
+                    {loading ? 'Chargement...' : `${filteredJobs.length} offres trouvées`}
                   </h2>
                 </div>
                 
@@ -283,22 +276,40 @@ const Jobs = () => {
                 </Select>
               </div>
 
-              <div className="space-y-6">
-                {jobs.map((job) => (
-                  <JobCard key={job.id} {...job} />
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-12">
+                  <p>Chargement des offres d'emploi...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-6">
+                    {filteredJobs.map((job) => (
+                      <JobCard key={job.id} job={job} />
+                    ))}
+                  </div>
+
+                  {filteredJobs.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">
+                        Aucune offre d'emploi ne correspond à vos critères de recherche.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* Pagination */}
-              <div className="mt-12 flex justify-center">
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">Précédent</Button>
-                  <Button size="sm" className="bg-eemploi-primary">1</Button>
-                  <Button variant="outline" size="sm">2</Button>
-                  <Button variant="outline" size="sm">3</Button>
-                  <Button variant="outline" size="sm">Suivant</Button>
+              {filteredJobs.length > 0 && (
+                <div className="mt-12 flex justify-center">
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm">Précédent</Button>
+                    <Button size="sm" className="bg-eemploi-primary">1</Button>
+                    <Button variant="outline" size="sm">2</Button>
+                    <Button variant="outline" size="sm">3</Button>
+                    <Button variant="outline" size="sm">Suivant</Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
