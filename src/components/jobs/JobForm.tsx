@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,11 +17,11 @@ const JobForm = () => {
     description: '',
     requirements: '',
     location: '',
-    job_type: 'full_time',
+    job_type: 'full-time',
     experience_level: 'mid',
     salary_min: '',
     salary_max: '',
-    company_id: '' // This would be selected from user's companies
+    company_id: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +76,7 @@ const JobForm = () => {
         description: '',
         requirements: '',
         location: '',
-        job_type: 'full_time',
+        job_type: 'full-time',
         experience_level: 'mid',
         salary_min: '',
         salary_max: '',
@@ -164,8 +163,8 @@ const JobForm = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full_time">Temps plein</SelectItem>
-                  <SelectItem value="part_time">Temps partiel</SelectItem>
+                  <SelectItem value="full-time">Temps plein</SelectItem>
+                  <SelectItem value="part-time">Temps partiel</SelectItem>
                   <SelectItem value="contract">Contrat</SelectItem>
                   <SelectItem value="internship">Stage</SelectItem>
                 </SelectContent>

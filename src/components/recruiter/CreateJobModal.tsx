@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
     description: '',
     requirements: '',
     location: '',
-    job_type: 'full_time',
+    job_type: 'full-time',
     experience_level: 'mid',
     salary_min: '',
     salary_max: '',
@@ -84,7 +83,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         description: '',
         requirements: '',
         location: '',
-        job_type: 'full_time',
+        job_type: 'full-time',
         experience_level: 'mid',
         salary_min: '',
         salary_max: '',
@@ -175,8 +174,8 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full_time">Temps plein</SelectItem>
-                  <SelectItem value="part_time">Temps partiel</SelectItem>
+                  <SelectItem value="full-time">Temps plein</SelectItem>
+                  <SelectItem value="part-time">Temps partiel</SelectItem>
                   <SelectItem value="contract">Contrat</SelectItem>
                   <SelectItem value="internship">Stage</SelectItem>
                 </SelectContent>
