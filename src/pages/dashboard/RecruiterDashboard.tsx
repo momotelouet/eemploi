@@ -227,7 +227,7 @@ const RecruiterDashboard = () => {
                   </div>
                 ))}
                 <Button variant="outline" asChild className="w-full">
-                  <Link to="/recruteur/hub">Voir toutes les candidatures</Link>
+                  <Link to="/recruteur/candidatures">Voir toutes les candidatures</Link>
                 </Button>
               </div>
             ) : (
@@ -255,9 +255,9 @@ const RecruiterDashboard = () => {
             </Button>
             
             <Button asChild variant="outline" className="h-20 flex-col space-y-2">
-              <Link to="/recruteur/hub">
+              <Link to="/recruteur/candidatures">
                 <Users className="w-6 h-6" />
-                <span>Rechercher des profils</span>
+                <span>Gérer les candidatures</span>
               </Link>
             </Button>
             
