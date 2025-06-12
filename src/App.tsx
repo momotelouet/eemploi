@@ -14,6 +14,7 @@ import CompanyDetails from "./pages/CompanyDetails";
 import Auth from "./pages/auth/Auth";
 import CandidateDashboard from "./pages/dashboard/CandidateDashboard";
 import RecruiterDashboard from "./pages/dashboard/RecruiterDashboard";
+import RecruiterHub from "./pages/recruiter/RecruiterHub";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
@@ -47,6 +48,7 @@ const App = () => {
               <Route path="/inscription" element={<Auth />} />
               <Route path="/dashboard/candidat" element={<CandidateDashboard />} />
               <Route path="/dashboard/recruteur" element={<RecruiterDashboard />} />
+              <Route path="/recruteur/hub" element={<RecruiterHub />} />
               <Route path="/dashboard/admin" element={<AdminDashboard />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/a-propos" element={<About />} />

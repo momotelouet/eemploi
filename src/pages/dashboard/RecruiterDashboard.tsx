@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import {
   FileText,
   Loader2
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -27,12 +27,15 @@ import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
 import { useJobApplications } from "@/hooks/useJobApplications";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import CreateJobModal from "@/components/recruiter/CreateJobModal";
 
 const RecruiterDashboard = () => {
+  const navigate = useNavigate();
   const { profile } = useUserProfile();
   const { userPoints } = useUserPoints();
   const { jobs, loading: jobsLoading } = useRecruiterJobs();
   const { applications, loading: applicationsLoading } = useJobApplications();
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Calculate stats from real data
   const totalApplications = applications.length;
@@ -64,6 +67,23 @@ const RecruiterDashboard = () => {
       change: "+75 cette semaine" 
     }
   ];
+
+  const handleCreateJob = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleSearchProfiles = () => {
+    navigate('/recruteur/hub?tab=search');
+  };
+
+  const handleManageCompany = () => {
+    navigate('/recruteur/hub?tab=company');
+  };
+
+  const handleJobCreated = () => {
+    // Rafraîchir la page ou les données
+    window.location.reload();
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -123,7 +143,11 @@ const RecruiterDashboard = () => {
             </h1>
             <p className="text-muted-foreground">Gérez vos offres et trouvez les meilleurs talents</p>
           </div>
-          <Button size="lg" className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+          <Button 
+            size="lg" 
+            onClick={handleCreateJob}
+            className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Publier une offre
           </Button>
@@ -178,7 +202,10 @@ const RecruiterDashboard = () => {
                         <p className="text-sm text-muted-foreground mb-4">
                           Commencez par publier votre première offre d'emploi
                         </p>
-                        <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+                        <Button 
+                          onClick={handleCreateJob}
+                          className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+                        >
                           <Plus className="w-4 h-4 mr-2" />
                           Créer une offre
                         </Button>
@@ -371,15 +398,26 @@ const RecruiterDashboard = () => {
                 <CardTitle className="text-lg">Actions rapides</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90">
+                <Button 
+                  onClick={handleCreateJob}
+                  className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Créer une offre
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleSearchProfiles}
+                >
                   <Users className="w-4 h-4 mr-2" />
                   Rechercher des profils
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleManageCompany}
+                >
                   <Building className="w-4 h-4 mr-2" />
                   Gérer mon entreprise
                 </Button>
@@ -477,6 +515,12 @@ const RecruiterDashboard = () => {
       </div>
 
       <Footer />
+
+      <CreateJobModal 
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onJobCreated={handleJobCreated}
+      />
     </div>
   );
 };
