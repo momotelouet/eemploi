@@ -23,8 +23,26 @@ import {
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
-interface CandidateProfile extends Tables<'candidate_profiles'> {
-  profiles?: Tables<'profiles'>;
+// Define custom interface for candidate profile
+interface CandidateProfile {
+  id: string;
+  user_id: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  linkedin_url?: string;
+  portfolio_url?: string;
+  skills?: string[];
+  experience_years?: number;
+  education?: string;
+  languages?: string[];
+  cv_file_url?: string;
+  cv_file_name?: string;
+  profile_picture_url?: string;
+  bio?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface CandidateProfileModalProps {
@@ -48,9 +66,9 @@ const CandidateProfileModal = ({ isOpen, onClose, candidateId, candidateEmail }:
   const fetchCandidateProfile = async () => {
     setLoading(true);
     try {
-      // Fetch candidate profile
+      // Fetch candidate profile using direct query
       const { data: candidateProfile, error: profileError } = await supabase
-        .from('candidate_profiles')
+        .from('candidate_profiles' as any)
         .select('*')
         .eq('user_id', candidateId)
         .maybeSingle();
