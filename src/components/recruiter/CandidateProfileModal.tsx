@@ -89,8 +89,11 @@ const CandidateProfileModal = ({ isOpen, onClose, candidateId, candidateEmail }:
         console.error('Error fetching candidate profile:', profileError);
         toast.error('Erreur lors du chargement du profil');
         setProfile(null);
-      } else {
+      } else if (candidateProfile && typeof candidateProfile === 'object' && !('error' in candidateProfile)) {
+        // Only set profile if data is valid and not an error object
         setProfile(candidateProfile as CandidateProfile);
+      } else {
+        setProfile(null);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);

@@ -49,8 +49,11 @@ export const useCandidateProfile = (candidateId: string | null) => {
         if (error) {
           console.error('Error fetching candidate profile:', error);
           setProfile(null);
-        } else {
+        } else if (data && typeof data === 'object' && !('error' in data)) {
+          // Only set profile if data is valid and not an error object
           setProfile(data as CandidateProfile);
+        } else {
+          setProfile(null);
         }
       } catch (err) {
         setError(err as Error);
