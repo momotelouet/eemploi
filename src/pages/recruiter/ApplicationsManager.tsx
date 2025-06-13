@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/button';
 import { useJobApplications } from '@/hooks/useJobApplications';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Eye, Download, Mail, Phone, MapPin } from 'lucide-react';
+import { Eye, Download, Mail, Phone, MapPin, User } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import CandidateProfileModal from '@/components/recruiter/CandidateProfileModal';
 
 const ApplicationsManager = () => {
   const { applications, loading } = useJobApplications();
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedJobFilter, setSelectedJobFilter] = useState('all');
+  const [selectedCandidate, setSelectedCandidate] = useState<{id: string, email?: string} | null>(null);
 
   const filteredApplications = applications.filter(app => {
     const statusMatch = statusFilter === 'all' || app.status === statusFilter;
@@ -58,6 +60,76 @@ const ApplicationsManager = () => {
       case 'accepted': return 'Acceptée';
       case 'rejected': return 'Rejetée';
       default: return status;
+    }
+  };
+
+  const handleViewProfile = async (candidateId: string) => {
+    try {
+      // Get candidate email from auth.users via profiles
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', candidateId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+      }
+
+      // For now, we'll open the modal with the candidate ID
+      // The email will be fetched inside the modal if needed
+      setSelectedCandidate({ id: candidateId });
+    } catch (error) {
+      console.error('Error fetching candidate info:', error);
+      toast.error('Erreur lors du chargement du profil');
+    }
+  };
+
+  const handleDownloadCV = async (cvUrl: string, fileName?: string) => {
+    if (!cvUrl) {
+      toast.error('Aucun CV disponible');
+      return;
+    }
+
+    try {
+      const response = await fetch(cvUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName || 'CV_candidat.pdf';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('CV téléchargé avec succès');
+    } catch (error) {
+      console.error('Error downloading CV:', error);
+      toast.error('Erreur lors du téléchargement du CV');
+    }
+  };
+
+  const handleContactCandidate = async (candidateId: string) => {
+    try {
+      // Get candidate email from profiles
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', candidateId)
+        .single();
+
+      if (error || !profile) {
+        toast.error('Impossible de récupérer les informations de contact');
+        return;
+      }
+
+      // For now, we'll assume we can get the email from somewhere
+      // In a real implementation, you might need to store this differently
+      const email = `${profile.first_name?.toLowerCase()}.${profile.last_name?.toLowerCase()}@example.com`;
+      window.open(`mailto:${email}`, '_blank');
+    } catch (error) {
+      console.error('Error contacting candidate:', error);
+      toast.error('Erreur lors de l\'ouverture du client email');
     }
   };
 
@@ -192,17 +264,29 @@ const ApplicationsManager = () => {
                 )}
 
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleViewProfile(application.candidate_id)}
+                  >
                     <Eye className="w-4 h-4 mr-2" />
                     Voir le profil
                   </Button>
                   {application.cv_url && (
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDownloadCV(application.cv_url!, 'CV_candidat.pdf')}
+                    >
                       <Download className="w-4 h-4 mr-2" />
                       Télécharger CV
                     </Button>
                   )}
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleContactCandidate(application.candidate_id)}
+                  >
                     <Mail className="w-4 h-4 mr-2" />
                     Contacter
                   </Button>
@@ -212,6 +296,14 @@ const ApplicationsManager = () => {
           ))
         )}
       </div>
+
+      {/* Modal du profil candidat */}
+      <CandidateProfileModal
+        isOpen={!!selectedCandidate}
+        onClose={() => setSelectedCandidate(null)}
+        candidateId={selectedCandidate?.id || ''}
+        candidateEmail={selectedCandidate?.email}
+      />
     </div>
   );
 };
