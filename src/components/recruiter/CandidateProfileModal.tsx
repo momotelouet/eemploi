@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ import {
   Linkedin, 
   Download, 
   Printer,
-  Calendar,
   GraduationCap,
   Briefcase,
   Languages
@@ -22,27 +22,8 @@ import {
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
-// Define custom interface for candidate profile
-interface CandidateProfile {
-  id: string;
-  user_id: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  linkedin_url?: string;
-  portfolio_url?: string;
-  skills?: string[];
-  experience_years?: number;
-  education?: string;
-  languages?: string[];
-  cv_file_url?: string;
-  cv_file_name?: string;
-  profile_picture_url?: string;
-  bio?: string;
-  created_at: string;
-  updated_at: string;
-}
+type CandidateProfile = Tables<'candidate_profiles'>;
+type UserProfile = Tables<'profiles'>;
 
 interface CandidateProfileModalProps {
   isOpen: boolean;
@@ -53,7 +34,7 @@ interface CandidateProfileModalProps {
 
 const CandidateProfileModal = ({ isOpen, onClose, candidateId, candidateEmail }: CandidateProfileModalProps) => {
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
-  const [userProfile, setUserProfile] = useState<Tables<'profiles'> | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -65,9 +46,9 @@ const CandidateProfileModal = ({ isOpen, onClose, candidateId, candidateEmail }:
   const fetchCandidateProfile = async () => {
     setLoading(true);
     try {
-      // Fetch candidate profile using direct query
+      // Fetch candidate profile using the new table structure
       const { data: candidateProfile, error: profileError } = await supabase
-        .from('candidate_profiles' as any)
+        .from('candidate_profiles')
         .select('*')
         .eq('user_id', candidateId)
         .maybeSingle();
@@ -89,11 +70,8 @@ const CandidateProfileModal = ({ isOpen, onClose, candidateId, candidateEmail }:
         console.error('Error fetching candidate profile:', profileError);
         toast.error('Erreur lors du chargement du profil');
         setProfile(null);
-      } else if (candidateProfile && typeof candidateProfile === 'object' && !('error' in candidateProfile)) {
-        // Only set profile if data is valid and not an error object
-        setProfile(candidateProfile as CandidateProfile);
       } else {
-        setProfile(null);
+        setProfile(candidateProfile);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);

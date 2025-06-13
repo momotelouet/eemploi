@@ -13,82 +13,62 @@ import {
   TrendingUp, 
   Eye,
   Send,
-  Calendar,
-  Award,
-  Settings,
-  Upload,
   Search,
-  Loader2
+  Award,
+  Target,
+  Briefcase
 } from "lucide-react";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
-import CVUpload from "@/components/cv/CVUpload";
-import CVManager from "@/components/cv/CVManager";
-import CoverLetterGenerator from "@/components/cover-letter/CoverLetterGenerator";
-import ProfileForm from "@/components/profile/ProfileForm";
+import CandidateProfileManager from "@/components/candidate/CandidateProfileManager";
 import ApplicationsList from "@/components/applications/ApplicationsList";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { useApplications } from "@/hooks/useApplications";
 import { useJobs } from "@/hooks/useJobs";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { useCandidateProfile } from "@/hooks/useCandidateProfile";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const CandidateDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { profile } = useUserProfile();
+  const { profile: candidateProfile } = useCandidateProfile(user?.id);
   const { userPoints } = useUserPoints();
-  const { applications, loading: applicationsLoading } = useApplications();
+  const { applications } = useApplications();
   const { jobs } = useJobs();
 
   // Calculate profile completion
   const calculateProfileCompletion = () => {
     if (!profile) return 0;
     let completion = 30; // Base for having an account
-    if (profile.first_name) completion += 35;
-    if (profile.last_name) completion += 35;
-    return completion;
+    
+    if (profile.first_name) completion += 20;
+    if (profile.last_name) completion += 20;
+    
+    if (candidateProfile) {
+      if (candidateProfile.phone) completion += 5;
+      if (candidateProfile.bio) completion += 10;
+      if (candidateProfile.cv_file_url) completion += 10;
+      if (candidateProfile.skills && candidateProfile.skills.length > 0) completion += 5;
+    }
+    
+    return Math.min(completion, 100);
   };
 
   const profileCompletion = calculateProfileCompletion();
 
-  // Handle button clicks
   const handleSearchJobs = () => {
     navigate('/emplois');
-  };
-
-  const handleCompleteProfile = () => {
-    toast({
-      title: "Fonctionnalité à venir",
-      description: "La page de modification du profil sera bientôt disponible.",
-    });
   };
 
   const handleCreateAlert = () => {
     toast({
       title: "Fonctionnalité à venir",
       description: "La création d'alertes emploi sera bientôt disponible.",
-    });
-  };
-
-  const handleViewAllApplications = () => {
-    toast({
-      title: "Toutes vos candidatures",
-      description: `Vous avez envoyé ${applications.length} candidature(s) au total.`,
-    });
-  };
-
-  const handleViewJobDetails = (jobId: string) => {
-    navigate(`/emplois/${jobId}`);
-  };
-
-  const handleApplyToJob = (jobTitle: string) => {
-    toast({
-      title: "Candidature envoyée",
-      description: `Votre candidature pour le poste "${jobTitle}" a été envoyée avec succès.`,
     });
   };
 
@@ -99,74 +79,48 @@ const CandidateDashboard = () => {
     });
   };
 
-  const handleViewApplicationDetails = (applicationId: string) => {
-    toast({
-      title: "Détails de la candidature",
-      description: "La page de détails des candidatures sera bientôt disponible.",
-    });
-  };
-
   // Calculate stats from real data
   const stats = [
     { 
       label: "Candidatures envoyées", 
       value: applications.length.toString(), 
       icon: <Send className="w-4 h-4" />, 
-      change: "+5 cette semaine" 
+      change: "+5 cette semaine",
+      color: "text-blue-600"
     },
     { 
-      label: "Vues de profil", 
-      value: "156", 
-      icon: <Eye className="w-4 h-4" />, 
-      change: "+12 cette semaine" 
+      label: "Profil complété", 
+      value: `${profileCompletion}%`, 
+      icon: <User className="w-4 h-4" />, 
+      change: "Continuez !",
+      color: "text-green-600"
     },
     { 
       label: "Réponses reçues", 
       value: applications.filter(app => app.status !== 'pending').length.toString(), 
       icon: <Bell className="w-4 h-4" />, 
-      change: "+3 nouvelles" 
+      change: "+3 nouvelles",
+      color: "text-purple-600"
     },
     { 
       label: "Points de fidélité", 
       value: userPoints?.points?.toString() || "0", 
       icon: <Star className="w-4 h-4" />, 
-      change: "+100 cette semaine" 
+      change: "+100 cette semaine",
+      color: "text-yellow-600"
     }
   ];
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending': return 'En cours';
-      case 'reviewed': return 'Examinée';
-      case 'interview': return 'Entretien';
-      case 'accepted': return 'Acceptée';
-      case 'rejected': return 'Rejetée';
-      default: return status;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'reviewed': return 'bg-blue-500';
-      case 'interview': return 'bg-purple-500';
-      case 'accepted': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  // Get job recommendations (first 2 active jobs that user hasn't applied to)
+  // Get job recommendations (first 3 active jobs that user hasn't applied to)
   const appliedJobIds = applications.map(app => app.job_id);
   const recommendations = jobs
     .filter(job => !appliedJobIds.includes(job.id))
-    .slice(0, 2)
+    .slice(0, 3)
     .map(job => ({
       id: job.id,
       title: job.title,
       company: job.companies?.name || 'Entreprise non spécifiée',
       location: job.location || 'Non spécifié',
-      match: "95%", // This could be calculated based on various factors
       salary: job.salary_min && job.salary_max 
         ? `${job.salary_min} - ${job.salary_max} MAD`
         : "Salaire à négocier"
@@ -176,13 +130,13 @@ const CandidateDashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Welcome Section */}
       <div className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
             Bonjour, {profile?.first_name || 'Candidat'}! 👋
           </h1>
-          <p className="text-muted-foreground">Voici un aperçu de votre activité récente</p>
+          <p className="text-muted-foreground">Gérez votre carrière professionnelle en toute simplicité</p>
         </div>
 
         {/* Stats Grid */}
@@ -191,7 +145,7 @@ const CandidateDashboard = () => {
             <Card key={index} className="hover-lift">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="text-eemploi-primary">
+                  <div className={`${stat.color}`}>
                     {stat.icon}
                   </div>
                   <Badge variant="secondary" className="text-xs">
@@ -205,46 +159,48 @@ const CandidateDashboard = () => {
           ))}
         </div>
 
+        {/* Profile Completion Alert */}
+        {profileCompletion < 80 && (
+          <Card className="mb-8 border-blue-200 bg-blue-50">
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <Target className="w-6 h-6 text-blue-600 mt-1" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-900 mb-2">Complétez votre profil</h3>
+                  <p className="text-blue-700 mb-4">
+                    Un profil complet augmente vos chances d'être recruté de 70% !
+                  </p>
+                  <div className="flex items-center space-x-3">
+                    <Progress value={profileCompletion} className="flex-1 h-2" />
+                    <span className="text-sm font-medium text-blue-900">{profileCompletion}%</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Profile Completion */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="w-5 h-5 mr-2 text-eemploi-primary" />
-                  Complétion du profil
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Progression</span>
-                    <span className="text-sm font-medium">{profileCompletion}%</span>
-                  </div>
-                  <Progress value={profileCompletion} className="h-2" />
-                  <div className="text-sm text-muted-foreground">
-                    Complétez votre profil pour augmenter vos chances d'être recruté
-                  </div>
-                  <ProfileForm />
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Tabs Section */}
             <Card>
               <CardContent className="p-0">
-                <Tabs defaultValue="applications" className="w-full">
+                <Tabs defaultValue="profile" className="w-full">
                   <div className="border-b">
                     <TabsList className="grid w-full grid-cols-4 bg-transparent">
+                      <TabsTrigger value="profile">Mon Profil</TabsTrigger>
                       <TabsTrigger value="applications">Candidatures</TabsTrigger>
                       <TabsTrigger value="recommendations">Recommandations</TabsTrigger>
-                      <TabsTrigger value="cv">Mon CV</TabsTrigger>
                       <TabsTrigger value="alerts">Alertes</TabsTrigger>
                     </TabsList>
                   </div>
+
+                  <TabsContent value="profile" className="p-6">
+                    <CandidateProfileManager />
+                  </TabsContent>
 
                   <TabsContent value="applications" className="p-6">
                     <ApplicationsList />
@@ -253,40 +209,43 @@ const CandidateDashboard = () => {
                   <TabsContent value="recommendations" className="p-6 space-y-4">
                     {recommendations.length === 0 ? (
                       <div className="text-center py-8">
-                        <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                         <h3 className="font-medium mb-2">Aucune recommandation disponible</h3>
                         <p className="text-sm text-muted-foreground mb-4">
                           Complétez votre profil pour recevoir des recommandations personnalisées
                         </p>
+                        <Button onClick={handleSearchJobs} className="bg-eemploi-primary hover:bg-eemploi-primary/90">
+                          <Search className="w-4 h-4 mr-2" />
+                          Voir toutes les offres
+                        </Button>
                       </div>
                     ) : (
-                      recommendations.map((rec, index) => (
-                        <div key={index} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h4 className="font-medium">{rec.title}</h4>
-                              <p className="text-sm text-muted-foreground">{rec.company} • {rec.location}</p>
-                              <p className="text-sm text-eemploi-primary font-medium">{rec.salary}</p>
-                            </div>
-                            <Badge className="bg-green-100 text-green-800">
-                              {rec.match} match
-                            </Badge>
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button size="sm" className="bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={() => handleApplyToJob(rec.title)}>
-                              Postuler
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleViewJobDetails(rec.id)}>
-                              Voir détails
-                            </Button>
-                          </div>
+                      <>
+                        <div className="mb-4">
+                          <h3 className="font-semibold text-lg">Offres recommandées pour vous</h3>
+                          <p className="text-sm text-muted-foreground">Basées sur votre profil et vos compétences</p>
                         </div>
-                      ))
+                        {recommendations.map((rec, index) => (
+                          <div key={index} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h4 className="font-medium">{rec.title}</h4>
+                                <p className="text-sm text-muted-foreground">{rec.company} • {rec.location}</p>
+                                <p className="text-sm text-eemploi-primary font-medium">{rec.salary}</p>
+                              </div>
+                              <Badge className="bg-green-100 text-green-800">
+                                Recommandé
+                              </Badge>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button size="sm" className="bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={() => navigate(`/emplois/${rec.id}`)}>
+                                Voir l'offre
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </>
                     )}
-                  </TabsContent>
-
-                  <TabsContent value="cv" className="p-6">
-                    <CVManager />
                   </TabsContent>
 
                   <TabsContent value="alerts" className="p-6">
@@ -297,7 +256,7 @@ const CandidateDashboard = () => {
                         Créez des alertes pour recevoir les nouvelles offres correspondant à vos critères
                       </p>
                       <Button className="bg-eemploi-primary hover:bg-eemploi-primary/90" onClick={handleCreateAlert}>
-                        <Search className="w-4 h-4 mr-2" />
+                        <Bell className="w-4 h-4 mr-2" />
                         Créer une alerte
                       </Button>
                     </div>
@@ -320,8 +279,10 @@ const CandidateDashboard = () => {
                   <Search className="w-4 h-4 mr-2" />
                   Rechercher des emplois
                 </Button>
-                <CVUpload />
-                <CoverLetterGenerator />
+                <Button variant="outline" className="w-full" onClick={handleCreateAlert}>
+                  <Bell className="w-4 h-4 mr-2" />
+                  Créer une alerte emploi
+                </Button>
               </CardContent>
             </Card>
 
@@ -371,7 +332,7 @@ const CandidateDashboard = () => {
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm">Votre profil a été consulté par <span className="font-medium">TechCorp</span></p>
+                      <p className="text-sm">Profil consulté par <span className="font-medium">TechCorp</span></p>
                       <p className="text-xs text-muted-foreground">Il y a 2 heures</p>
                     </div>
                   </div>

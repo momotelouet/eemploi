@@ -50,6 +50,77 @@ export type Database = {
           },
         ]
       }
+      candidate_profiles: {
+        Row: {
+          address: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          cv_file_name: string | null
+          cv_file_url: string | null
+          education: string | null
+          experience_years: number | null
+          id: string
+          languages: string[] | null
+          linkedin_url: string | null
+          phone: string | null
+          portfolio_url: string | null
+          profile_picture_url: string | null
+          skills: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          cv_file_name?: string | null
+          cv_file_url?: string | null
+          education?: string | null
+          experience_years?: number | null
+          id?: string
+          languages?: string[] | null
+          linkedin_url?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          cv_file_name?: string | null
+          cv_file_url?: string | null
+          education?: string | null
+          experience_years?: number | null
+          id?: string
+          languages?: string[] | null
+          linkedin_url?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string
