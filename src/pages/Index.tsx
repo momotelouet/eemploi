@@ -1,11 +1,9 @@
-import Header from "@/components/Layout/Header";
-import Footer from "@/components/Layout/Footer";
+
 import SearchSection from "@/components/SearchSection";
 import Stats from "@/components/Stats";
 import JobCard from "@/components/JobCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Star, CheckCircle, Zap, Shield, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useJobs } from "@/hooks/useJobs";
@@ -41,8 +39,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       <SearchSection />
       
       <Stats />
@@ -168,8 +164,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

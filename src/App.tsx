@@ -60,29 +60,29 @@ function App() {
                     
                     {/* Protected Routes */}
                     <Route path="/dashboard/candidat" element={
-                      <ProtectedRoute allowedTypes={['candidat']}>
+                      <ProtectedRoute>
                         <CandidateDashboard />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/recruteur" element={
-                      <ProtectedRoute allowedTypes={['recruteur']}>
+                      <ProtectedRoute>
                         <RecruiterDashboard />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/admin" element={
-                      <ProtectedRoute allowedTypes={['admin']}>
+                      <ProtectedRoute>
                         <AdminDashboard />
                       </ProtectedRoute>
                     } />
                     
                     {/* Recruiter Routes */}
                     <Route path="/recruteur/hub" element={
-                      <ProtectedRoute allowedTypes={['recruteur']}>
+                      <ProtectedRoute>
                         <RecruiterHub />
                       </ProtectedRoute>
                     } />
                     <Route path="/recruteur/candidatures" element={
-                      <ProtectedRoute allowedTypes={['recruteur']}>
+                      <ProtectedRoute>
                         <ApplicationsManager />
                       </ProtectedRoute>
                     } />
