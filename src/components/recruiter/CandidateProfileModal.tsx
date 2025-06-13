@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -89,12 +88,14 @@ const CandidateProfileModal = ({ isOpen, onClose, candidateId, candidateEmail }:
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error fetching candidate profile:', profileError);
         toast.error('Erreur lors du chargement du profil');
+        setProfile(null);
       } else {
-        setProfile(candidateProfile);
+        setProfile(candidateProfile as CandidateProfile);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast.error('Erreur lors du chargement du profil');
+      setProfile(null);
     } finally {
       setLoading(false);
     }

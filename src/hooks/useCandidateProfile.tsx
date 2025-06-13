@@ -39,26 +39,23 @@ export const useCandidateProfile = (candidateId: string | null) => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        // Use direct SQL query to access candidate_profiles table
+        // Use direct query to access candidate_profiles table
         const { data, error } = await supabase
-          .rpc('get_candidate_profile', { candidate_user_id: candidateId });
+          .from('candidate_profiles' as any)
+          .select('*')
+          .eq('user_id', candidateId)
+          .maybeSingle();
 
         if (error) {
-          // If RPC doesn't exist, fall back to direct query
-          const { data: directData, error: directError } = await supabase
-            .from('candidate_profiles' as any)
-            .select('*')
-            .eq('user_id', candidateId)
-            .maybeSingle();
-
-          if (directError) throw directError;
-          setProfile(directData);
+          console.error('Error fetching candidate profile:', error);
+          setProfile(null);
         } else {
-          setProfile(data);
+          setProfile(data as CandidateProfile);
         }
       } catch (err) {
         setError(err as Error);
         console.error('Error fetching candidate profile:', err);
+        setProfile(null);
       } finally {
         setLoading(false);
       }
