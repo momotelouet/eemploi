@@ -13,6 +13,7 @@ import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
 
 const RecruiterHub = () => {
   const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("jobs");
   const { jobs } = useRecruiterJobs();
 
   return (
@@ -83,14 +84,44 @@ const RecruiterHub = () => {
         {/* Main Content */}
         <Card>
           <CardContent className="p-0">
-            <Tabs defaultValue="jobs" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="border-b">
-                <TabsList className="grid w-full grid-cols-5 bg-transparent">
-                  <TabsTrigger value="jobs">Mes offres</TabsTrigger>
-                  <TabsTrigger value="search">Rechercher des profils</TabsTrigger>
-                  <TabsTrigger value="company">Mon entreprise</TabsTrigger>
-                  <TabsTrigger value="ai-generator">Générateur IA</TabsTrigger>
-                  <TabsTrigger value="ai-assistant">Assistant IA</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5 bg-transparent h-auto p-1">
+                  <TabsTrigger 
+                    value="jobs" 
+                    className="flex items-center justify-center px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <Briefcase className="w-4 h-4 mr-2" />
+                    Mes offres
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="search" 
+                    className="flex items-center justify-center px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Rechercher des profils
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="company" 
+                    className="flex items-center justify-center px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <Building className="w-4 h-4 mr-2" />
+                    Mon entreprise
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="ai-generator" 
+                    className="flex items-center justify-center px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <Bot className="w-4 h-4 mr-2" />
+                    Générateur IA
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="ai-assistant" 
+                    className="flex items-center justify-center px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <Bot className="w-4 h-4 mr-2" />
+                    Assistant IA
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
