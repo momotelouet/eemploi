@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,6 @@ import {
   Target,
   Briefcase
 } from "lucide-react";
-import Header from "@/components/Layout/Header";
-import Footer from "@/components/Layout/Footer";
 import CandidateProfileManager from "@/components/candidate/CandidateProfileManager";
 import ApplicationsList from "@/components/applications/ApplicationsList";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -128,7 +125,6 @@ const CandidateDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
@@ -357,7 +353,6 @@ const CandidateDashboard = () => {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 };

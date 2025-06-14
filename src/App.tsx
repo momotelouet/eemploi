@@ -42,7 +42,7 @@ function App() {
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <div className="min-h-screen bg-background font-sans antialiased">
+            <div className="min-h-screen bg-background font-sans antialiased flex flex-col">
               <Header />
               <main className="flex-1">
                 <Suspense fallback={<div className="flex items-center justify-center h-64">Chargement...</div>}>
