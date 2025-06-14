@@ -44,163 +44,135 @@ export const useCVPDF = () => {
     }
 
     const doc = new jsPDF();
-    let yPosition = 30;
-
-    // Get template colors based on template ID
+    
+    // Template colors that match TemplatePreview exactly
     const getTemplateColors = () => {
       if (!template) {
         return {
-          primary: [59, 130, 246], // Blue-500
-          secondary: [75, 85, 99], // Gray-600
-          accent: [239, 246, 255], // Blue-50
-          text: [31, 41, 55] // Gray-800
+          primary: [33, 150, 243], // Blue
+          secondary: [75, 85, 99], // Gray
+          headerBg: [33, 150, 243],
+          headerText: [255, 255, 255],
+          accentBg: [239, 246, 255],
+          bodyText: [31, 41, 55]
         };
       }
 
       switch (template.id) {
         case 'modern-blue':
           return {
-            primary: [59, 130, 246],
+            primary: [37, 99, 235], // blue-600
             secondary: [75, 85, 99],
-            accent: [239, 246, 255],
-            text: [31, 41, 55]
+            headerBg: [37, 99, 235],
+            headerText: [255, 255, 255],
+            accentBg: [239, 246, 255],
+            bodyText: [31, 41, 55]
           };
         case 'classic-elegant':
           return {
-            primary: [55, 65, 81],
+            primary: [55, 65, 81], // gray-700
             secondary: [107, 114, 128],
-            accent: [249, 250, 251],
-            text: [17, 24, 39]
+            headerBg: [55, 65, 81],
+            headerText: [255, 255, 255],
+            accentBg: [249, 250, 251],
+            bodyText: [17, 24, 39]
           };
         case 'creative-orange':
           return {
-            primary: [249, 115, 22],
+            primary: [234, 88, 12], // orange-600
             secondary: [120, 113, 108],
-            accent: [255, 247, 237],
-            text: [31, 41, 55]
+            headerBg: [249, 115, 22],
+            headerText: [255, 255, 255],
+            accentBg: [255, 247, 237],
+            bodyText: [31, 41, 55]
           };
         case 'minimal-green':
           return {
-            primary: [34, 197, 94],
+            primary: [22, 163, 74], // green-600
             secondary: [75, 85, 99],
-            accent: [240, 253, 244],
-            text: [31, 41, 55]
+            headerBg: [34, 197, 94],
+            headerText: [255, 255, 255],
+            accentBg: [240, 253, 244],
+            bodyText: [31, 41, 55]
           };
         case 'executive-dark':
           return {
-            primary: [30, 41, 59],
+            primary: [30, 41, 59], // slate-800
             secondary: [71, 85, 105],
-            accent: [248, 250, 252],
-            text: [15, 23, 42]
+            headerBg: [30, 41, 59],
+            headerText: [255, 255, 255],
+            accentBg: [248, 250, 252],
+            bodyText: [15, 23, 42]
           };
         case 'modern-purple':
           return {
-            primary: [147, 51, 234],
+            primary: [147, 51, 234], // purple-600
             secondary: [75, 85, 99],
-            accent: [250, 245, 255],
-            text: [31, 41, 55]
+            headerBg: [168, 85, 247],
+            headerText: [255, 255, 255],
+            accentBg: [250, 245, 255],
+            bodyText: [31, 41, 55]
           };
         case 'clean-teal':
           return {
-            primary: [20, 184, 166],
+            primary: [13, 148, 136], // teal-600
             secondary: [75, 85, 99],
-            accent: [240, 253, 250],
-            text: [31, 41, 55]
+            headerBg: [20, 184, 166],
+            headerText: [255, 255, 255],
+            accentBg: [240, 253, 250],
+            bodyText: [31, 41, 55]
           };
         case 'artistic-red':
           return {
-            primary: [239, 68, 68],
+            primary: [220, 38, 38], // red-600
             secondary: [75, 85, 99],
-            accent: [254, 242, 242],
-            text: [31, 41, 55]
+            headerBg: [239, 68, 68],
+            headerText: [255, 255, 255],
+            accentBg: [254, 242, 242],
+            bodyText: [31, 41, 55]
           };
         case 'corporate-navy':
           return {
-            primary: [30, 58, 138],
+            primary: [30, 58, 138], // blue-900
             secondary: [71, 85, 105],
-            accent: [239, 246, 255],
-            text: [15, 23, 42]
+            headerBg: [30, 58, 138],
+            headerText: [255, 255, 255],
+            accentBg: [239, 246, 255],
+            bodyText: [15, 23, 42]
           };
         case 'modern-gradient':
           return {
-            primary: [219, 39, 119],
+            primary: [219, 39, 119], // pink-600
             secondary: [75, 85, 99],
-            accent: [253, 244, 255],
-            text: [31, 41, 55]
+            headerBg: [219, 39, 119],
+            headerText: [255, 255, 255],
+            accentBg: [253, 244, 255],
+            bodyText: [31, 41, 55]
           };
         default:
           return {
-            primary: [59, 130, 246],
+            primary: [33, 150, 243],
             secondary: [75, 85, 99],
-            accent: [239, 246, 255],
-            text: [31, 41, 55]
+            headerBg: [33, 150, 243],
+            headerText: [255, 255, 255],
+            accentBg: [239, 246, 255],
+            bodyText: [31, 41, 55]
           };
       }
     };
 
     const colors = getTemplateColors();
 
-    // Helper function to convert HTML to plain text while preserving some formatting
-    const htmlToFormattedText = (html: string): string => {
-      const text = html
-        .replace(/<b>|<strong>/gi, '')
-        .replace(/<\/b>|<\/strong>/gi, '')
-        .replace(/<i>|<em>/gi, '')
-        .replace(/<\/i>|<\/em>/gi, '')
-        .replace(/<u>/gi, '')
-        .replace(/<\/u>/gi, '')
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<\/p>/gi, '\n')
-        .replace(/<p>/gi, '')
-        .replace(/<li>/gi, '• ')
-        .replace(/<\/li>/gi, '\n')
-        .replace(/<ul>|<\/ul>|<ol>|<\/ol>/gi, '')
-        .replace(/<[^>]*>/g, '');
-      
-      return text.replace(/\n\s*\n/g, '\n').trim();
-    };
-
-    const addFormattedText = (html: string, x: number, y: number, maxWidth?: number) => {
-      const text = htmlToFormattedText(html);
-      const lines = text.split('\n');
-      let currentY = y;
-      
-      lines.forEach(line => {
-        if (line.trim()) {
-          if (maxWidth && line.length > 60) {
-            const wrappedLines = doc.splitTextToSize(line, maxWidth);
-            wrappedLines.forEach((wrappedLine: string) => {
-              doc.text(wrappedLine, x, currentY);
-              currentY += 6;
-            });
-          } else {
-            doc.text(line, x, currentY);
-            currentY += 6;
-          }
-        } else {
-          currentY += 3;
-        }
-      });
-      
-      return currentY;
-    };
-
-    // Function to load image properly for PDF
-    const loadImageForPDF = (imageUrl: string): Promise<string | null> => {
-      return new Promise((resolve) => {
-        if (!imageUrl) {
-          resolve(null);
-          return;
+    // Load and convert image to base64
+    const loadImageAsDataUrl = async (imageUrl: string): Promise<string | null> => {
+      try {
+        if (!imageUrl) return null;
+        
+        if (imageUrl.startsWith('data:')) {
+          return imageUrl;
         }
 
-        try {
-          // If it's already a data URL, use it directly
-          if (imageUrl.startsWith('data:')) {
-            resolve(imageUrl);
-            return;
-          }
-
-          // Create image element
+        return new Promise((resolve) => {
           const img = new Image();
           img.crossOrigin = 'anonymous';
           
@@ -213,10 +185,17 @@ export const useCVPDF = () => {
                 return;
               }
               
-              canvas.width = 80;
-              canvas.height = 80;
-              ctx.drawImage(img, 0, 0, 80, 80);
-              const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+              // Set canvas size to match template preview (96x96 pixels like w-24 h-24)
+              canvas.width = 96;
+              canvas.height = 96;
+              
+              // Draw image with circular crop
+              ctx.beginPath();
+              ctx.arc(48, 48, 48, 0, 2 * Math.PI);
+              ctx.clip();
+              ctx.drawImage(img, 0, 0, 96, 96);
+              
+              const dataURL = canvas.toDataURL('image/jpeg', 0.9);
               resolve(dataURL);
             } catch (error) {
               console.error('Error processing image:', error);
@@ -230,254 +209,299 @@ export const useCVPDF = () => {
           };
 
           img.src = imageUrl;
-        } catch (error) {
-          console.error('Error in loadImageForPDF:', error);
-          resolve(null);
-        }
-      });
+        });
+      } catch (error) {
+        console.error('Error in loadImageAsDataUrl:', error);
+        return null;
+      }
     };
 
-    // Add template-specific header background with improved styling
-    if (template) {
-      // Header background with gradient effect
-      doc.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.rect(0, 0, 210, 70, 'F');
-      
-      // Add subtle accent
-      doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
-      doc.rect(0, 65, 210, 5, 'F');
-    }
+    // Helper function to format dates exactly like in TemplatePreview
+    const formatDate = (dateString: string) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+    };
 
-    // Load and add photo if available
-    let photoAdded = false;
+    // Helper function to convert HTML to text while preserving basic formatting
+    const htmlToText = (html: string): string => {
+      return html
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<p>/gi, '')
+        .replace(/<li>/gi, '• ')
+        .replace(/<\/li>/gi, '\n')
+        .replace(/<ul>|<\/ul>|<ol>|<\/ol>/gi, '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\n\s*\n/g, '\n')
+        .trim();
+    };
+
+    const addWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 6): number => {
+      const lines = text.split('\n');
+      let currentY = y;
+      
+      lines.forEach(line => {
+        if (line.trim()) {
+          const wrappedLines = doc.splitTextToSize(line, maxWidth);
+          wrappedLines.forEach((wrappedLine: string) => {
+            doc.text(wrappedLine, x, currentY);
+            currentY += lineHeight;
+          });
+        } else {
+          currentY += lineHeight / 2;
+        }
+      });
+      
+      return currentY;
+    };
+
+    // HEADER SECTION - matching TemplatePreview layout exactly
+    // Header background with template color
+    doc.setFillColor(colors.headerBg[0], colors.headerBg[1], colors.headerBg[2]);
+    doc.rect(0, 0, 210, 60, 'F');
+
+    let yPos = 25;
+
+    // Profile photo (top right of header, like in TemplatePreview)
     if (cvData.personalInfo.photoUrl) {
       try {
-        const imageData = await loadImageForPDF(cvData.personalInfo.photoUrl);
+        const imageData = await loadImageAsDataUrl(cvData.personalInfo.photoUrl);
         if (imageData) {
-          doc.addImage(imageData, 'JPEG', 150, 15, 40, 40);
-          photoAdded = true;
+          // Position matches TemplatePreview: top right with some margin
+          doc.addImage(imageData, 'JPEG', 155, 15, 30, 30, undefined, 'FAST');
         }
       } catch (error) {
-        console.error('Error adding photo to PDF:', error);
+        console.error('Error adding photo:', error);
       }
     }
 
-    // Header with name and title - improved typography
-    doc.setFontSize(28);
+    // Name and title (left side of header)
+    doc.setTextColor(colors.headerText[0], colors.headerText[1], colors.headerText[2]);
+    doc.setFontSize(24);
     doc.setFont(undefined, 'bold');
-    doc.setTextColor(template ? 255 : colors.primary[0], template ? 255 : colors.primary[1], template ? 255 : colors.primary[2]);
-    doc.text(`${cvData.personalInfo.firstName} ${cvData.personalInfo.lastName}`, 20, yPosition + 5);
-    yPosition += 15;
+    doc.text(`${cvData.personalInfo.firstName} ${cvData.personalInfo.lastName}`, 20, yPos);
     
     if (cvData.personalInfo.professionalTitle) {
-      doc.setFontSize(16);
+      yPos += 10;
+      doc.setFontSize(14);
       doc.setFont(undefined, 'normal');
-      doc.setTextColor(template ? 240 : colors.secondary[0], template ? 240 : colors.secondary[1], template ? 240 : colors.secondary[2]);
-      doc.text(cvData.personalInfo.professionalTitle, 20, yPosition);
-      yPosition += 10;
+      doc.text(cvData.personalInfo.professionalTitle, 20, yPos);
+    }
+
+    // Contact info (bottom of header, like in TemplatePreview)
+    yPos = 50;
+    doc.setFontSize(9);
+    let contactX = 20;
+    
+    if (cvData.personalInfo.email) {
+      doc.text(`📧 ${cvData.personalInfo.email}`, contactX, yPos);
+      contactX += 65;
+    }
+    if (cvData.personalInfo.phone) {
+      doc.text(`📞 ${cvData.personalInfo.phone}`, contactX, yPos);
+      contactX += 65;
+    }
+    if (cvData.personalInfo.address && contactX < 150) {
+      doc.text(`📍 ${cvData.personalInfo.address}`, contactX, yPos);
     }
 
     // Reset position after header
-    yPosition = template ? 80 : 60;
+    yPos = 75;
 
-    // Contact information with better formatting
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-    
-    const contactInfo = [];
-    if (cvData.personalInfo.email) contactInfo.push(`📧 ${cvData.personalInfo.email}`);
-    if (cvData.personalInfo.phone) contactInfo.push(`📞 ${cvData.personalInfo.phone}`);
-    if (cvData.personalInfo.address) contactInfo.push(`📍 ${cvData.personalInfo.address}`);
-    
-    contactInfo.forEach((info, index) => {
-      doc.text(info, 20 + (index * 60), yPosition);
-    });
-    yPosition += 15;
+    // CONTENT SECTIONS - matching TemplatePreview structure
 
-    // Professional summary with template styling
+    // Professional Summary
     if (cvData.personalInfo.summary) {
+      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.text('PROFIL PROFESSIONNEL', 20, yPosition);
+      doc.text('Profil Professionnel', 20, yPos);
       
-      // Add styled line under section title
+      // Section underline
       doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.setLineWidth(1);
-      doc.line(20, yPosition + 2, 90, yPosition + 2);
+      doc.setLineWidth(0.5);
+      doc.line(20, yPos + 2, 80, yPos + 2);
       
-      yPosition += 10;
-      
+      yPos += 8;
+      doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
       doc.setFontSize(10);
       doc.setFont(undefined, 'normal');
-      doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-      yPosition = addFormattedText(cvData.personalInfo.summary, 20, yPosition, 170) + 10;
+      
+      const summaryText = htmlToText(cvData.personalInfo.summary);
+      yPos = addWrappedText(summaryText, 20, yPos, 170) + 8;
     }
 
-    // Experience section with enhanced styling
+    // Experience Section
     if (cvData.experience.length > 0) {
+      if (yPos > 240) {
+        doc.addPage();
+        yPos = 30;
+      }
+      
+      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.text('EXPÉRIENCE PROFESSIONNELLE', 20, yPosition);
+      doc.text('Expérience Professionnelle', 20, yPos);
       
       doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.setLineWidth(1);
-      doc.line(20, yPosition + 2, 120, yPosition + 2);
+      doc.setLineWidth(0.5);
+      doc.line(20, yPos + 2, 110, yPos + 2);
       
-      yPosition += 10;
+      yPos += 10;
       
       cvData.experience.forEach((exp) => {
-        if (yPosition > 250) {
+        if (yPos > 250) {
           doc.addPage();
-          yPosition = 30;
+          yPos = 30;
         }
+        
+        // Experience background (accent color like in TemplatePreview)
+        doc.setFillColor(colors.accentBg[0], colors.accentBg[1], colors.accentBg[2]);
+        const boxHeight = exp.description ? 25 : 15;
+        doc.rect(18, yPos - 5, 174, boxHeight, 'F');
         
         // Position title
+        doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        doc.text(`${exp.position}`, 20, yPosition);
-        yPosition += 7;
+        doc.text(exp.position, 22, yPos);
         
-        // Company name
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'bold');
-        doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-        doc.text(exp.company, 20, yPosition);
-        yPosition += 7;
-        
-        // Date range
+        // Company and date on same line
         doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
-        const dateText = `${exp.startDate} - ${exp.current ? 'Présent' : exp.endDate}`;
-        doc.text(dateText, 20, yPosition);
-        yPosition += 7;
+        doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+        doc.setFont(undefined, 'bold');
+        doc.text(exp.company, 22, yPos + 6);
         
-        // Description
+        const dateText = `${formatDate(exp.startDate)} - ${exp.current ? 'Présent' : formatDate(exp.endDate)}`;
+        const dateWidth = doc.getTextWidth(dateText);
+        doc.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+        doc.setFont(undefined, 'normal');
+        doc.text(dateText, 190 - dateWidth, yPos + 6);
+        
+        yPos += 12;
+        
         if (exp.description) {
-          doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-          yPosition = addFormattedText(exp.description, 25, yPosition, 165) + 5;
+          doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
+          doc.setFontSize(9);
+          const descText = htmlToText(exp.description);
+          yPos = addWrappedText(descText, 22, yPos, 165, 4) + 2;
         }
-        yPosition += 8;
+        
+        yPos += 8;
       });
     }
 
-    // Education section
+    // Education Section
     if (cvData.education.length > 0) {
-      if (yPosition > 220) {
+      if (yPos > 220) {
         doc.addPage();
-        yPosition = 30;
+        yPos = 30;
       }
       
+      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.text('FORMATION', 20, yPosition);
+      doc.text('Formation', 20, yPos);
       
       doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.setLineWidth(1);
-      doc.line(20, yPosition + 2, 55, yPosition + 2);
+      doc.setLineWidth(0.5);
+      doc.line(20, yPos + 2, 50, yPos + 2);
       
-      yPosition += 10;
+      yPos += 10;
       
       cvData.education.forEach((edu) => {
-        if (yPosition > 250) {
+        if (yPos > 250) {
           doc.addPage();
-          yPosition = 30;
+          yPos = 30;
         }
         
+        doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
         doc.setFontSize(11);
         doc.setFont(undefined, 'bold');
-        doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        doc.text(`${edu.degree}`, 20, yPosition);
-        yPosition += 7;
+        doc.text(edu.degree, 20, yPos);
         
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
         doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-        doc.text(edu.institution, 20, yPosition);
-        yPosition += 7;
+        doc.setFontSize(10);
+        doc.text(edu.institution, 20, yPos + 6);
         
-        doc.setFont(undefined, 'normal');
+        const eduDateText = `${formatDate(edu.startDate)} - ${formatDate(edu.endDate)}`;
+        const eduDateWidth = doc.getTextWidth(eduDateText);
         doc.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
-        const dateText = `${edu.startDate} - ${edu.endDate}`;
-        doc.text(dateText, 20, yPosition);
-        yPosition += 7;
+        doc.setFont(undefined, 'normal');
+        doc.text(eduDateText, 190 - eduDateWidth, yPos + 6);
+        
+        yPos += 12;
         
         if (edu.description) {
-          doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-          yPosition = addFormattedText(edu.description, 25, yPosition, 165) + 5;
+          doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
+          doc.setFontSize(9);
+          const eduDescText = htmlToText(edu.description);
+          yPos = addWrappedText(eduDescText, 25, yPos, 160, 4) + 2;
         }
-        yPosition += 8;
+        
+        yPos += 6;
       });
     }
 
-    // Skills section with visual improvements
+    // Skills Section
     if (cvData.skills.length > 0) {
-      if (yPosition > 200) {
+      if (yPos > 200) {
         doc.addPage();
-        yPosition = 30;
+        yPos = 30;
       }
       
+      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.text('COMPÉTENCES', 20, yPosition);
+      doc.text('Compétences', 20, yPos);
       
       doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      doc.setLineWidth(1);
-      doc.line(20, yPosition + 2, 70, yPosition + 2);
+      doc.setLineWidth(0.5);
+      doc.line(20, yPos + 2, 60, yPos + 2);
       
-      yPosition += 10;
+      yPos += 10;
       
-      doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
-      doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-      
-      // Display skills in a more organized way
-      let currentX = 20;
-      let currentY = yPosition;
+      // Skills in grid layout like TemplatePreview
       const skillsPerRow = 2;
-      let skillCount = 0;
+      let skillIndex = 0;
       
-      cvData.skills.forEach((skill) => {
-        if (skillCount > 0 && skillCount % skillsPerRow === 0) {
-          currentY += 12;
-          currentX = 20;
-        }
-        
-        if (currentY > 250) {
+      while (skillIndex < cvData.skills.length) {
+        if (yPos > 260) {
           doc.addPage();
-          currentY = 30;
-          currentX = 20;
+          yPos = 30;
         }
         
-        // Skill name
-        doc.setFont(undefined, 'bold');
-        doc.text(`${skill.name}`, currentX, currentY);
+        for (let i = 0; i < skillsPerRow && skillIndex < cvData.skills.length; i++) {
+          const skill = cvData.skills[skillIndex];
+          const xPos = 20 + (i * 85);
+          
+          // Skill background (accent color)
+          doc.setFillColor(colors.accentBg[0], colors.accentBg[1], colors.accentBg[2]);
+          doc.rect(xPos, yPos - 3, 80, 12, 'F');
+          
+          // Skill name (centered)
+          doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'bold');
+          const skillNameWidth = doc.getTextWidth(skill.name);
+          doc.text(skill.name, xPos + (80 - skillNameWidth) / 2, yPos + 2);
+          
+          // Skill level (centered below)
+          doc.setFontSize(8);
+          doc.setFont(undefined, 'normal');
+          doc.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+          const skillLevelWidth = doc.getTextWidth(skill.level);
+          doc.text(skill.level, xPos + (80 - skillLevelWidth) / 2, yPos + 7);
+          
+          skillIndex++;
+        }
         
-        // Skill level with color coding
-        doc.setFont(undefined, 'normal');
-        const levelColors = {
-          'Expert': [34, 197, 94],     // Green
-          'Avancé': [59, 130, 246],    // Blue
-          'Intermédiaire': [245, 158, 11], // Orange
-          'Débutant': [156, 163, 175]   // Gray
-        };
-        const levelColor = levelColors[skill.level as keyof typeof levelColors] || colors.secondary;
-        doc.setTextColor(levelColor[0], levelColor[1], levelColor[2]);
-        doc.text(`(${skill.level})`, currentX + 45, currentY);
-        doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        
-        currentX += 90;
-        skillCount++;
-      });
+        yPos += 18;
+      }
     }
 
-    // Save the PDF with template name if available
+    // Save PDF with template name
     const templateName = template ? `_${template.name.replace(/\s+/g, '_')}` : '';
     const fileName = `CV_${cvData.personalInfo.firstName || 'Candidat'}_${cvData.personalInfo.lastName || 'Anonyme'}${templateName}.pdf`;
     doc.save(fileName);
