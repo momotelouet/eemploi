@@ -29,7 +29,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const executeCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
-    updateContent();
+    
+    // Force focus back to editor after command
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+    
+    // Small delay to ensure DOM is updated before reading content
+    setTimeout(() => {
+      updateContent();
+    }, 10);
   };
 
   const updateContent = () => {
@@ -43,9 +52,22 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    // Allow normal typing
+    // Handle Enter key for better list behavior
     if (e.key === 'Enter') {
-      // Let the browser handle Enter key naturally
+      setTimeout(updateContent, 0);
+    }
+    
+    // Handle Tab key for indentation
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      document.execCommand('indent');
+      setTimeout(updateContent, 0);
+    }
+    
+    // Handle Shift+Tab for outdentation
+    if (e.key === 'Tab' && e.shiftKey) {
+      e.preventDefault();
+      document.execCommand('outdent');
       setTimeout(updateContent, 0);
     }
   };
@@ -74,6 +96,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => executeCommand('bold')}
         >
           <Bold className="w-4 h-4" />
@@ -82,6 +105,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => executeCommand('italic')}
         >
           <Italic className="w-4 h-4" />
@@ -90,6 +114,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => executeCommand('underline')}
         >
           <Underline className="w-4 h-4" />
@@ -99,6 +124,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => executeCommand('insertUnorderedList')}
         >
           <List className="w-4 h-4" />
@@ -107,6 +133,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           variant="ghost"
           size="sm"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => executeCommand('insertOrderedList')}
         >
           <ListOrdered className="w-4 h-4" />
@@ -149,6 +176,24 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           content: attr(data-placeholder);
           color: #9ca3af;
           pointer-events: none;
+        }
+        
+        [contenteditable] ul, [contenteditable] ol {
+          margin: 10px 0;
+          padding-left: 20px;
+        }
+        
+        [contenteditable] li {
+          margin: 5px 0;
+          list-style-position: outside;
+        }
+        
+        [contenteditable] ul li {
+          list-style-type: disc;
+        }
+        
+        [contenteditable] ol li {
+          list-style-type: decimal;
         }
       `}</style>
     </div>

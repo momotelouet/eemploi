@@ -289,21 +289,21 @@ export const useCVPDF = () => {
       doc.text(cvData.personalInfo.professionalTitle, 20, yPos);
     }
 
-    // Contact info (bottom of header, like in TemplatePreview)
+    // Contact info (bottom of header, like in TemplatePreview) - Using text instead of emojis
     yPos = 50;
     doc.setFontSize(9);
     let contactX = 20;
     
     if (cvData.personalInfo.email) {
-      doc.text(`📧 ${cvData.personalInfo.email}`, contactX, yPos);
+      doc.text(`Email: ${cvData.personalInfo.email}`, contactX, yPos);
       contactX += 65;
     }
     if (cvData.personalInfo.phone) {
-      doc.text(`📞 ${cvData.personalInfo.phone}`, contactX, yPos);
+      doc.text(`Tel: ${cvData.personalInfo.phone}`, contactX, yPos);
       contactX += 65;
     }
     if (cvData.personalInfo.address && contactX < 150) {
-      doc.text(`📍 ${cvData.personalInfo.address}`, contactX, yPos);
+      doc.text(`Adresse: ${cvData.personalInfo.address}`, contactX, yPos);
     }
 
     // Reset position after header
