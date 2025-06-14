@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Building, Save, Upload, MapPin, Globe, Users } from 'lucide-react';
+import { Building, Save, Upload, MapPin, Globe, Users, Star, Award, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,9 +25,16 @@ const CompanyManagement = () => {
     size: '',
     logo_url: ''
   });
+  const [stats, setStats] = useState({
+    totalJobs: 0,
+    activeJobs: 0,
+    totalApplications: 0,
+    viewsThisMonth: 0
+  });
 
   useEffect(() => {
     fetchCompanyData();
+    fetchCompanyStats();
   }, [user]);
 
   const fetchCompanyData = async () => {
@@ -35,69 +42,126 @@ const CompanyManagement = () => {
     
     setLoading(true);
     try {
-      // Récupérer les entreprises de l'utilisateur
       const { data, error } = await supabase
         .from('companies')
         .select('*')
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
 
       if (data) {
         setCompany(data);
       }
     } catch (error) {
       console.error('Erreur lors du chargement de l\'entreprise:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les informations de l\'entreprise',
+        variant: 'destructive'
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCompanyStats = async () => {
+    if (!user) return;
+
+    try {
+      // Récupérer les statistiques des offres
+      const { data: jobsData, error: jobsError } = await supabase
+        .from('jobs')
+        .select('id, status, views, created_at')
+        .eq('posted_by', user.id);
+
+      if (jobsError) throw jobsError;
+
+      const totalJobs = jobsData?.length || 0;
+      const activeJobs = jobsData?.filter(job => job.status === 'active').length || 0;
+      const viewsThisMonth = jobsData?.reduce((sum, job) => sum + (job.views || 0), 0) || 0;
+
+      // Récupérer les statistiques des candidatures
+      const jobIds = jobsData?.map(job => job.id) || [];
+      let totalApplications = 0;
+
+      if (jobIds.length > 0) {
+        const { data: applicationsData, error: appsError } = await supabase
+          .from('applications')
+          .select('id')
+          .in('job_id', jobIds);
+
+        if (appsError) throw appsError;
+        totalApplications = applicationsData?.length || 0;
+      }
+
+      setStats({
+        totalJobs,
+        activeJobs,
+        totalApplications,
+        viewsThisMonth
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
     }
   };
 
   const handleSave = async () => {
     if (!user) return;
 
+    if (!company.name.trim()) {
+      toast({
+        title: 'Erreur',
+        description: 'Le nom de l\'entreprise est obligatoire',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const companyData = {
-        name: company.name,
-        description: company.description,
-        website: company.website,
-        location: company.location,
-        industry: company.industry,
-        size: company.size,
-        logo_url: company.logo_url
+        name: company.name.trim(),
+        description: company.description?.trim() || '',
+        website: company.website?.trim() || '',
+        location: company.location?.trim() || '',
+        industry: company.industry || '',
+        size: company.size || '',
+        logo_url: company.logo_url?.trim() || ''
       };
 
       let result;
       if (company.id) {
-        // Mettre à jour l'entreprise existante
         result = await supabase
           .from('companies')
           .update(companyData)
-          .eq('id', company.id);
+          .eq('id', company.id)
+          .select()
+          .single();
       } else {
-        // Créer une nouvelle entreprise
         result = await supabase
           .from('companies')
           .insert(companyData)
           .select()
           .single();
-        
-        if (result.data) {
-          setCompany({...company, id: result.data.id});
-        }
       }
 
       if (result.error) throw result.error;
 
-      toast({
-        title: 'Entreprise sauvegardée',
-        description: 'Les informations de votre entreprise ont été mises à jour avec succès.',
-      });
+      if (result.data) {
+        setCompany(result.data);
+        toast({
+          title: 'Entreprise sauvegardée',
+          description: 'Les informations de votre entreprise ont été mises à jour avec succès',
+        });
+      }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
       toast({
         title: 'Erreur',
-        description: 'Une erreur est survenue lors de la sauvegarde.',
+        description: 'Une erreur est survenue lors de la sauvegarde',
         variant: 'destructive'
       });
     } finally {
@@ -108,7 +172,7 @@ const CompanyManagement = () => {
   const handleLogoUpload = () => {
     toast({
       title: 'Fonctionnalité à venir',
-      description: 'L\'upload de logo sera bientôt disponible.',
+      description: 'L\'upload de logo sera bientôt disponible',
     });
   };
 
@@ -116,7 +180,7 @@ const CompanyManagement = () => {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <Building className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <div className="animate-spin w-8 h-8 border-4 border-eemploi-primary border-t-transparent rounded-full mx-auto mb-4"></div>
           <p>Chargement des informations de l'entreprise...</p>
         </div>
       </div>
@@ -125,6 +189,58 @@ const CompanyManagement = () => {
 
   return (
     <div className="space-y-6">
+      {/* En-tête */}
+      <div>
+        <h2 className="text-2xl font-bold mb-2">Gérer mon entreprise</h2>
+        <p className="text-muted-foreground">
+          Configurez le profil de votre entreprise et suivez vos performances
+        </p>
+      </div>
+
+      {/* Statistiques de l'entreprise */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mx-auto mb-3">
+              <Briefcase className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="text-2xl font-bold text-eemploi-primary mb-1">{stats.totalJobs}</div>
+            <div className="text-sm text-muted-foreground">Offres publiées</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mx-auto mb-3">
+              <Users className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="text-2xl font-bold text-eemploi-primary mb-1">{stats.totalApplications}</div>
+            <div className="text-sm text-muted-foreground">Candidatures reçues</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mx-auto mb-3">
+              <TrendingUp className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="text-2xl font-bold text-eemploi-primary mb-1">{stats.viewsThisMonth}</div>
+            <div className="text-sm text-muted-foreground">Vues ce mois</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg mx-auto mb-3">
+              <Award className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="text-2xl font-bold text-eemploi-primary mb-1">{stats.activeJobs}</div>
+            <div className="text-sm text-muted-foreground">Offres actives</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Informations de l'entreprise */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -137,7 +253,7 @@ const CompanyManagement = () => {
             {/* Logo et nom */}
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                   {company.logo_url ? (
                     <img src={company.logo_url} alt="Logo" className="w-full h-full object-cover rounded-lg" />
                   ) : (
@@ -158,11 +274,12 @@ const CompanyManagement = () => {
                   value={company.name}
                   onChange={(e) => setCompany({ ...company, name: e.target.value })}
                   placeholder="Ex: TechCorp Solutions"
+                  required
                 />
               </div>
             </div>
 
-            {/* Informations de base */}
+            {/* Informations de contact */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -204,8 +321,9 @@ const CompanyManagement = () => {
             <Textarea
               value={company.description}
               onChange={(e) => setCompany({ ...company, description: e.target.value })}
-              placeholder="Décrivez votre entreprise, sa mission, ses valeurs..."
+              placeholder="Décrivez votre entreprise, sa mission, ses valeurs, son secteur d'activité..."
               rows={4}
+              className="resize-none"
             />
           </div>
 
@@ -223,13 +341,16 @@ const CompanyManagement = () => {
                   <SelectValue placeholder="Sélectionner un secteur" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tech">Technologie</SelectItem>
-                  <SelectItem value="finance">Finance</SelectItem>
-                  <SelectItem value="healthcare">Santé</SelectItem>
-                  <SelectItem value="education">Éducation</SelectItem>
-                  <SelectItem value="retail">Commerce</SelectItem>
-                  <SelectItem value="manufacturing">Industrie</SelectItem>
-                  <SelectItem value="consulting">Conseil</SelectItem>
+                  <SelectItem value="tech">Technologie & IT</SelectItem>
+                  <SelectItem value="finance">Finance & Banque</SelectItem>
+                  <SelectItem value="healthcare">Santé & Médical</SelectItem>
+                  <SelectItem value="education">Éducation & Formation</SelectItem>
+                  <SelectItem value="retail">Commerce & Retail</SelectItem>
+                  <SelectItem value="manufacturing">Industrie & Manufacturing</SelectItem>
+                  <SelectItem value="consulting">Conseil & Services</SelectItem>
+                  <SelectItem value="telecom">Télécommunications</SelectItem>
+                  <SelectItem value="automotive">Automobile</SelectItem>
+                  <SelectItem value="construction">BTP & Construction</SelectItem>
                   <SelectItem value="other">Autre</SelectItem>
                 </SelectContent>
               </Select>
@@ -247,11 +368,11 @@ const CompanyManagement = () => {
                   <SelectValue placeholder="Sélectionner la taille" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1-10">1-10 employés</SelectItem>
-                  <SelectItem value="11-50">11-50 employés</SelectItem>
-                  <SelectItem value="51-200">51-200 employés</SelectItem>
-                  <SelectItem value="201-500">201-500 employés</SelectItem>
-                  <SelectItem value="500+">500+ employés</SelectItem>
+                  <SelectItem value="1-10">1-10 employés (Startup/PME)</SelectItem>
+                  <SelectItem value="11-50">11-50 employés (Petite entreprise)</SelectItem>
+                  <SelectItem value="51-200">51-200 employés (Moyenne entreprise)</SelectItem>
+                  <SelectItem value="201-500">201-500 employés (Grande entreprise)</SelectItem>
+                  <SelectItem value="500+">500+ employés (Très grande entreprise)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -259,12 +380,12 @@ const CompanyManagement = () => {
 
           {/* Actions */}
           <div className="flex justify-end space-x-4 pt-6 border-t">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => fetchCompanyData()}>
               Annuler
             </Button>
             <Button 
               onClick={handleSave}
-              disabled={saving || !company.name}
+              disabled={saving || !company.name.trim()}
               className="bg-eemploi-primary hover:bg-eemploi-primary/90"
             >
               <Save className="w-4 h-4 mr-2" />
@@ -274,27 +395,37 @@ const CompanyManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Statistiques de l'entreprise */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-eemploi-primary mb-2">12</div>
-            <div className="text-sm text-muted-foreground">Offres publiées</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-eemploi-primary mb-2">89</div>
-            <div className="text-sm text-muted-foreground">Candidatures reçues</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-eemploi-primary mb-2">4.8</div>
-            <div className="text-sm text-muted-foreground">Note employeur</div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Conseils et recommandations */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Star className="w-5 h-5 mr-2" />
+            Conseils pour optimiser votre profil
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm">✅ Profil complet</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Ajoutez une description détaillée</li>
+                <li>• Incluez votre site web</li>
+                <li>• Précisez votre secteur d'activité</li>
+                <li>• Uploadez votre logo d'entreprise</li>
+              </ul>
+            </div>
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm">🎯 Attirer les candidats</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Publiez régulièrement des offres</li>
+                <li>• Répondez rapidement aux candidatures</li>
+                <li>• Mettez en avant votre culture d'entreprise</li>
+                <li>• Soyez transparent sur les avantages</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
