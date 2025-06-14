@@ -37,6 +37,15 @@ interface CandidateDetailModalProps {
   applicationId: string;
 }
 
+// Helper function to safely extract score from JSON
+const getScoreFromJson = (jsonData: any): number => {
+  if (!jsonData) return 0;
+  if (typeof jsonData === 'object' && jsonData.score !== undefined) {
+    return Number(jsonData.score) || 0;
+  }
+  return 0;
+};
+
 const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId }: CandidateDetailModalProps) => {
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -400,19 +409,19 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId }: C
                         </div>
                         <div className="text-center">
                           <p className="text-xl font-semibold text-green-600">
-                            {assessment.personality_score?.score || 0}
+                            {getScoreFromJson(assessment.personality_score)}
                           </p>
                           <p className="text-sm text-muted-foreground">Personnalité</p>
                         </div>
                         <div className="text-center">
                           <p className="text-xl font-semibold text-purple-600">
-                            {assessment.skills_score?.score || 0}
+                            {getScoreFromJson(assessment.skills_score)}
                           </p>
                           <p className="text-sm text-muted-foreground">Compétences</p>
                         </div>
                         <div className="text-center">
                           <p className="text-xl font-semibold text-orange-600">
-                            {assessment.qualities_score?.score || 0}
+                            {getScoreFromJson(assessment.qualities_score)}
                           </p>
                           <p className="text-sm text-muted-foreground">Qualités</p>
                         </div>
