@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,7 +107,7 @@ const Jobs = () => {
               </SelectContent>
             </Select>
             
-            <Button className="hover:scale-105 transition-all duration-300">
+            <Button variant="default" className="hover:scale-105 transition-all duration-300">
               <Filter className="w-4 h-4 mr-2" />
               Filtrer
             </Button>
@@ -141,6 +142,7 @@ const Jobs = () => {
                 Essayez de modifier vos critères de recherche
               </p>
               <Button 
+                variant="default"
                 onClick={() => {
                   setSearchTerm('');
                   setLocationFilter('');
@@ -225,14 +227,17 @@ const Jobs = () => {
                       
                       <div className="flex flex-col gap-2 lg:min-w-[200px]">
                         <Link to={`/emplois/${job.id}`}>
-                          <Button className="w-full group-hover:bg-eemploi-primary group-hover:scale-105 transition-all duration-300">
+                          <Button 
+                            variant="default" 
+                            className="w-full group-hover:scale-105 transition-all duration-300"
+                          >
                             Voir l'offre
                             <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                           </Button>
                         </Link>
                         <Button 
                           variant="outline" 
-                          className="w-full group-hover:border-eemploi-primary group-hover:text-eemploi-primary transition-all duration-300"
+                          className="w-full transition-all duration-300"
                         >
                           <Star className="w-4 h-4 mr-2" />
                           Sauvegarder
