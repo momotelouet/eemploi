@@ -1,6 +1,3 @@
-
-import Header from "@/components/Layout/Header";
-import Footer from "@/components/Layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -85,8 +82,6 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-eemploi-primary to-eemploi-secondary py-20">
         <div className="container mx-auto px-4 text-center">
@@ -330,8 +325,6 @@ const About = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };
