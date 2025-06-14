@@ -39,6 +39,8 @@ interface CVProfileData {
     name: string;
     level: string;
   }>;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const useCVProfiles = () => {
@@ -64,7 +66,31 @@ export const useCVProfiles = () => {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      setProfiles(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData = (data || []).map(profile => ({
+        id: profile.id,
+        template_id: profile.template_id,
+        personal_info: typeof profile.personal_info === 'object' && profile.personal_info !== null 
+          ? profile.personal_info as CVProfileData['personal_info']
+          : {
+              firstName: '',
+              lastName: '',
+              email: '',
+              phone: '',
+              address: '',
+              professionalTitle: '',
+              summary: '',
+              photoUrl: ''
+            },
+        experience: Array.isArray(profile.experience) ? profile.experience as CVProfileData['experience'] : [],
+        education: Array.isArray(profile.education) ? profile.education as CVProfileData['education'] : [],
+        skills: Array.isArray(profile.skills) ? profile.skills as CVProfileData['skills'] : [],
+        created_at: profile.created_at,
+        updated_at: profile.updated_at
+      }));
+      
+      setProfiles(transformedData);
     } catch (err) {
       console.error('Error fetching CV profiles:', err);
       setError(err as Error);
@@ -99,8 +125,19 @@ export const useCVProfiles = () => {
 
         if (error) throw error;
         
-        setProfiles(prev => prev.map(p => p.id === profileData.id ? data : p));
-        return data;
+        const transformedData = {
+          id: data.id,
+          template_id: data.template_id,
+          personal_info: data.personal_info as CVProfileData['personal_info'],
+          experience: data.experience as CVProfileData['experience'],
+          education: data.education as CVProfileData['education'],
+          skills: data.skills as CVProfileData['skills'],
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        };
+        
+        setProfiles(prev => prev.map(p => p.id === profileData.id ? transformedData : p));
+        return transformedData;
       } else {
         // Create new profile
         const { data, error } = await supabase
@@ -111,8 +148,19 @@ export const useCVProfiles = () => {
 
         if (error) throw error;
         
-        setProfiles(prev => [data, ...prev]);
-        return data;
+        const transformedData = {
+          id: data.id,
+          template_id: data.template_id,
+          personal_info: data.personal_info as CVProfileData['personal_info'],
+          experience: data.experience as CVProfileData['experience'],
+          education: data.education as CVProfileData['education'],
+          skills: data.skills as CVProfileData['skills'],
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        };
+        
+        setProfiles(prev => [transformedData, ...prev]);
+        return transformedData;
       }
     } catch (err) {
       console.error('Error saving CV profile:', err);

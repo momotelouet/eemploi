@@ -12,6 +12,13 @@ import CVTemplates, { CVTemplate } from './CVTemplates';
 import TemplatePreview from './TemplatePreview';
 import { useCVPDF } from '@/hooks/useCVPDF';
 
+interface SimpleTemplate {
+  id: string;
+  name: string;
+  color: string;
+  style: 'modern' | 'classic' | 'creative' | 'minimal';
+}
+
 const ProfessionalProfileManager = () => {
   const { profiles, loading, saveProfile, deleteProfile } = useCVProfiles();
   const { generatePDF } = useCVPDF();
@@ -23,15 +30,24 @@ const ProfessionalProfileManager = () => {
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null);
 
-  const templates = [
-    { id: 'modern-blue', name: 'Professionnel Moderne', color: 'bg-blue-500', style: 'modern' as const },
-    { id: 'classic-elegant', name: 'Classique Élégant', color: 'bg-gray-700', style: 'classic' as const },
-    { id: 'creative-orange', name: 'Créatif Dynamique', color: 'bg-orange-500', style: 'creative' as const },
-    { id: 'minimal-green', name: 'Minimaliste Vert', color: 'bg-green-500', style: 'minimal' as const }
+  const templates: SimpleTemplate[] = [
+    { id: 'modern-blue', name: 'Professionnel Moderne', color: 'bg-blue-500', style: 'modern' },
+    { id: 'classic-elegant', name: 'Classique Élégant', color: 'bg-gray-700', style: 'classic' },
+    { id: 'creative-orange', name: 'Créatif Dynamique', color: 'bg-orange-500', style: 'creative' },
+    { id: 'minimal-green', name: 'Minimaliste Vert', color: 'bg-green-500', style: 'minimal' }
   ];
 
-  const getTemplateById = (templateId: string) => {
+  const getTemplateById = (templateId: string): SimpleTemplate => {
     return templates.find(t => t.id === templateId) || templates[0];
+  };
+
+  const convertToFullTemplate = (simpleTemplate: SimpleTemplate): CVTemplate => {
+    return {
+      ...simpleTemplate,
+      description: `Template ${simpleTemplate.style} avec design ${simpleTemplate.name.toLowerCase()}`,
+      preview: `photo-1649972904349-6e44c42644a7`, // Using a default preview image
+      isPremium: false
+    };
   };
 
   const handleCreateNew = (template: CVTemplate) => {
@@ -59,13 +75,15 @@ const ProfessionalProfileManager = () => {
 
   const handleEdit = (profile: any) => {
     setSelectedProfile(profile);
-    setSelectedTemplate(getTemplateById(profile.template_id));
+    const simpleTemplate = getTemplateById(profile.template_id);
+    setSelectedTemplate(convertToFullTemplate(simpleTemplate));
     setShowEditor(true);
   };
 
   const handlePreview = (profile: any) => {
     setSelectedProfile(profile);
-    setSelectedTemplate(getTemplateById(profile.template_id));
+    const simpleTemplate = getTemplateById(profile.template_id);
+    setSelectedTemplate(convertToFullTemplate(simpleTemplate));
     setShowPreview(true);
   };
 
@@ -73,7 +91,10 @@ const ProfessionalProfileManager = () => {
     try {
       const profileData = {
         ...selectedProfile,
-        ...data
+        personal_info: data.personalInfo,
+        experience: data.experience,
+        education: data.education,
+        skills: data.skills
       };
       
       await saveProfile(profileData);
@@ -199,7 +220,7 @@ const ProfessionalProfileManager = () => {
                           {profile.experience?.length || 0} expérience(s) • {profile.education?.length || 0} formation(s)
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          Modifié le {new Date(profile.updated_at).toLocaleDateString('fr-FR')}
+                          Modifié le {new Date(profile.updated_at || Date.now()).toLocaleDateString('fr-FR')}
                         </div>
                       </div>
                       
@@ -231,7 +252,7 @@ const ProfessionalProfileManager = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(profile.id)}
+                          onClick={() => handleDelete(profile.id!)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -259,7 +280,14 @@ const ProfessionalProfileManager = () => {
               initialData={selectedProfile}
               onSave={handleSave}
               onPreview={(data) => {
-                setSelectedProfile({ ...selectedProfile, ...data });
+                const updatedProfile = {
+                  ...selectedProfile,
+                  personal_info: data.personalInfo,
+                  experience: data.experience,
+                  education: data.education,
+                  skills: data.skills
+                };
+                setSelectedProfile(updatedProfile);
                 setShowEditor(false);
                 setShowPreview(true);
               }}

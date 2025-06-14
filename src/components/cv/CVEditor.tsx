@@ -48,15 +48,28 @@ interface CVData {
 interface CVEditorProps {
   onSave: (data: CVData) => void;
   onPreview: (data: CVData) => void;
-  initialData?: CVData;
+  initialData?: any;
 }
 
 const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) => {
   const { toast } = useToast();
   const { uploadImage } = useCVImages();
   
-  const [cvData, setCVData] = useState<CVData>(initialData || {
-    personalInfo: {
+  // Ensure personalInfo is always defined with safe defaults
+  const getInitialPersonalInfo = () => {
+    if (initialData?.personal_info) {
+      return {
+        firstName: initialData.personal_info.firstName || '',
+        lastName: initialData.personal_info.lastName || '',
+        email: initialData.personal_info.email || '',
+        phone: initialData.personal_info.phone || '',
+        address: initialData.personal_info.address || '',
+        professionalTitle: initialData.personal_info.professionalTitle || '',
+        summary: initialData.personal_info.summary || '',
+        photoUrl: initialData.personal_info.photoUrl || ''
+      };
+    }
+    return {
       firstName: '',
       lastName: '',
       email: '',
@@ -65,10 +78,14 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
       professionalTitle: '',
       summary: '',
       photoUrl: ''
-    },
-    experience: [],
-    education: [],
-    skills: []
+    };
+  };
+  
+  const [cvData, setCVData] = useState<CVData>({
+    personalInfo: getInitialPersonalInfo(),
+    experience: initialData?.experience || [],
+    education: initialData?.education || [],
+    skills: initialData?.skills || []
   });
 
   const updatePersonalInfo = (field: keyof CVData['personalInfo'], value: string) => {
@@ -216,9 +233,9 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="w-24 h-24">
-                  <AvatarImage src={cvData.personalInfo.photoUrl} />
+                  <AvatarImage src={cvData.personalInfo?.photoUrl || ''} />
                   <AvatarFallback>
-                    {cvData.personalInfo.firstName?.charAt(0)}{cvData.personalInfo.lastName?.charAt(0)}
+                    {cvData.personalInfo?.firstName?.charAt(0) || ''}{cvData.personalInfo?.lastName?.charAt(0) || ''}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -252,7 +269,7 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
                   <Label htmlFor="firstName">Prénom</Label>
                   <Input
                     id="firstName"
-                    value={cvData.personalInfo.firstName}
+                    value={cvData.personalInfo?.firstName || ''}
                     onChange={(e) => updatePersonalInfo('firstName', e.target.value)}
                   />
                 </div>
@@ -260,7 +277,7 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
                   <Label htmlFor="lastName">Nom</Label>
                   <Input
                     id="lastName"
-                    value={cvData.personalInfo.lastName}
+                    value={cvData.personalInfo?.lastName || ''}
                     onChange={(e) => updatePersonalInfo('lastName', e.target.value)}
                   />
                 </div>
@@ -270,7 +287,7 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
                 <Label htmlFor="professionalTitle">Titre professionnel</Label>
                 <Input
                   id="professionalTitle"
-                  value={cvData.personalInfo.professionalTitle}
+                  value={cvData.personalInfo?.professionalTitle || ''}
                   onChange={(e) => updatePersonalInfo('professionalTitle', e.target.value)}
                   placeholder="Ex: Développeur Full-Stack Senior"
                 />
@@ -282,7 +299,7 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
                   <Input
                     id="email"
                     type="email"
-                    value={cvData.personalInfo.email}
+                    value={cvData.personalInfo?.email || ''}
                     onChange={(e) => updatePersonalInfo('email', e.target.value)}
                   />
                 </div>
@@ -290,7 +307,7 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
                   <Label htmlFor="phone">Téléphone</Label>
                   <Input
                     id="phone"
-                    value={cvData.personalInfo.phone}
+                    value={cvData.personalInfo?.phone || ''}
                     onChange={(e) => updatePersonalInfo('phone', e.target.value)}
                   />
                 </div>
@@ -300,7 +317,7 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
                 <Label htmlFor="address">Adresse</Label>
                 <Input
                   id="address"
-                  value={cvData.personalInfo.address}
+                  value={cvData.personalInfo?.address || ''}
                   onChange={(e) => updatePersonalInfo('address', e.target.value)}
                 />
               </div>
@@ -308,7 +325,7 @@ const CVEditor: React.FC<CVEditorProps> = ({ onSave, onPreview, initialData }) =
               <div className="space-y-2">
                 <Label htmlFor="summary">Résumé professionnel</Label>
                 <RichTextEditor
-                  value={cvData.personalInfo.summary}
+                  value={cvData.personalInfo?.summary || ''}
                   onChange={(value) => updatePersonalInfo('summary', value)}
                   placeholder="Décrivez votre parcours et vos objectifs..."
                 />
