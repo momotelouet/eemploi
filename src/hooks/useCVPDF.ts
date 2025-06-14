@@ -255,7 +255,7 @@ export const useCVPDF = () => {
         .trim();
     };
 
-    // Enhanced text wrapping function that handles bullet points properly
+    // Enhanced text wrapping function that handles bullet points properly with same-line alignment
     const addWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 6): number => {
       const lines = text.split('\n');
       let currentY = y;
@@ -265,20 +265,30 @@ export const useCVPDF = () => {
         if (trimmedLine) {
           // Check if this is a bullet point
           if (trimmedLine.startsWith('• ')) {
-            // Handle bullet points with proper indentation
-            const bulletText = trimmedLine.substring(2); // Remove the bullet
+            // Handle bullet points with proper same-line alignment
+            const bulletText = trimmedLine.substring(2).trim(); // Remove the bullet and trim
             
             // Draw the bullet
             doc.text('•', x, currentY);
             
-            // Wrap the text after the bullet with proper indentation
-            const wrappedBulletLines = doc.splitTextToSize(bulletText, maxWidth - 10);
+            // Wrap the text after the bullet, starting on the same line
+            const availableWidth = maxWidth - 8; // Account for bullet space
+            const wrappedBulletLines = doc.splitTextToSize(bulletText, availableWidth);
+            
             wrappedBulletLines.forEach((wrappedLine: string, index: number) => {
-              // First line starts right after the bullet, subsequent lines are indented
-              const textX = index === 0 ? x + 8 : x + 8;
-              doc.text(wrappedLine, textX, currentY);
-              currentY += lineHeight;
+              // All lines start after the bullet position, but only first line is on same line as bullet
+              if (index === 0) {
+                // First line: same line as bullet
+                doc.text(wrappedLine, x + 8, currentY);
+              } else {
+                // Subsequent lines: indented to align with first line text
+                currentY += lineHeight;
+                doc.text(wrappedLine, x + 8, currentY);
+              }
             });
+            
+            // Move to next line after bullet point
+            currentY += lineHeight;
           } else {
             // Handle regular text
             const wrappedLines = doc.splitTextToSize(trimmedLine, maxWidth);
