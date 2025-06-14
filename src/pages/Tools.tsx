@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, PenTool, Calculator, MessageSquare, Palette, Star } from 'lucide-react';
-import CVManager from '@/components/cv/CVManager';
+import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
 import CoverLetterGenerator from '@/components/cover-letter/CoverLetterGenerator';
 import SalarySimulator from '@/components/tools/SalarySimulator';
 import InterviewSimulator from '@/components/tools/InterviewSimulator';
@@ -72,7 +71,7 @@ const Tools = () => {
                 Créez votre CV avec nos 10 templates modernes et téléchargez-le en PDF
               </p>
             </div>
-            <CVManager />
+            <ProfessionalProfileManager />
           </TabsContent>
 
           <TabsContent value="cover-letter" className="space-y-6">

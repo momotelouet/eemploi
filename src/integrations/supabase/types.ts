@@ -66,6 +66,7 @@ export type Database = {
           linkedin_url: string | null
           phone: string | null
           portfolio_url: string | null
+          professional_summary: string | null
           profile_picture_url: string | null
           skills: string[] | null
           updated_at: string
@@ -86,6 +87,7 @@ export type Database = {
           linkedin_url?: string | null
           phone?: string | null
           portfolio_url?: string | null
+          professional_summary?: string | null
           profile_picture_url?: string | null
           skills?: string[] | null
           updated_at?: string
@@ -106,6 +108,7 @@ export type Database = {
           linkedin_url?: string | null
           phone?: string | null
           portfolio_url?: string | null
+          professional_summary?: string | null
           profile_picture_url?: string | null
           skills?: string[] | null
           updated_at?: string
@@ -157,6 +160,42 @@ export type Database = {
           size?: string | null
           updated_at?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      cv_profiles: {
+        Row: {
+          created_at: string
+          education: Json
+          experience: Json
+          id: string
+          personal_info: Json
+          skills: Json
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          education?: Json
+          experience?: Json
+          id?: string
+          personal_info?: Json
+          skills?: Json
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          education?: Json
+          experience?: Json
+          id?: string
+          personal_info?: Json
+          skills?: Json
+          template_id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
