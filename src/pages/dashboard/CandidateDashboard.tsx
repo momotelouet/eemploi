@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useApplications } from '@/hooks/useApplications';
 import { useCVProfiles } from '@/hooks/useCVProfiles';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
 import AIEnhancedProfileManager from '@/components/candidate/AIEnhancedProfileManager';
 import ApplicationsList from '@/components/applications/ApplicationsList';
@@ -26,6 +27,7 @@ const CandidateDashboard = () => {
   const { applications, loading: applicationsLoading } = useApplications();
   const { profiles: cvProfiles, loading: cvLoading } = useCVProfiles();
   const { profile: candidateProfile, loading: candidateLoading } = useCandidateProfile(user?.id);
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
@@ -111,23 +113,23 @@ const CandidateDashboard = () => {
       <div className="container mx-auto px-4 py-8">
         {/* En-tête du dashboard */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
             Bonjour {profile?.first_name || user?.email?.split('@')[0]} ! 👋
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm md:text-base">
             Gérez votre profil professionnel et vos candidatures avec l'aide de l'IA
           </p>
         </div>
 
         {/* Statistiques rapides */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
-                <FileText className="w-8 h-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">CV Créés</p>
-                  <p className="text-2xl font-bold">
+                <FileText className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">CV Créés</p>
+                  <p className="text-lg md:text-2xl font-bold">
                     {cvLoading ? '...' : cvProfiles.length}
                   </p>
                 </div>
@@ -136,12 +138,12 @@ const CandidateDashboard = () => {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
-                <Briefcase className="w-8 h-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Candidatures</p>
-                  <p className="text-2xl font-bold">
+                <Briefcase className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Candidatures</p>
+                  <p className="text-lg md:text-2xl font-bold">
                     {applicationsLoading ? '...' : applications.length}
                   </p>
                 </div>
@@ -150,12 +152,12 @@ const CandidateDashboard = () => {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
-                <TrendingUp className="w-8 h-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Entretiens</p>
-                  <p className="text-2xl font-bold">
+                <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Entretiens</p>
+                  <p className="text-lg md:text-2xl font-bold">
                     {applicationsLoading ? '...' : interviewCount}
                   </p>
                 </div>
@@ -164,12 +166,12 @@ const CandidateDashboard = () => {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
-                <Star className="w-8 h-8 text-yellow-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Profil Complété</p>
-                  <p className="text-2xl font-bold">
+                <Star className="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Profil Complété</p>
+                  <p className="text-lg md:text-2xl font-bold">
                     {candidateLoading ? '...' : `${calculateProfileCompletion()}%`}
                   </p>
                 </div>
@@ -180,34 +182,34 @@ const CandidateDashboard = () => {
 
         {/* Contenu principal avec onglets */}
         <Tabs defaultValue="cv" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="cv" className="flex items-center space-x-2">
+          <TabsList className={`w-full ${isMobile ? 'grid-cols-2 h-auto flex-wrap' : 'grid-cols-7'} grid gap-1`}>
+            <TabsTrigger value="cv" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <FileText className="w-4 h-4" />
-              <span>Mes CV</span>
+              <span className={isMobile ? 'text-xs' : ''}>Mes CV</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex items-center space-x-2">
+            <TabsTrigger value="profile" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <User className="w-4 h-4" />
-              <span>Mon Profil</span>
+              <span className={isMobile ? 'text-xs' : ''}>Mon Profil</span>
             </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center space-x-2">
+            <TabsTrigger value="applications" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <Briefcase className="w-4 h-4" />
-              <span>Candidatures</span>
+              <span className={isMobile ? 'text-xs' : ''}>Candidatures</span>
             </TabsTrigger>
-            <TabsTrigger value="assessment" className="flex items-center space-x-2">
+            <TabsTrigger value="assessment" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <Award className="w-4 h-4" />
-              <span>Évaluation</span>
+              <span className={isMobile ? 'text-xs' : ''}>Évaluation</span>
             </TabsTrigger>
-            <TabsTrigger value="job-search" className="flex items-center space-x-2">
+            <TabsTrigger value="job-search" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <Search className="w-4 h-4" />
-              <span>Recherche IA</span>
+              <span className={isMobile ? 'text-xs' : ''}>Recherche IA</span>
             </TabsTrigger>
-            <TabsTrigger value="ai-optimizer" className="flex items-center space-x-2">
+            <TabsTrigger value="ai-optimizer" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <Bot className="w-4 h-4" />
-              <span>Optimiseur IA</span>
+              <span className={isMobile ? 'text-xs' : ''}>Optimiseur IA</span>
             </TabsTrigger>
-            <TabsTrigger value="ai-assistant" className="flex items-center space-x-2">
+            <TabsTrigger value="ai-assistant" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <Bot className="w-4 h-4" />
-              <span>Assistant IA</span>
+              <span className={isMobile ? 'text-xs' : ''}>Assistant IA</span>
             </TabsTrigger>
           </TabsList>
 
@@ -273,41 +275,41 @@ const CandidateDashboard = () => {
             <CardTitle>Actions Rapides</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-4 gap-4'}`}>
               <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
                 onClick={handleCreateCV}
               >
-                <FileText className="w-6 h-6 text-blue-600 mb-2" />
-                <h4 className="font-medium">Créer un nouveau CV</h4>
-                <p className="text-sm text-muted-foreground">Utilisez nos templates modernes</p>
+                <FileText className="w-6 h-6 text-blue-600 mb-2 mx-auto" />
+                <h4 className="font-medium text-sm md:text-base">Créer un nouveau CV</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Utilisez nos templates modernes</p>
               </div>
               
               <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
                 onClick={handleSearchJobs}
               >
-                <Briefcase className="w-6 h-6 text-green-600 mb-2" />
-                <h4 className="font-medium">Rechercher des emplois</h4>
-                <p className="text-sm text-muted-foreground">Trouvez votre prochain défi</p>
+                <Briefcase className="w-6 h-6 text-green-600 mb-2 mx-auto" />
+                <h4 className="font-medium text-sm md:text-base">Rechercher des emplois</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Trouvez votre prochain défi</p>
               </div>
               
               <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
                 onClick={handleInterviewSimulation}
               >
-                <Calendar className="w-6 h-6 text-purple-600 mb-2" />
-                <h4 className="font-medium">Simuler un entretien</h4>
-                <p className="text-sm text-muted-foreground">Préparez-vous efficacement</p>
+                <Calendar className="w-6 h-6 text-purple-600 mb-2 mx-auto" />
+                <h4 className="font-medium text-sm md:text-base">Simuler un entretien</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Préparez-vous efficacement</p>
               </div>
 
               <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
                 onClick={handleStartAssessment}
               >
-                <Award className="w-6 h-6 text-yellow-600 mb-2" />
-                <h4 className="font-medium">Test de personnalité</h4>
-                <p className="text-sm text-muted-foreground">Obtenez votre certificat</p>
+                <Award className="w-6 h-6 text-yellow-600 mb-2 mx-auto" />
+                <h4 className="font-medium text-sm md:text-base">Test de personnalité</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Obtenez votre certificat</p>
               </div>
             </div>
           </CardContent>
