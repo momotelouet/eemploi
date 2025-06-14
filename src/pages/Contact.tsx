@@ -1,6 +1,3 @@
-
-import Header from "@/components/Layout/Header";
-import Footer from "@/components/Layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,8 +92,6 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-eemploi-primary to-eemploi-secondary py-16">
         <div className="container mx-auto px-4 text-center">
@@ -294,8 +289,6 @@ const Contact = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };
