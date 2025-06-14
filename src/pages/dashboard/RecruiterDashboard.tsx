@@ -12,19 +12,24 @@ import {
   Search,
   Filter,
   Star,
-  Building
+  Building,
+  CheckCircle,
+  XCircle,
+  Clock
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
 import { useJobApplications } from "@/hooks/useJobApplications";
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
   const { jobs } = useRecruiterJobs();
   const { applications } = useJobApplications();
   const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Calculate stats
   const totalJobs = jobs.length;
@@ -62,6 +67,31 @@ const RecruiterDashboard = () => {
       color: "text-yellow-600"
     }
   ];
+
+  const getCandidateName = (application: any) => {
+    if (application.candidate_profiles?.profiles) {
+      const profile = application.candidate_profiles.profiles;
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Candidat anonyme';
+    }
+    return `Candidat #${application.candidate_id.slice(0, 8)}`;
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+      case 'accepted':
+        return <Badge className="bg-green-100 text-green-800">Acceptée</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800">Refusée</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const handleViewApplications = () => {
+    navigate('/recruteur/candidatures');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -186,12 +216,73 @@ const RecruiterDashboard = () => {
                   </TabsContent>
 
                   <TabsContent value="applications" className="p-6">
-                    <div className="text-center py-8">
-                      <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="font-medium mb-2">Candidatures</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Gérez les candidatures reçues pour vos offres
-                      </p>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">Candidatures reçues</h3>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleViewApplications}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Voir toutes
+                        </Button>
+                      </div>
+                      
+                      {applications.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                          <h3 className="font-medium mb-2">Aucune candidature reçue</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Les candidatures pour vos offres d'emploi apparaîtront ici
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {applications.slice(0, 5).map((application) => (
+                            <div key={application.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <h4 className="font-medium">{getCandidateName(application)}</h4>
+                                    {getStatusBadge(application.status)}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {application.jobs?.title || 'Offre supprimée'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {new Date(application.applied_at).toLocaleDateString('fr-FR')}
+                                  </p>
+                                </div>
+                                <div className="flex space-x-2">
+                                  {application.status === 'pending' && (
+                                    <>
+                                      <Button size="sm" variant="outline" className="text-green-600">
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        Accepter
+                                      </Button>
+                                      <Button size="sm" variant="outline" className="text-red-600">
+                                        <XCircle className="w-4 h-4 mr-2" />
+                                        Refuser
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {applications.length > 5 && (
+                            <div className="text-center">
+                              <Button 
+                                variant="outline"
+                                onClick={handleViewApplications}
+                              >
+                                Voir toutes les candidatures ({applications.length})
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
 
