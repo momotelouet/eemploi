@@ -50,6 +50,129 @@ export type Database = {
           },
         ]
       }
+      assessment_questions: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          options: Json | null
+          question_text: string
+          question_type: string
+          updated_at: string
+          weight: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          options?: Json | null
+          question_text: string
+          question_type?: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          options?: Json | null
+          question_text?: string
+          question_type?: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      assessment_responses: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          id: string
+          question_id: string
+          response_value: Json
+          score: number | null
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+          response_value: Json
+          score?: number | null
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          response_value?: Json
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_responses_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_assessments: {
+        Row: {
+          assessment_type: string
+          certificate_url: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          personality_score: Json | null
+          qualities_score: Json | null
+          skills_score: Json | null
+          started_at: string
+          status: string
+          total_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assessment_type?: string
+          certificate_url?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          personality_score?: Json | null
+          qualities_score?: Json | null
+          skills_score?: Json | null
+          started_at?: string
+          status?: string
+          total_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assessment_type?: string
+          certificate_url?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          personality_score?: Json | null
+          qualities_score?: Json | null
+          skills_score?: Json | null
+          started_at?: string
+          status?: string
+          total_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       candidate_profiles: {
         Row: {
           address: string | null

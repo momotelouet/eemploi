@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot, Search } from 'lucide-react';
+import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot, Search, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +17,8 @@ import CVOptimizer from '@/components/ai/CVOptimizer';
 import AIChat from '@/components/ai/AIChat';
 import InterviewAI from '@/components/ai/InterviewAI';
 import JobSearchAI from '@/components/ai/JobSearchAI';
+import AssessmentTest from '@/components/assessment/AssessmentTest';
+import AssessmentResults from '@/components/assessment/AssessmentResults';
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ const CandidateDashboard = () => {
   const navigate = useNavigate();
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
+  const [showAssessmentTest, setShowAssessmentTest] = useState(false);
 
   if (loading) {
     return (
@@ -49,6 +51,10 @@ const CandidateDashboard = () => {
 
   const handleInterviewSimulation = () => {
     setShowInterviewSimulator(true);
+  };
+
+  const handleStartAssessment = () => {
+    setShowAssessmentTest(true);
   };
 
   // Calculate profile completion percentage based on candidate profile
@@ -174,7 +180,7 @@ const CandidateDashboard = () => {
 
         {/* Contenu principal avec onglets */}
         <Tabs defaultValue="cv" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="cv" className="flex items-center space-x-2">
               <FileText className="w-4 h-4" />
               <span>Mes CV</span>
@@ -186,6 +192,10 @@ const CandidateDashboard = () => {
             <TabsTrigger value="applications" className="flex items-center space-x-2">
               <Briefcase className="w-4 h-4" />
               <span>Candidatures</span>
+            </TabsTrigger>
+            <TabsTrigger value="assessment" className="flex items-center space-x-2">
+              <Award className="w-4 h-4" />
+              <span>Évaluation</span>
             </TabsTrigger>
             <TabsTrigger value="job-search" className="flex items-center space-x-2">
               <Search className="w-4 h-4" />
@@ -213,6 +223,33 @@ const CandidateDashboard = () => {
             <ApplicationsList />
           </TabsContent>
 
+          <TabsContent value="assessment" className="mt-6">
+            <div className="space-y-6">
+              <AssessmentResults />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Nouveau Test d'Évaluation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center space-y-4">
+                    <p className="text-muted-foreground">
+                      Passez un test complet de personnalité et compétences pour obtenir votre certificat professionnel
+                    </p>
+                    <div 
+                      className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                      onClick={handleStartAssessment}
+                    >
+                      <Award className="w-6 h-6 text-blue-600 mb-2 mx-auto" />
+                      <h4 className="font-medium">Commencer une nouvelle évaluation</h4>
+                      <p className="text-sm text-muted-foreground">Durée: 5-10 minutes</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="job-search" className="mt-6">
             <JobSearchAI />
           </TabsContent>
@@ -236,7 +273,7 @@ const CandidateDashboard = () => {
             <CardTitle>Actions Rapides</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div 
                 className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                 onClick={handleCreateCV}
@@ -263,6 +300,15 @@ const CandidateDashboard = () => {
                 <h4 className="font-medium">Simuler un entretien</h4>
                 <p className="text-sm text-muted-foreground">Préparez-vous efficacement</p>
               </div>
+
+              <div 
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                onClick={handleStartAssessment}
+              >
+                <Award className="w-6 h-6 text-yellow-600 mb-2" />
+                <h4 className="font-medium">Test de personnalité</h4>
+                <p className="text-sm text-muted-foreground">Obtenez votre certificat</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -286,6 +332,21 @@ const CandidateDashboard = () => {
             <InterviewAI 
               jobTitle="Poste généraliste"
               candidateProfile={profile ? `${profile.first_name} ${profile.last_name}` : 'Candidat'}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog pour le test d'évaluation */}
+        <Dialog open={showAssessmentTest} onOpenChange={setShowAssessmentTest}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Test de Personnalité et Compétences</DialogTitle>
+            </DialogHeader>
+            <AssessmentTest 
+              onComplete={() => {
+                setShowAssessmentTest(false);
+                window.location.reload(); // Recharger pour voir les nouveaux résultats
+              }}
             />
           </DialogContent>
         </Dialog>
