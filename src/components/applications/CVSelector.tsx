@@ -10,6 +10,7 @@ import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useCVPDF } from '@/hooks/useCVPDF';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface CVSelectorProps {
@@ -27,6 +28,7 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
   const { user } = useAuth();
   const { profiles: cvProfiles, loading: cvLoading } = useCVProfiles();
   const { profile: candidateProfile } = useCandidateProfile(user?.id);
+  const { generatePDF } = useCVPDF();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedCVProfile, setSelectedCVProfile] = useState<string>('');
   const [previewCV, setPreviewCV] = useState<any>(null);
@@ -85,6 +87,39 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
     });
   };
 
+  const handleGeneratePDFFromProfile = async (profileId: string) => {
+    try {
+      const profile = cvProfiles.find(p => p.id === profileId);
+      if (!profile) {
+        toast.error('CV non trouvé');
+        return;
+      }
+
+      // Transform the profile data to match CVData format
+      const cvData = {
+        personalInfo: {
+          firstName: profile.personal_info?.firstName || '',
+          lastName: profile.personal_info?.lastName || '',
+          email: profile.personal_info?.email || '',
+          phone: profile.personal_info?.phone || '',
+          address: profile.personal_info?.address || '',
+          professionalTitle: profile.personal_info?.professionalTitle || '',
+          summary: profile.personal_info?.summary || '',
+          photoUrl: profile.personal_info?.photoUrl
+        },
+        experience: Array.isArray(profile.experience) ? profile.experience : [],
+        education: Array.isArray(profile.education) ? profile.education : [],
+        skills: Array.isArray(profile.skills) ? profile.skills : []
+      };
+
+      await generatePDF(cvData);
+      toast.success('CV généré en PDF avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error);
+      toast.error('Erreur lors de la génération du PDF');
+    }
+  };
+
   const handlePreviewCV = async (profileId: string) => {
     try {
       const profile = cvProfiles.find(p => p.id === profileId);
@@ -140,7 +175,8 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handlePreviewCV(profile.id!)}
+                                onClick={() => handleGeneratePDFFromProfile(profile.id!)}
+                                title="Télécharger en PDF"
                               >
                                 <Eye className="w-4 h-4" />
                               </Button>
