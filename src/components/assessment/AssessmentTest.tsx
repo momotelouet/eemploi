@@ -56,10 +56,17 @@ const AssessmentTest: React.FC<AssessmentTestProps> = ({ onComplete }) => {
   };
 
   const calculateScore = (question: AssessmentQuestion, response: any): number => {
+    console.log('Calculating score for question:', question.category, 'response:', response);
+    
     if (question.question_type === 'scale') {
-      return parseInt(response) || 0;
+      const score = parseInt(response) || 0;
+      console.log('Scale score:', score);
+      return score;
     } else if (question.question_type === 'choice') {
-      return 3; // Score fixe pour les choix multiples
+      // Pour les questions à choix multiple, on donne 3 points
+      const score = 3;
+      console.log('Choice score:', score);
+      return score;
     }
     return 0;
   };
@@ -74,6 +81,7 @@ const AssessmentTest: React.FC<AssessmentTestProps> = ({ onComplete }) => {
         score: score
       };
 
+      console.log('Adding response:', newResponse);
       setResponses(prev => [...prev, newResponse]);
       setCurrentResponse(null);
 
@@ -87,6 +95,8 @@ const AssessmentTest: React.FC<AssessmentTestProps> = ({ onComplete }) => {
 
   const completeAssessment = async (finalResponses: AssessmentResponse[]) => {
     if (!currentAssessmentId) return;
+
+    console.log('Completing assessment with responses:', finalResponses);
 
     try {
       await submitResponse.mutateAsync({

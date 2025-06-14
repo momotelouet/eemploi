@@ -113,6 +113,8 @@ export const useSubmitAssessmentResponse = () => {
       assessmentId: string; 
       responses: AssessmentResponse[] 
     }) => {
+      console.log('Submitting responses:', responses);
+
       // Insérer toutes les réponses
       const { error: responsesError } = await supabase
         .from('assessment_responses')
@@ -125,22 +127,49 @@ export const useSubmitAssessmentResponse = () => {
           }))
         );
 
-      if (responsesError) throw responsesError;
+      if (responsesError) {
+        console.error('Error inserting responses:', responsesError);
+        throw responsesError;
+      }
 
-      // Calculer les scores par catégorie
+      // Récupérer les questions pour connaître leurs catégories
+      const { data: questions, error: questionsError } = await supabase
+        .from('assessment_questions')
+        .select('id, category')
+        .in('id', responses.map(r => r.question_id));
+
+      if (questionsError) {
+        console.error('Error fetching questions:', questionsError);
+        throw questionsError;
+      }
+
+      // Créer un map pour associer question_id à catégorie
+      const questionCategories = questions.reduce((acc, question) => {
+        acc[question.id] = question.category;
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Calculer les scores par catégorie en utilisant les vraies catégories
       const personalityScore = responses
-        .filter(r => r.question_id.includes('personality'))
+        .filter(r => questionCategories[r.question_id] === 'personality')
         .reduce((sum, r) => sum + r.score, 0);
       
       const skillsScore = responses
-        .filter(r => r.question_id.includes('skills'))
+        .filter(r => questionCategories[r.question_id] === 'skills')
         .reduce((sum, r) => sum + r.score, 0);
       
       const qualitiesScore = responses
-        .filter(r => r.question_id.includes('qualities'))
+        .filter(r => questionCategories[r.question_id] === 'qualities')
         .reduce((sum, r) => sum + r.score, 0);
 
       const totalScore = personalityScore + skillsScore + qualitiesScore;
+
+      console.log('Calculated scores:', {
+        personality: personalityScore,
+        skills: skillsScore,
+        qualities: qualitiesScore,
+        total: totalScore
+      });
 
       // Mettre à jour l'évaluation avec les scores
       const { data, error } = await supabase
@@ -157,7 +186,12 @@ export const useSubmitAssessmentResponse = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating assessment:', error);
+        throw error;
+      }
+
+      console.log('Updated assessment:', data);
       return data as Assessment;
     },
     onSuccess: () => {
