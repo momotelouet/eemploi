@@ -1,275 +1,274 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Briefcase, 
   Users, 
+  Briefcase, 
   Eye, 
-  Plus,
   TrendingUp,
-  Calendar,
-  FileText,
-  BarChart3
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRecruiterJobs } from '@/hooks/useRecruiterJobs';
-import { useJobApplications } from '@/hooks/useJobApplications';
-import { supabase } from '@/integrations/supabase/client';
+  Plus,
+  Search,
+  Filter,
+  Star,
+  Building
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
+import { useJobApplications } from "@/hooks/useJobApplications";
+import CreateJobModal from "@/components/recruiter/CreateJobModal";
+import { useState } from "react";
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
-  const { jobs, loading: jobsLoading } = useRecruiterJobs();
-  const { applications, loading: applicationsLoading } = useJobApplications();
-  const [stats, setStats] = useState({
-    totalJobs: 0,
-    activeJobs: 0,
-    totalApplications: 0,
-    totalViews: 0
-  });
+  const { jobs } = useRecruiterJobs();
+  const { applications } = useJobApplications();
+  const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!jobsLoading && !applicationsLoading) {
-      const activeJobsCount = jobs.filter(job => job.status === 'active').length;
-      const totalViews = jobs.reduce((sum, job) => sum + (job.views || 0), 0);
-      
-      setStats({
-        totalJobs: jobs.length,
-        activeJobs: activeJobsCount,
-        totalApplications: applications.length,
-        totalViews
-      });
+  // Calculate stats
+  const totalJobs = jobs.length;
+  const activeJobs = jobs.filter(job => job.status === 'active').length;
+  const totalApplications = applications.length;
+  const pendingApplications = applications.filter(app => app.status === 'pending').length;
+
+  const stats = [
+    { 
+      label: "Offres publiées", 
+      value: totalJobs.toString(), 
+      icon: <Briefcase className="w-4 h-4" />, 
+      change: "+2 ce mois",
+      color: "text-blue-600"
+    },
+    { 
+      label: "Offres actives", 
+      value: activeJobs.toString(), 
+      icon: <TrendingUp className="w-4 h-4" />, 
+      change: `${activeJobs}/${totalJobs} actives`,
+      color: "text-green-600"
+    },
+    { 
+      label: "Candidatures reçues", 
+      value: totalApplications.toString(), 
+      icon: <Users className="w-4 h-4" />, 
+      change: "+15 cette semaine",
+      color: "text-purple-600"
+    },
+    { 
+      label: "En attente", 
+      value: pendingApplications.toString(), 
+      icon: <Eye className="w-4 h-4" />, 
+      change: "À traiter",
+      color: "text-yellow-600"
     }
-  }, [jobs, applications, jobsLoading, applicationsLoading]);
-
-  const getJobTypeLabel = (type: string) => {
-    switch (type) {
-      case 'full-time': return 'Temps plein';
-      case 'part-time': return 'Temps partiel';
-      case 'contract': return 'Contrat';
-      case 'internship': return 'Stage';
-      default: return type;
-    }
-  };
-
-  const formatSalary = (min: number | null, max: number | null) => {
-    if (!min && !max) return "Non spécifié";
-    if (min && max) return `${min} - ${max} MAD`;
-    if (min) return `À partir de ${min} MAD`;
-    if (max) return `Jusqu'à ${max} MAD`;
-    return "Non spécifié";
-  };
-
-  const recentJobs = jobs.slice(0, 5);
-  const recentApplications = applications.slice(0, 5);
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Tableau de bord recruteur</h1>
-          <p className="text-muted-foreground">
-            Gérez vos offres d'emploi et candidatures
-          </p>
-        </div>
-        <div className="flex space-x-4">
-          <Button asChild>
-            <Link to="/recruteur/hub">
-              <Plus className="w-4 h-4 mr-2" />
-              Créer une offre
-            </Link>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
+              Tableau de bord recruteur 👋
+            </h1>
+            <p className="text-muted-foreground">Gérez vos offres d'emploi et candidatures</p>
+          </div>
+          <Button 
+            className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+            onClick={() => setIsCreateJobModalOpen(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Publier une offre
           </Button>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Offres publiées</CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalJobs}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.activeJobs} actives
-            </p>
-          </CardContent>
-        </Card>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <Card key={index} className="hover-lift">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`${stat.color}`}>
+                    {stat.icon}
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {stat.change}
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold mb-2">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Candidatures</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalApplications}</div>
-            <p className="text-xs text-muted-foreground">
-              Toutes offres confondues
-            </p>
-          </CardContent>
-        </Card>
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Card>
+              <CardContent className="p-0">
+                <Tabs defaultValue="jobs" className="w-full">
+                  <div className="border-b">
+                    <TabsList className="grid w-full grid-cols-3 bg-transparent">
+                      <TabsTrigger value="jobs">Mes offres</TabsTrigger>
+                      <TabsTrigger value="applications">Candidatures</TabsTrigger>
+                      <TabsTrigger value="analytics">Statistiques</TabsTrigger>
+                    </TabsList>
+                  </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vues totales</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalViews}</div>
-            <p className="text-xs text-muted-foreground">
-              Sur toutes vos offres
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux de conversion</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalViews > 0 ? Math.round((stats.totalApplications / stats.totalViews) * 100) : 0}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Candidatures / Vues
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Jobs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Briefcase className="w-5 h-5 mr-2" />
-              Mes offres récentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {jobsLoading ? (
-              <p>Chargement...</p>
-            ) : recentJobs.length > 0 ? (
-              <div className="space-y-4">
-                {recentJobs.map((job) => (
-                  <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{job.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {job.companies?.name || 'Entreprise non spécifiée'}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Badge variant={job.status === 'active' ? 'default' : 'secondary'}>
-                          {job.status === 'active' ? 'Active' : 'Inactive'}
-                        </Badge>
-                        <Badge variant="outline">
-                          {getJobTypeLabel(job.job_type || 'full-time')}
-                        </Badge>
+                  <TabsContent value="jobs" className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">Mes offres d'emploi</h3>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Filter className="w-4 h-4 mr-2" />
+                            Filtrer
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Search className="w-4 h-4 mr-2" />
+                            Rechercher
+                          </Button>
+                        </div>
                       </div>
+                      
+                      {jobs.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                          <h3 className="font-medium mb-2">Aucune offre publiée</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Commencez par publier votre première offre d'emploi
+                          </p>
+                          <Button 
+                            className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+                            onClick={() => setIsCreateJobModalOpen(true)}
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Publier une offre
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {jobs.map((job) => (
+                            <div key={job.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <h4 className="font-medium">{job.title}</h4>
+                                  <p className="text-sm text-muted-foreground">{job.location}</p>
+                                  <p className="text-sm text-eemploi-primary font-medium">
+                                    {job.salary_min && job.salary_max 
+                                      ? `${job.salary_min} - ${job.salary_max} MAD`
+                                      : "Salaire à négocier"
+                                    }
+                                  </p>
+                                </div>
+                                <Badge 
+                                  variant={job.status === 'active' ? 'default' : 'secondary'}
+                                  className={job.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+                                >
+                                  {job.status === 'active' ? 'Active' : 'Inactive'}
+                                </Badge>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button size="sm" variant="outline">
+                                  Modifier
+                                </Button>
+                                <Button size="sm" variant="outline">
+                                  Voir les candidatures
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      <p>{job.views || 0} vues</p>
-                      <p>{formatSalary(job.salary_min, job.salary_max)}</p>
-                    </div>
-                  </div>
-                ))}
-                <Button variant="outline" asChild className="w-full">
-                  <Link to="/recruteur/hub">Voir toutes mes offres</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Aucune offre d'emploi publiée</p>
-                <Button asChild>
-                  <Link to="/recruteur/hub">Créer votre première offre</Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  </TabsContent>
 
-        {/* Recent Applications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="w-5 h-5 mr-2" />
-              Candidatures récentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {applicationsLoading ? (
-              <p>Chargement...</p>
-            ) : recentApplications.length > 0 ? (
-              <div className="space-y-4">
-                {recentApplications.map((application) => (
-                  <div key={application.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{application.jobs?.title}</h3>
+                  <TabsContent value="applications" className="p-6">
+                    <div className="text-center py-8">
+                      <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">Candidatures</h3>
                       <p className="text-sm text-muted-foreground">
-                        Candidature reçue le {new Date(application.applied_at).toLocaleDateString('fr-FR')}
+                        Gérez les candidatures reçues pour vos offres
                       </p>
-                      <Badge 
-                        variant={
-                          application.status === 'pending' ? 'secondary' :
-                          application.status === 'accepted' ? 'default' : 'destructive'
-                        }
-                        className="mt-2"
-                      >
-                        {application.status === 'pending' ? 'En attente' :
-                         application.status === 'accepted' ? 'Acceptée' : 'Refusée'}
-                      </Badge>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="analytics" className="p-6">
+                    <div className="text-center py-8">
+                      <TrendingUp className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">Statistiques détaillées</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Analysez les performances de vos offres d'emploi
+                      </p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Actions rapides</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90"
+                  onClick={() => setIsCreateJobModalOpen(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Publier une offre
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <Users className="w-4 h-4 mr-2" />
+                  Rechercher des candidats
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <Building className="w-4 h-4 mr-2" />
+                  Gérer mon entreprise
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Conseils du jour</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <Star className="w-4 h-4 text-yellow-500 mt-1" />
+                    <div>
+                      <p className="text-sm font-medium">Optimisez vos offres</p>
+                      <p className="text-xs text-muted-foreground">
+                        Les offres avec description détaillée reçoivent 3x plus de candidatures
+                      </p>
                     </div>
                   </div>
-                ))}
-                <Button variant="outline" asChild className="w-full">
-                  <Link to="/recruteur/candidatures">Voir toutes les candidatures</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-muted-foreground">Aucune candidature reçue</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <div className="flex items-start space-x-3">
+                    <Star className="w-4 h-4 text-yellow-500 mt-1" />
+                    <div>
+                      <p className="text-sm font-medium">Répondez rapidement</p>
+                      <p className="text-xs text-muted-foreground">
+                        Les candidats apprécient une réponse sous 48h
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions rapides</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button asChild className="h-20 flex-col space-y-2">
-              <Link to="/recruteur/hub">
-                <Plus className="w-6 h-6" />
-                <span>Créer une offre</span>
-              </Link>
-            </Button>
-            
-            <Button asChild variant="outline" className="h-20 flex-col space-y-2">
-              <Link to="/recruteur/candidatures">
-                <Users className="w-6 h-6" />
-                <span>Gérer les candidatures</span>
-              </Link>
-            </Button>
-            
-            <Button asChild variant="outline" className="h-20 flex-col space-y-2">
-              <Link to="/recruteur/hub">
-                <BarChart3 className="w-6 h-6" />
-                <span>Gérer mon entreprise</span>
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <CreateJobModal 
+        isOpen={isCreateJobModalOpen}
+        onClose={() => setIsCreateJobModalOpen(false)}
+      />
     </div>
   );
 };

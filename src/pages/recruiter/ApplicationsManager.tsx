@@ -1,309 +1,323 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useJobApplications } from '@/hooks/useJobApplications';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { Eye, Download, Mail, Phone, MapPin, User } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import CandidateProfileModal from '@/components/recruiter/CandidateProfileModal';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Users, 
+  Eye, 
+  CheckCircle, 
+  XCircle, 
+  Clock,
+  Filter,
+  Search,
+  Download,
+  Mail
+} from "lucide-react";
+import { useJobApplications } from "@/hooks/useJobApplications";
+import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
 
 const ApplicationsManager = () => {
-  const { applications, loading } = useJobApplications();
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedJobFilter, setSelectedJobFilter] = useState('all');
-  const [selectedCandidate, setSelectedCandidate] = useState<{id: string, email?: string} | null>(null);
+  const { applications } = useJobApplications();
+  const { jobs } = useRecruiterJobs();
 
-  const filteredApplications = applications.filter(app => {
-    const statusMatch = statusFilter === 'all' || app.status === statusFilter;
-    const jobMatch = selectedJobFilter === 'all' || app.job_id === selectedJobFilter;
-    return statusMatch && jobMatch;
-  });
+  // Filter applications for recruiter's jobs
+  const recruiterJobIds = jobs.map(job => job.id);
+  const recruiterApplications = applications.filter(app => 
+    recruiterJobIds.includes(app.job_id)
+  );
 
-  const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('applications')
-        .update({ status: newStatus })
-        .eq('id', applicationId);
+  const pendingApplications = recruiterApplications.filter(app => app.status === 'pending');
+  const acceptedApplications = recruiterApplications.filter(app => app.status === 'accepted');
+  const rejectedApplications = recruiterApplications.filter(app => app.status === 'rejected');
 
-      if (error) throw error;
-
-      toast.success('Statut de la candidature mis à jour');
-      // The hook should automatically refresh the data
-    } catch (error) {
-      console.error('Error updating application status:', error);
-      toast.error('Erreur lors de la mise à jour du statut');
+  const stats = [
+    { 
+      label: "Total candidatures", 
+      value: recruiterApplications.length.toString(), 
+      icon: <Users className="w-4 h-4" />, 
+      change: "+5 cette semaine",
+      color: "text-blue-600"
+    },
+    { 
+      label: "En attente", 
+      value: pendingApplications.length.toString(), 
+      icon: <Clock className="w-4 h-4" />, 
+      change: "À traiter",
+      color: "text-yellow-600"
+    },
+    { 
+      label: "Acceptées", 
+      value: acceptedApplications.length.toString(), 
+      icon: <CheckCircle className="w-4 h-4" />, 
+      change: "+2 ce mois",
+      color: "text-green-600"
+    },
+    { 
+      label: "Refusées", 
+      value: rejectedApplications.length.toString(), 
+      icon: <XCircle className="w-4 h-4" />, 
+      change: "+1 ce mois",
+      color: "text-red-600"
     }
+  ];
+
+  const getJobTitle = (jobId: string) => {
+    const job = jobs.find(j => j.id === jobId);
+    return job?.title || 'Offre supprimée';
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'reviewed': return 'bg-blue-500';
-      case 'interview': return 'bg-purple-500';
-      case 'accepted': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+      case 'accepted':
+        return <Badge className="bg-green-100 text-green-800">Acceptée</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800">Refusée</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending': return 'En attente';
-      case 'reviewed': return 'Examinée';
-      case 'interview': return 'Entretien';
-      case 'accepted': return 'Acceptée';
-      case 'rejected': return 'Rejetée';
-      default: return status;
-    }
-  };
-
-  const handleViewProfile = async (candidateId: string) => {
-    try {
-      // Get candidate email from auth.users via profiles
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', candidateId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-      }
-
-      // For now, we'll open the modal with the candidate ID
-      // The email will be fetched inside the modal if needed
-      setSelectedCandidate({ id: candidateId });
-    } catch (error) {
-      console.error('Error fetching candidate info:', error);
-      toast.error('Erreur lors du chargement du profil');
-    }
-  };
-
-  const handleDownloadCV = async (cvUrl: string, fileName?: string) => {
-    if (!cvUrl) {
-      toast.error('Aucun CV disponible');
-      return;
-    }
-
-    try {
-      const response = await fetch(cvUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName || 'CV_candidat.pdf';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success('CV téléchargé avec succès');
-    } catch (error) {
-      console.error('Error downloading CV:', error);
-      toast.error('Erreur lors du téléchargement du CV');
-    }
-  };
-
-  const handleContactCandidate = async (candidateId: string) => {
-    try {
-      // Get candidate email from profiles
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', candidateId)
-        .single();
-
-      if (error || !profile) {
-        toast.error('Impossible de récupérer les informations de contact');
-        return;
-      }
-
-      // For now, we'll assume we can get the email from somewhere
-      // In a real implementation, you might need to store this differently
-      const email = `${profile.first_name?.toLowerCase()}.${profile.last_name?.toLowerCase()}@example.com`;
-      window.open(`mailto:${email}`, '_blank');
-    } catch (error) {
-      console.error('Error contacting candidate:', error);
-      toast.error('Erreur lors de l\'ouverture du client email');
-    }
-  };
-
-  const uniqueJobs = [...new Set(applications.map(app => app.jobs?.title).filter(Boolean))];
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Chargement des candidatures...</div>
-      </div>
-    );
-  }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Gestion des candidatures</h1>
-          <p className="text-muted-foreground">
-            {applications.length} candidature{applications.length > 1 ? 's' : ''} reçue{applications.length > 1 ? 's' : ''}
-          </p>
-        </div>
-      </div>
-
-      {/* Filtres */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtres</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Statut</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="pending">En attente</SelectItem>
-                  <SelectItem value="reviewed">Examinée</SelectItem>
-                  <SelectItem value="interview">Entretien</SelectItem>
-                  <SelectItem value="accepted">Acceptée</SelectItem>
-                  <SelectItem value="rejected">Rejetée</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Offre d'emploi</label>
-              <Select value={selectedJobFilter} onValueChange={setSelectedJobFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les offres</SelectItem>
-                  {uniqueJobs.map((job, index) => (
-                    <SelectItem key={index} value={applications.find(app => app.jobs?.title === job)?.job_id || ''}>
-                      {job}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Gestion des candidatures</h1>
+            <p className="text-muted-foreground">
+              Suivez et gérez toutes les candidatures reçues
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex space-x-2">
+            <Button variant="outline">
+              <Filter className="w-4 h-4 mr-2" />
+              Filtres
+            </Button>
+            <Button variant="outline">
+              <Download className="w-4 h-4 mr-2" />
+              Exporter
+            </Button>
+          </div>
+        </div>
 
-      {/* Liste des candidatures */}
-      <div className="space-y-4">
-        {filteredApplications.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">
-                {applications.length === 0 
-                  ? "Aucune candidature reçue pour le moment." 
-                  : "Aucune candidature ne correspond aux filtres sélectionnés."
-                }
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredApplications.map((application) => (
-            <Card key={application.id} className="hover:shadow-md transition-shadow">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <Card key={index} className="hover-lift">
               <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-lg">
-                        {application.jobs?.title || 'Poste non spécifié'}
-                      </h3>
-                      <Badge 
-                        className={`${getStatusColor(application.status || 'pending')} text-white`}
-                      >
-                        {getStatusText(application.status || 'pending')}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
-                      <span>Candidature reçue {formatDistanceToNow(new Date(application.applied_at), { addSuffix: true, locale: fr })}</span>
-                      {application.jobs?.location && (
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{application.jobs.location}</span>
-                        </div>
-                      )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`${stat.color}`}>
+                    {stat.icon}
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {stat.change}
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold mb-2">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <Card>
+          <CardContent className="p-0">
+            <Tabs defaultValue="all" className="w-full">
+              <div className="border-b">
+                <TabsList className="grid w-full grid-cols-4 bg-transparent">
+                  <TabsTrigger value="all">Toutes ({recruiterApplications.length})</TabsTrigger>
+                  <TabsTrigger value="pending">En attente ({pendingApplications.length})</TabsTrigger>
+                  <TabsTrigger value="accepted">Acceptées ({acceptedApplications.length})</TabsTrigger>
+                  <TabsTrigger value="rejected">Refusées ({rejectedApplications.length})</TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="all" className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-lg">Toutes les candidatures</h3>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Search className="w-4 h-4 mr-2" />
+                        Rechercher
+                      </Button>
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Select 
-                      value={application.status || 'pending'} 
-                      onValueChange={(value) => updateApplicationStatus(application.id, value)}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">En attente</SelectItem>
-                        <SelectItem value="reviewed">Examinée</SelectItem>
-                        <SelectItem value="interview">Entretien</SelectItem>
-                        <SelectItem value="accepted">Acceptée</SelectItem>
-                        <SelectItem value="rejected">Rejetée</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {application.cover_letter && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium mb-2">Lettre de motivation:</h4>
-                    <p className="text-sm">{application.cover_letter}</p>
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewProfile(application.candidate_id)}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Voir le profil
-                  </Button>
-                  {application.cv_url && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleDownloadCV(application.cv_url!, 'CV_candidat.pdf')}
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Télécharger CV
-                    </Button>
+                  {recruiterApplications.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Aucune candidature reçue</h3>
+                      <p className="text-muted-foreground">
+                        Les candidatures pour vos offres d'emploi apparaîtront ici.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recruiterApplications.map((application) => (
+                        <Card key={application.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                  {getStatusBadge(application.status)}
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-1">
+                                  <strong>Offre :</strong> {getJobTitle(application.job_id)}
+                                </p>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  <strong>Candidature :</strong> {new Date(application.created_at).toLocaleDateString('fr-FR')}
+                                </p>
+                                {application.cover_letter && (
+                                  <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded mt-2">
+                                    {application.cover_letter.substring(0, 150)}...
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex space-x-2 ml-4">
+                                <Button variant="outline" size="sm">
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Voir
+                                </Button>
+                                {application.status === 'pending' && (
+                                  <>
+                                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
+                                      <CheckCircle className="w-4 h-4 mr-2" />
+                                      Accepter
+                                    </Button>
+                                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                      <XCircle className="w-4 h-4 mr-2" />
+                                      Refuser
+                                    </Button>
+                                  </>
+                                )}
+                                <Button variant="outline" size="sm">
+                                  <Mail className="w-4 h-4 mr-2" />
+                                  Contacter
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   )}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleContactCandidate(application.candidate_id)}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Contacter
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+              </TabsContent>
 
-      {/* Modal du profil candidat */}
-      <CandidateProfileModal
-        isOpen={!!selectedCandidate}
-        onClose={() => setSelectedCandidate(null)}
-        candidateId={selectedCandidate?.id || ''}
-        candidateEmail={selectedCandidate?.email}
-      />
+              <TabsContent value="pending" className="p-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">Candidatures en attente</h3>
+                  {pendingApplications.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-muted-foreground">Aucune candidature en attente</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {pendingApplications.map((application) => (
+                        <Card key={application.id} className="border-yellow-200">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {getJobTitle(application.job_id)}
+                                </p>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Accepter
+                                </Button>
+                                <Button variant="outline" size="sm" className="text-red-600">
+                                  <XCircle className="w-4 h-4 mr-2" />
+                                  Refuser
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="accepted" className="p-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">Candidatures acceptées</h3>
+                  {acceptedApplications.length === 0 ? (
+                    <div className="text-center py-8">
+                      <CheckCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-muted-foreground">Aucune candidature acceptée</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {acceptedApplications.map((application) => (
+                        <Card key={application.id} className="border-green-200">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {getJobTitle(application.job_id)}
+                                </p>
+                              </div>
+                              <Button variant="outline" size="sm">
+                                <Mail className="w-4 h-4 mr-2" />
+                                Contacter
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="rejected" className="p-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">Candidatures refusées</h3>
+                  {rejectedApplications.length === 0 ? (
+                    <div className="text-center py-8">
+                      <XCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-muted-foreground">Aucune candidature refusée</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {rejectedApplications.map((application) => (
+                        <Card key={application.id} className="border-red-200">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {getJobTitle(application.job_id)}
+                                </p>
+                              </div>
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4 mr-2" />
+                                Voir
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
