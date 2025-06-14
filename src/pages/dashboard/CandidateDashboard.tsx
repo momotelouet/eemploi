@@ -4,16 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot } from 'lucide-react';
+import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
-import ImprovedCandidateProfileManager from '@/components/candidate/ImprovedCandidateProfileManager';
+import AIEnhancedProfileManager from '@/components/candidate/AIEnhancedProfileManager';
 import ApplicationsList from '@/components/applications/ApplicationsList';
 import CVOptimizer from '@/components/ai/CVOptimizer';
 import AIChat from '@/components/ai/AIChat';
-import InterviewSimulator from '@/components/tools/InterviewSimulator';
+import InterviewAI from '@/components/ai/InterviewAI';
+import JobSearchAI from '@/components/ai/JobSearchAI';
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
@@ -53,7 +54,7 @@ const CandidateDashboard = () => {
             Bonjour {profile?.first_name || user?.email?.split('@')[0]} ! 👋
           </h1>
           <p className="text-muted-foreground">
-            Gérez votre profil professionnel et vos candidatures depuis votre tableau de bord
+            Gérez votre profil professionnel et vos candidatures avec l'aide de l'IA
           </p>
         </div>
 
@@ -110,7 +111,7 @@ const CandidateDashboard = () => {
 
         {/* Contenu principal avec onglets */}
         <Tabs defaultValue="cv" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="cv" className="flex items-center space-x-2">
               <FileText className="w-4 h-4" />
               <span>Mes CV</span>
@@ -121,7 +122,11 @@ const CandidateDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="applications" className="flex items-center space-x-2">
               <Briefcase className="w-4 h-4" />
-              <span>Mes Candidatures</span>
+              <span>Candidatures</span>
+            </TabsTrigger>
+            <TabsTrigger value="job-search" className="flex items-center space-x-2">
+              <Search className="w-4 h-4" />
+              <span>Recherche IA</span>
             </TabsTrigger>
             <TabsTrigger value="ai-optimizer" className="flex items-center space-x-2">
               <Bot className="w-4 h-4" />
@@ -138,11 +143,15 @@ const CandidateDashboard = () => {
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6">
-            <ImprovedCandidateProfileManager />
+            <AIEnhancedProfileManager />
           </TabsContent>
 
           <TabsContent value="applications" className="mt-6">
             <ApplicationsList />
+          </TabsContent>
+
+          <TabsContent value="job-search" className="mt-6">
+            <JobSearchAI />
           </TabsContent>
 
           <TabsContent value="ai-optimizer" className="mt-6">
@@ -209,9 +218,12 @@ const CandidateDashboard = () => {
         <Dialog open={showInterviewSimulator} onOpenChange={setShowInterviewSimulator}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Simulateur d'entretien</DialogTitle>
+              <DialogTitle>Simulateur d'entretien IA</DialogTitle>
             </DialogHeader>
-            <InterviewSimulator />
+            <InterviewAI 
+              jobTitle="Poste généraliste"
+              candidateProfile={profile ? `${profile.first_name} ${profile.last_name}` : 'Candidat'}
+            />
           </DialogContent>
         </Dialog>
       </div>
