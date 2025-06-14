@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from '@/contexts/AuthContext';
 
 import Layout from '@/components/Layout/Layout';
 import Index from '@/pages/Index';
@@ -21,7 +22,6 @@ import RecruiterDashboard from '@/pages/dashboard/RecruiterDashboard';
 import AdminDashboard from '@/pages/dashboard/AdminDashboard';
 import RecruiterHub from '@/pages/recruiter/RecruiterHub';
 import ApplicationsManager from '@/pages/recruiter/ApplicationsManager';
-import { AuthProvider } from '@/contexts/AuthContext';
 
 import Tools from "@/pages/Tools";
 
