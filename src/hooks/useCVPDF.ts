@@ -247,27 +247,49 @@ export const useCVPDF = () => {
         .replace(/<\/?u>/gi, '')
         // Remove any remaining HTML tags
         .replace(/<[^>]*>/g, '')
-        // Clean up multiple newlines
-        .replace(/\n\s*\n/g, '\n')
-        // Clean up extra spaces
-        .replace(/\s+/g, ' ')
+        // Clean up multiple newlines but keep intentional spacing
+        .replace(/\n\s*\n\s*\n/g, '\n\n')
+        // Clean up extra spaces but preserve bullet formatting
+        .replace(/[ \t]+/g, ' ')
         // Trim the result
         .trim();
     };
 
+    // Enhanced text wrapping function that handles bullet points properly
     const addWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 6): number => {
       const lines = text.split('\n');
       let currentY = y;
       
       lines.forEach(line => {
-        if (line.trim()) {
-          const wrappedLines = doc.splitTextToSize(line, maxWidth);
-          wrappedLines.forEach((wrappedLine: string) => {
-            doc.text(wrappedLine, x, currentY);
-            currentY += lineHeight;
-          });
+        const trimmedLine = line.trim();
+        if (trimmedLine) {
+          // Check if this is a bullet point
+          if (trimmedLine.startsWith('• ')) {
+            // Handle bullet points with proper indentation
+            const bulletText = trimmedLine.substring(2); // Remove the bullet
+            
+            // Draw the bullet
+            doc.text('•', x, currentY);
+            
+            // Wrap the text after the bullet with proper indentation
+            const wrappedBulletLines = doc.splitTextToSize(bulletText, maxWidth - 10);
+            wrappedBulletLines.forEach((wrappedLine: string, index: number) => {
+              // First line starts right after the bullet, subsequent lines are indented
+              const textX = index === 0 ? x + 8 : x + 8;
+              doc.text(wrappedLine, textX, currentY);
+              currentY += lineHeight;
+            });
+          } else {
+            // Handle regular text
+            const wrappedLines = doc.splitTextToSize(trimmedLine, maxWidth);
+            wrappedLines.forEach((wrappedLine: string) => {
+              doc.text(wrappedLine, x, currentY);
+              currentY += lineHeight;
+            });
+          }
         } else {
-          currentY += lineHeight / 2;
+          // Empty line - add some spacing
+          currentY += lineHeight * 0.5;
         }
       });
       
