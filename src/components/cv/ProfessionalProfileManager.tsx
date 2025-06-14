@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import CVEditor from './CVEditor';
 import CVTemplates, { CVTemplate } from './CVTemplates';
 import TemplatePreview from './TemplatePreview';
 import { useCVPDF } from '@/hooks/useCVPDF';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SimpleTemplate {
   id: string;
@@ -23,6 +23,7 @@ const ProfessionalProfileManager = () => {
   const { profiles, loading, saveProfile, deleteProfile } = useCVProfiles();
   const { generatePDF } = useCVPDF();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [showTemplates, setShowTemplates] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
@@ -50,7 +51,6 @@ const ProfessionalProfileManager = () => {
     };
   };
 
-  // Convert profile data to TemplatePreview format
   const convertProfileForPreview = (profile: any) => {
     return {
       personalInfo: profile.personal_info || {
@@ -181,13 +181,13 @@ const ProfessionalProfileManager = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Mes Profils Professionnels
+          <CardTitle className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'}`}>
+            <span className={isMobile ? 'text-lg' : ''}>Mes Profils Professionnels</span>
             <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className={isMobile ? 'w-full text-sm' : ''}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Créer un nouveau profil
+                  {isMobile ? 'Nouveau profil' : 'Créer un nouveau profil'}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -203,82 +203,85 @@ const ProfessionalProfileManager = () => {
             </Dialog>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isMobile ? 'p-3' : ''}>
           {profiles.length === 0 ? (
             <div className="text-center py-12">
-              <Palette className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Aucun profil créé</h3>
-              <p className="text-muted-foreground mb-6">
+              <Palette className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} mx-auto text-muted-foreground mb-4`} />
+              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium mb-2`}>Aucun profil créé</h3>
+              <p className={`${isMobile ? 'text-sm' : ''} text-muted-foreground mb-6`}>
                 Créez votre premier profil professionnel avec nos templates modernes
               </p>
-              <Button onClick={() => setShowTemplates(true)}>
+              <Button onClick={() => setShowTemplates(true)} className={isMobile ? 'text-sm' : ''}>
                 <Plus className="w-4 h-4 mr-2" />
                 Créer mon premier profil
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
               {profiles.map((profile) => {
                 const template = getTemplateById(profile.template_id);
                 return (
                   <Card key={profile.id} className="overflow-hidden">
-                    <div className={`h-32 ${template.color} relative`}>
+                    <div className={`${isMobile ? 'h-24' : 'h-32'} ${template.color} relative`}>
                       <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                        <div className="text-white text-center">
-                          <h4 className="font-bold text-lg">
+                        <div className="text-white text-center px-2">
+                          <h4 className={`font-bold ${isMobile ? 'text-sm' : 'text-lg'}`}>
                             {profile.personal_info?.firstName} {profile.personal_info?.lastName}
                           </h4>
-                          <p className="text-sm opacity-90">
+                          <p className={`${isMobile ? 'text-xs' : 'text-sm'} opacity-90`}>
                             {profile.personal_info?.professionalTitle || 'Profil professionnel'}
                           </p>
                         </div>
                       </div>
-                      <Badge className="absolute top-2 right-2 bg-white/20 text-white">
-                        {template.name}
+                      <Badge className={`absolute top-2 right-2 bg-white/20 text-white ${isMobile ? 'text-xs px-1 py-0' : ''}`}>
+                        {isMobile ? template.name.split(' ')[0] : template.name}
                       </Badge>
                     </div>
-                    <CardContent className="p-4">
-                      <div className="space-y-2 mb-4">
-                        <div className="text-sm text-muted-foreground">
+                    <CardContent className={isMobile ? 'p-3' : 'p-4'}>
+                      <div className={`space-y-2 ${isMobile ? 'mb-3' : 'mb-4'}`}>
+                        <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                           {profile.experience?.length || 0} expérience(s) • {profile.education?.length || 0} formation(s)
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                           Modifié le {new Date(profile.updated_at || Date.now()).toLocaleDateString('fr-FR')}
                         </div>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className={`flex ${isMobile ? 'flex-wrap gap-1' : 'gap-2'}`}>
                         <Button
                           variant="outline"
-                          size="sm"
+                          size={isMobile ? 'sm' : 'sm'}
                           onClick={() => handleEdit(profile)}
+                          className={isMobile ? 'text-xs px-2 py-1 flex-1' : ''}
                         >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Modifier
+                          <Edit className={`${isMobile ? 'w-3 h-3' : 'w-3 h-3 mr-1'}`} />
+                          {!isMobile && 'Modifier'}
                         </Button>
                         <Button
                           variant="outline"
-                          size="sm"
+                          size={isMobile ? 'sm' : 'sm'}
                           onClick={() => handlePreview(profile)}
+                          className={isMobile ? 'text-xs px-2 py-1 flex-1' : ''}
                         >
-                          <Eye className="w-3 h-3 mr-1" />
-                          Voir
+                          <Eye className={`${isMobile ? 'w-3 h-3' : 'w-3 h-3 mr-1'}`} />
+                          {!isMobile && 'Voir'}
                         </Button>
                         <Button
                           variant="outline"
-                          size="sm"
+                          size={isMobile ? 'sm' : 'sm'}
                           onClick={() => handleGeneratePDF(profile)}
+                          className={isMobile ? 'text-xs px-2 py-1 flex-1' : ''}
                         >
-                          <Download className="w-3 h-3 mr-1" />
-                          PDF
+                          <Download className={`${isMobile ? 'w-3 h-3' : 'w-3 h-3 mr-1'}`} />
+                          {!isMobile && 'PDF'}
                         </Button>
                         <Button
                           variant="outline"
-                          size="sm"
+                          size={isMobile ? 'sm' : 'sm'}
                           onClick={() => handleDelete(profile.id!)}
-                          className="text-red-600 hover:text-red-700"
+                          className={`${isMobile ? 'text-xs px-2 py-1' : ''} text-red-600 hover:text-red-700`}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className={`${isMobile ? 'w-3 h-3' : 'w-3 h-3'}`} />
                         </Button>
                       </div>
                     </CardContent>
