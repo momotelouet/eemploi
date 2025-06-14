@@ -6,9 +6,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Eye, Download } from 'lucide-react';
 import { useApplications } from '@/hooks/useApplications';
+import { useNavigate } from 'react-router-dom';
 
 const ApplicationsList = () => {
   const { applications, loading } = useApplications();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -40,6 +42,14 @@ const ApplicationsList = () => {
       case 'rejected': return 'Rejetée';
       default: return status;
     }
+  };
+
+  const handleViewJob = (jobId: string) => {
+    navigate(`/emplois/${jobId}`);
+  };
+
+  const handleDownloadCV = (cvUrl: string) => {
+    window.open(cvUrl, '_blank');
   };
 
   return (
@@ -82,12 +92,20 @@ const ApplicationsList = () => {
                 )}
 
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleViewJob(application.job_id)}
+                  >
                     <Eye className="w-4 h-4 mr-2" />
                     Voir l'offre
                   </Button>
                   {application.cv_url && (
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDownloadCV(application.cv_url)}
+                    >
                       <Download className="w-4 h-4 mr-2" />
                       Télécharger CV
                     </Button>
