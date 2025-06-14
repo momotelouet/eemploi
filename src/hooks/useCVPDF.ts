@@ -255,7 +255,7 @@ export const useCVPDF = () => {
         .trim();
     };
 
-    // Enhanced text wrapping function that handles bullet points properly with same-line alignment
+    // Enhanced text wrapping function that handles bullet points properly with proper alignment
     const addWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 6): number => {
       const lines = text.split('\n');
       let currentY = y;
@@ -276,19 +276,20 @@ export const useCVPDF = () => {
             const wrappedBulletLines = doc.splitTextToSize(bulletText, availableWidth);
             
             wrappedBulletLines.forEach((wrappedLine: string, index: number) => {
-              // All lines start after the bullet position, but only first line is on same line as bullet
               if (index === 0) {
                 // First line: same line as bullet
                 doc.text(wrappedLine, x + 8, currentY);
               } else {
-                // Subsequent lines: indented to align with first line text
+                // Subsequent lines: move to next line and align with text
                 currentY += lineHeight;
                 doc.text(wrappedLine, x + 8, currentY);
               }
             });
             
-            // Move to next line after bullet point
-            currentY += lineHeight;
+            // Only move to next line if we have wrapped text
+            if (wrappedBulletLines.length > 0) {
+              currentY += lineHeight;
+            }
           } else {
             // Handle regular text
             const wrappedLines = doc.splitTextToSize(trimmedLine, maxWidth);
