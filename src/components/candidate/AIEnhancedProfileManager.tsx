@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,19 +21,19 @@ const AIEnhancedProfileManager = () => {
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    bio: profile?.bio || '',
-    phone: profile?.phone || '',
-    address: profile?.address || '',
-    city: profile?.city || '',
-    country: profile?.country || '',
-    linkedin_url: profile?.linkedin_url || '',
-    portfolio_url: profile?.portfolio_url || '',
-    experience_years: profile?.experience_years || 0,
-    education: profile?.education || '',
-    professional_summary: profile?.professional_summary || '',
-    profile_picture_url: profile?.profile_picture_url || '',
-    skills: profile?.skills || [],
-    languages: profile?.languages || []
+    bio: '',
+    phone: '',
+    address: '',
+    city: '',
+    country: '',
+    linkedin_url: '',
+    portfolio_url: '',
+    experience_years: 0,
+    education: '',
+    professional_summary: '',
+    profile_picture_url: '',
+    skills: [] as string[],
+    languages: [] as string[]
   });
 
   const [newSkill, setNewSkill] = useState('');
@@ -45,8 +46,10 @@ const AIEnhancedProfileManager = () => {
     skills: false
   });
 
-  React.useEffect(() => {
+  // Synchroniser les données du profil avec le formulaire
+  useEffect(() => {
     if (profile) {
+      console.log('Profile loaded:', profile);
       setFormData({
         bio: profile.bio || '',
         phone: profile.phone || '',
@@ -59,19 +62,24 @@ const AIEnhancedProfileManager = () => {
         education: profile.education || '',
         professional_summary: profile.professional_summary || '',
         profile_picture_url: profile.profile_picture_url || '',
-        skills: profile.skills || [],
-        languages: profile.languages || []
+        skills: Array.isArray(profile.skills) ? profile.skills : [],
+        languages: Array.isArray(profile.languages) ? profile.languages : []
       });
     }
   }, [profile]);
 
   const handleInputChange = (field: string, value: any) => {
+    console.log(`Updating field ${field} with value:`, value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleAISuggestion = (field: string, suggestion: string) => {
     handleInputChange(field, suggestion);
     setShowAI(prev => ({ ...prev, [field]: false }));
+    toast({
+      title: 'Suggestion IA appliquée',
+      description: 'La suggestion a été intégrée à votre profil.',
+    });
   };
 
   const toggleAI = (field: string) => {
@@ -87,6 +95,7 @@ const AIEnhancedProfileManager = () => {
         description: 'Votre photo de profil a été ajoutée avec succès.',
       });
     } catch (error) {
+      console.error('Error uploading photo:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible d\'ajouter la photo.',
@@ -97,32 +106,47 @@ const AIEnhancedProfileManager = () => {
 
   const addSkill = () => {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      handleInputChange('skills', [...formData.skills, newSkill.trim()]);
+      const updatedSkills = [...formData.skills, newSkill.trim()];
+      handleInputChange('skills', updatedSkills);
       setNewSkill('');
     }
   };
 
   const removeSkill = (skillToRemove: string) => {
-    handleInputChange('skills', formData.skills.filter(skill => skill !== skillToRemove));
+    const updatedSkills = formData.skills.filter(skill => skill !== skillToRemove);
+    handleInputChange('skills', updatedSkills);
   };
 
   const addLanguage = () => {
     if (newLanguage.trim() && !formData.languages.includes(newLanguage.trim())) {
-      handleInputChange('languages', [...formData.languages, newLanguage.trim()]);
+      const updatedLanguages = [...formData.languages, newLanguage.trim()];
+      handleInputChange('languages', updatedLanguages);
       setNewLanguage('');
     }
   };
 
   const removeLanguage = (languageToRemove: string) => {
-    handleInputChange('languages', formData.languages.filter(lang => lang !== languageToRemove));
+    const updatedLanguages = formData.languages.filter(lang => lang !== languageToRemove);
+    handleInputChange('languages', updatedLanguages);
   };
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: 'Erreur',
+        description: 'Utilisateur non connecté.',
+        variant: 'destructive'
+      });
+      return;
+    }
 
     setSaving(true);
+    console.log('Saving profile data:', formData);
+    
     try {
-      await updateProfile(formData);
+      const result = await updateProfile(formData);
+      console.log('Profile updated successfully:', result);
+      
       toast({
         title: 'Profil sauvegardé',
         description: 'Votre profil a été mis à jour avec succès.',
@@ -131,7 +155,7 @@ const AIEnhancedProfileManager = () => {
       console.error('Erreur lors de la sauvegarde:', error);
       toast({
         title: 'Erreur de sauvegarde',
-        description: 'Impossible de sauvegarder le profil. Veuillez réessayer.',
+        description: `Impossible de sauvegarder le profil: ${error.message || 'Erreur inconnue'}`,
         variant: 'destructive'
       });
     } finally {
@@ -164,7 +188,6 @@ const AIEnhancedProfileManager = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          
           
           {/* Photo de profil */}
           <div className="flex items-center space-x-4">
@@ -390,7 +413,7 @@ const AIEnhancedProfileManager = () => {
                 value={newSkill}
                 onChange={(e) => setNewSkill(e.target.value)}
                 placeholder="Ajouter une compétence"
-                onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               />
               <Button onClick={addSkill} size="sm">
                 <Plus className="w-4 h-4" />
@@ -400,7 +423,7 @@ const AIEnhancedProfileManager = () => {
               {formData.skills.map((skill) => (
                 <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                   {skill}
-                  <button onClick={() => removeSkill(skill)}>
+                  <button onClick={() => removeSkill(skill)} type="button">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </Badge>
@@ -415,6 +438,10 @@ const AIEnhancedProfileManager = () => {
                   const newSkills = skills.filter(skill => !formData.skills.includes(skill));
                   if (newSkills.length > 0) {
                     handleInputChange('skills', [...formData.skills, ...newSkills]);
+                    toast({
+                      title: 'Compétences ajoutées',
+                      description: `${newSkills.length} nouvelle(s) compétence(s) ajoutée(s).`,
+                    });
                   }
                   setShowAI(prev => ({ ...prev, skills: false }));
                 }}
@@ -430,7 +457,7 @@ const AIEnhancedProfileManager = () => {
                 value={newLanguage}
                 onChange={(e) => setNewLanguage(e.target.value)}
                 placeholder="Ajouter une langue"
-                onKeyPress={(e) => e.key === 'Enter' && addLanguage()}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
               />
               <Button onClick={addLanguage} size="sm">
                 <Plus className="w-4 h-4" />
@@ -440,7 +467,7 @@ const AIEnhancedProfileManager = () => {
               {formData.languages.map((language) => (
                 <Badge key={language} variant="secondary" className="flex items-center gap-1">
                   {language}
-                  <button onClick={() => removeLanguage(language)}>
+                  <button onClick={() => removeLanguage(language)} type="button">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </Badge>
@@ -449,10 +476,14 @@ const AIEnhancedProfileManager = () => {
           </div>
 
           {/* Bouton de sauvegarde */}
-          <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving}>
+          <div className="flex justify-end pt-4 border-t">
+            <Button 
+              onClick={handleSave} 
+              disabled={saving || !user}
+              className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+            >
               <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+              {saving ? 'Sauvegarde...' : 'Sauvegarder le profil'}
             </Button>
           </div>
         </CardContent>

@@ -20,6 +20,7 @@ export const useCandidateProfile = (candidateId: string | null = null) => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
+        console.log('Fetching profile for user:', candidateId);
         const { data, error } = await supabase
           .from('candidate_profiles')
           .select('*')
@@ -28,13 +29,17 @@ export const useCandidateProfile = (candidateId: string | null = null) => {
 
         if (error) {
           console.error('Error fetching candidate profile:', error);
+          setError(error);
           setProfile(null);
         } else {
+          console.log('Profile fetched successfully:', data);
           setProfile(data);
+          setError(null);
         }
       } catch (err) {
-        setError(err as Error);
-        console.error('Error fetching candidate profile:', err);
+        const error = err as Error;
+        setError(error);
+        console.error('Error fetching candidate profile:', error);
         setProfile(null);
       } finally {
         setLoading(false);
@@ -45,25 +50,45 @@ export const useCandidateProfile = (candidateId: string | null = null) => {
   }, [candidateId]);
 
   const updateProfile = async (updates: Partial<CandidateProfile>) => {
-    if (!candidateId) return;
+    if (!candidateId) {
+      throw new Error('User ID is required');
+    }
 
     try {
+      console.log('Updating profile with data:', updates);
+      
+      // Préparer les données avec les types corrects
+      const profileData = {
+        user_id: candidateId,
+        ...updates,
+        updated_at: new Date().toISOString(),
+        // S'assurer que les arrays sont correctement formatés
+        skills: Array.isArray(updates.skills) ? updates.skills : [],
+        languages: Array.isArray(updates.languages) ? updates.languages : []
+      };
+
       const { data, error } = await supabase
         .from('candidate_profiles')
-        .upsert({
-          user_id: candidateId,
-          ...updates,
-          updated_at: new Date().toISOString()
+        .upsert(profileData, {
+          onConflict: 'user_id'
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
+
+      console.log('Profile updated successfully:', data);
       setProfile(data);
+      setError(null);
       return data;
     } catch (err) {
-      setError(err as Error);
-      throw err;
+      const error = err as Error;
+      console.error('Error updating profile:', error);
+      setError(error);
+      throw error;
     }
   };
 
