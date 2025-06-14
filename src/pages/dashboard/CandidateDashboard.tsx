@@ -3,12 +3,14 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin } from 'lucide-react';
+import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
 import ImprovedCandidateProfileManager from '@/components/candidate/ImprovedCandidateProfileManager';
 import ApplicationsList from '@/components/applications/ApplicationsList';
+import CVOptimizer from '@/components/ai/CVOptimizer';
+import AIChat from '@/components/ai/AIChat';
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
@@ -90,7 +92,7 @@ const CandidateDashboard = () => {
 
         {/* Contenu principal avec onglets */}
         <Tabs defaultValue="cv" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="cv" className="flex items-center space-x-2">
               <FileText className="w-4 h-4" />
               <span>Mes CV</span>
@@ -102,6 +104,14 @@ const CandidateDashboard = () => {
             <TabsTrigger value="applications" className="flex items-center space-x-2">
               <Briefcase className="w-4 h-4" />
               <span>Mes Candidatures</span>
+            </TabsTrigger>
+            <TabsTrigger value="ai-optimizer" className="flex items-center space-x-2">
+              <Bot className="w-4 h-4" />
+              <span>Optimiseur IA</span>
+            </TabsTrigger>
+            <TabsTrigger value="ai-assistant" className="flex items-center space-x-2">
+              <Bot className="w-4 h-4" />
+              <span>Assistant IA</span>
             </TabsTrigger>
           </TabsList>
 
@@ -115,6 +125,18 @@ const CandidateDashboard = () => {
 
           <TabsContent value="applications" className="mt-6">
             <ApplicationsList />
+          </TabsContent>
+
+          <TabsContent value="ai-optimizer" className="mt-6">
+            <CVOptimizer />
+          </TabsContent>
+
+          <TabsContent value="ai-assistant" className="mt-6">
+            <AIChat
+              title="Assistant Carrière IA"
+              placeholder="Posez vos questions sur votre carrière, recherche d'emploi, préparation d'entretien..."
+              type="interview-prep"
+            />
           </TabsContent>
         </Tabs>
 

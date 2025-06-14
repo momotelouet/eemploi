@@ -2,10 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Users, Briefcase, Building, Search } from "lucide-react";
+import { Plus, Users, Briefcase, Building, Search, Bot } from "lucide-react";
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
 import CompanyManagement from "@/components/recruiter/CompanyManagement";
 import ProfileSearch from "@/components/recruiter/ProfileSearch";
+import JobDescriptionGenerator from "@/components/ai/JobDescriptionGenerator";
+import AIChat from "@/components/ai/AIChat";
 import { useState } from "react";
 import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
 
@@ -83,10 +85,12 @@ const RecruiterHub = () => {
           <CardContent className="p-0">
             <Tabs defaultValue="jobs" className="w-full">
               <div className="border-b">
-                <TabsList className="grid w-full grid-cols-3 bg-transparent">
+                <TabsList className="grid w-full grid-cols-5 bg-transparent">
                   <TabsTrigger value="jobs">Mes offres</TabsTrigger>
                   <TabsTrigger value="search">Rechercher des profils</TabsTrigger>
                   <TabsTrigger value="company">Mon entreprise</TabsTrigger>
+                  <TabsTrigger value="ai-generator">Générateur IA</TabsTrigger>
+                  <TabsTrigger value="ai-assistant">Assistant IA</TabsTrigger>
                 </TabsList>
               </div>
 
@@ -157,6 +161,18 @@ const RecruiterHub = () => {
 
               <TabsContent value="company" className="p-6">
                 <CompanyManagement />
+              </TabsContent>
+
+              <TabsContent value="ai-generator" className="p-6">
+                <JobDescriptionGenerator />
+              </TabsContent>
+
+              <TabsContent value="ai-assistant" className="p-6">
+                <AIChat
+                  title="Assistant Recrutement IA"
+                  placeholder="Posez vos questions sur le recrutement, l'analyse de candidats, les stratégies RH..."
+                  type="candidate-analysis"
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
