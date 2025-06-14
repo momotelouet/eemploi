@@ -1,6 +1,3 @@
-
-import Header from "@/components/Layout/Header";
-import Footer from "@/components/Layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -101,8 +98,6 @@ const Companies = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-eemploi-primary to-eemploi-secondary py-16">
         <div className="container mx-auto px-4">
@@ -317,8 +312,6 @@ const Companies = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };
