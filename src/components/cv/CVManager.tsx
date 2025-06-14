@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, Edit, Eye } from 'lucide-react';
+import { Download, FileText, Edit, Eye, Palette } from 'lucide-react';
 import { useCVPDF } from '@/hooks/useCVPDF';
 import { useCVData } from '@/hooks/useCVData';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,8 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import CVEditor from './CVEditor';
 import CVPreview from './CVPreview';
+import CVTemplates, { CVTemplate } from './CVTemplates';
+import TemplatePreview from './TemplatePreview';
 import { useState } from 'react';
 
 const CVManager = () => {
@@ -20,6 +22,8 @@ const CVManager = () => {
   const { profile, loading: profileLoading } = useUserProfile();
   const [showEditor, setShowEditor] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null);
 
   const handleGeneratePDF = () => {
     if (!user) {
@@ -71,6 +75,14 @@ const CVManager = () => {
     setShowPreview(true);
   };
 
+  const handleSelectTemplate = (template: CVTemplate) => {
+    setSelectedTemplate(template);
+    toast({
+      title: 'Template sélectionné',
+      description: `Le template "${template.name}" a été sélectionné.`,
+    });
+  };
+
   const isLoading = profileLoading || cvLoading;
   const isDisabled = !user || isLoading;
   const hasData = cvData && (
@@ -90,10 +102,29 @@ const CVManager = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
-          Créez et gérez votre CV professionnel. Remplissez vos informations et générez une version PDF.
+          Créez et gérez votre CV professionnel. Choisissez un template, remplissez vos informations et générez une version PDF.
         </div>
         
         <div className="flex flex-wrap gap-2">
+          <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
+            <DialogTrigger asChild>
+              <Button variant="outline" disabled={isDisabled}>
+                <Palette className="w-4 h-4 mr-2" />
+                Choisir un template
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Templates de CV</DialogTitle>
+              </DialogHeader>
+              <CVTemplates
+                selectedTemplate={selectedTemplate?.id || ''}
+                onSelectTemplate={handleSelectTemplate}
+                userIsPremium={false}
+              />
+            </DialogContent>
+          </Dialog>
+
           <Dialog open={showEditor} onOpenChange={setShowEditor}>
             <DialogTrigger asChild>
               <Button variant="outline" disabled={isDisabled}>
@@ -127,7 +158,11 @@ const CVManager = () => {
                 <DialogHeader>
                   <DialogTitle>Aperçu de votre CV</DialogTitle>
                 </DialogHeader>
-                {cvData && <CVPreview data={cvData} />}
+                {selectedTemplate && cvData ? (
+                  <TemplatePreview data={cvData} template={selectedTemplate} />
+                ) : (
+                  cvData && <CVPreview data={cvData} />
+                )}
               </DialogContent>
             </Dialog>
           )}
@@ -141,6 +176,14 @@ const CVManager = () => {
             {isLoading ? 'Chargement...' : 'Générer PDF'}
           </Button>
         </div>
+
+        {selectedTemplate && (
+          <div className="p-3 border rounded-lg bg-blue-50 border-blue-200">
+            <p className="text-sm text-blue-800">
+              <strong>Template sélectionné:</strong> {selectedTemplate.name}
+            </p>
+          </div>
+        )}
 
         {isDisabled && (
           <div className="p-3 border rounded-lg bg-yellow-50 border-yellow-200">
@@ -157,15 +200,23 @@ const CVManager = () => {
           <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
             <h4 className="font-medium mb-2 text-blue-900">Commencez votre CV</h4>
             <p className="text-sm text-blue-800 mb-3">
-              Créez votre CV professionnel en remplissant vos informations personnelles, 
+              Choisissez d'abord un template, puis créez votre CV professionnel en remplissant vos informations personnelles, 
               votre expérience et vos compétences.
             </p>
-            <Button 
-              onClick={() => setShowEditor(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Commencer mon CV
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowTemplates(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Choisir un template
+              </Button>
+              <Button 
+                onClick={() => setShowEditor(true)}
+                variant="outline"
+              >
+                Créer directement
+              </Button>
+            </div>
           </div>
         )}
 
@@ -173,7 +224,7 @@ const CVManager = () => {
           <div className="p-4 border rounded-lg bg-green-50 border-green-200">
             <h4 className="font-medium mb-2 text-green-900">Votre CV est prêt ✓</h4>
             <p className="text-sm text-green-800">
-              Votre CV contient vos informations. Vous pouvez le modifier, le prévisualiser ou le télécharger en PDF.
+              Votre CV contient vos informations. Vous pouvez choisir un template, le modifier, le prévisualiser ou le télécharger en PDF.
             </p>
           </div>
         )}
