@@ -5,8 +5,15 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
 type ApplicationWithJobAndProfile = Tables<'applications'> & {
-  jobs: Tables<'jobs'>;
-  profiles?: Tables<'profiles'>;
+  jobs: Tables<'jobs'> & {
+    companies?: Tables<'companies'>;
+  };
+  candidate_profiles?: Tables<'candidate_profiles'> & {
+    profiles?: {
+      first_name: string;
+      last_name: string;
+    };
+  };
 };
 
 export const useJobApplications = () => {
@@ -23,36 +30,38 @@ export const useJobApplications = () => {
 
     const fetchJobApplications = async () => {
       try {
-        // First get jobs posted by the recruiter
-        const { data: recruiterJobs, error: jobsError } = await supabase
-          .from('jobs')
-          .select('id')
-          .eq('posted_by', user.id);
-
-        if (jobsError) throw jobsError;
-
-        const jobIds = recruiterJobs?.map(job => job.id) || [];
-
-        if (jobIds.length === 0) {
-          setApplications([]);
-          setLoading(false);
-          return;
-        }
-
-        // Then get applications for those jobs
+        console.log('Fetching applications for recruiter:', user.id);
+        
+        // Récupérer toutes les candidatures pour les offres du recruteur
         const { data, error } = await supabase
           .from('applications')
           .select(`
             *,
-            jobs (*)
+            jobs (
+              *,
+              companies (*)
+            ),
+            candidate_profiles!applications_candidate_id_fkey (
+              *,
+              profiles (
+                first_name,
+                last_name
+              )
+            )
           `)
-          .in('job_id', jobIds)
+          .eq('jobs.posted_by', user.id)
           .order('applied_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching applications:', error);
+          throw error;
+        }
+
+        console.log('Applications fetched:', data);
         setApplications(data || []);
       } catch (err) {
         console.error('Error fetching job applications:', err);
+        setApplications([]);
       } finally {
         setLoading(false);
       }

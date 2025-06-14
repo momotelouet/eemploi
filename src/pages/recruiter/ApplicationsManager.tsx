@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,26 +15,22 @@ import {
   Mail
 } from "lucide-react";
 import { useJobApplications } from "@/hooks/useJobApplications";
-import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ApplicationsManager = () => {
-  const { applications } = useJobApplications();
-  const { jobs } = useRecruiterJobs();
+  const { applications, loading } = useJobApplications();
+  const { toast } = useToast();
 
-  // Filter applications for recruiter's jobs
-  const recruiterJobIds = jobs.map(job => job.id);
-  const recruiterApplications = applications.filter(app => 
-    recruiterJobIds.includes(app.job_id)
-  );
-
-  const pendingApplications = recruiterApplications.filter(app => app.status === 'pending');
-  const acceptedApplications = recruiterApplications.filter(app => app.status === 'accepted');
-  const rejectedApplications = recruiterApplications.filter(app => app.status === 'rejected');
+  // Calculer les statistiques
+  const pendingApplications = applications.filter(app => app.status === 'pending');
+  const acceptedApplications = applications.filter(app => app.status === 'accepted');
+  const rejectedApplications = applications.filter(app => app.status === 'rejected');
 
   const stats = [
     { 
       label: "Total candidatures", 
-      value: recruiterApplications.length.toString(), 
+      value: applications.length.toString(), 
       icon: <Users className="w-4 h-4" />, 
       change: "+5 cette semaine",
       color: "text-blue-600"
@@ -61,11 +58,6 @@ const ApplicationsManager = () => {
     }
   ];
 
-  const getJobTitle = (jobId: string) => {
-    const job = jobs.find(j => j.id === jobId);
-    return job?.title || 'Offre supprimée';
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -78,6 +70,53 @@ const ApplicationsManager = () => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
+
+  const getCandidateName = (application: any) => {
+    if (application.candidate_profiles?.profiles) {
+      const profile = application.candidate_profiles.profiles;
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Candidat anonyme';
+    }
+    return `Candidat #${application.candidate_id.slice(0, 8)}`;
+  };
+
+  const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ status: newStatus })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Statut mis à jour',
+        description: `La candidature a été ${newStatus === 'accepted' ? 'acceptée' : 'refusée'}`,
+      });
+
+      // Recharger la page pour actualiser les données
+      window.location.reload();
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le statut de la candidature',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-eemploi-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Chargement des candidatures...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,7 +167,7 @@ const ApplicationsManager = () => {
             <Tabs defaultValue="all" className="w-full">
               <div className="border-b">
                 <TabsList className="grid w-full grid-cols-4 bg-transparent">
-                  <TabsTrigger value="all">Toutes ({recruiterApplications.length})</TabsTrigger>
+                  <TabsTrigger value="all">Toutes ({applications.length})</TabsTrigger>
                   <TabsTrigger value="pending">En attente ({pendingApplications.length})</TabsTrigger>
                   <TabsTrigger value="accepted">Acceptées ({acceptedApplications.length})</TabsTrigger>
                   <TabsTrigger value="rejected">Refusées ({rejectedApplications.length})</TabsTrigger>
@@ -147,7 +186,7 @@ const ApplicationsManager = () => {
                     </div>
                   </div>
                   
-                  {recruiterApplications.length === 0 ? (
+                  {applications.length === 0 ? (
                     <div className="text-center py-12">
                       <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                       <h3 className="text-lg font-medium mb-2">Aucune candidature reçue</h3>
@@ -157,23 +196,27 @@ const ApplicationsManager = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {recruiterApplications.map((application) => (
+                      {applications.map((application) => (
                         <Card key={application.id} className="hover:shadow-md transition-shadow">
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center space-x-3 mb-2">
-                                  <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                  <h4 className="font-semibold">{getCandidateName(application)}</h4>
                                   {getStatusBadge(application.status)}
                                 </div>
                                 <p className="text-sm text-muted-foreground mb-1">
-                                  <strong>Offre :</strong> {getJobTitle(application.job_id)}
+                                  <strong>Offre :</strong> {application.jobs?.title || 'Offre supprimée'}
+                                </p>
+                                <p className="text-sm text-muted-foreground mb-1">
+                                  <strong>Entreprise :</strong> {application.jobs?.companies?.name || 'Non spécifiée'}
                                 </p>
                                 <p className="text-sm text-muted-foreground mb-2">
                                   <strong>Candidature :</strong> {new Date(application.applied_at).toLocaleDateString('fr-FR')}
                                 </p>
                                 {application.cover_letter && (
                                   <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded mt-2">
+                                    <strong>Lettre de motivation :</strong><br />
                                     {application.cover_letter.substring(0, 150)}...
                                   </p>
                                 )}
@@ -185,11 +228,21 @@ const ApplicationsManager = () => {
                                 </Button>
                                 {application.status === 'pending' && (
                                   <>
-                                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="text-green-600 hover:text-green-700"
+                                      onClick={() => updateApplicationStatus(application.id, 'accepted')}
+                                    >
                                       <CheckCircle className="w-4 h-4 mr-2" />
                                       Accepter
                                     </Button>
-                                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="text-red-600 hover:text-red-700"
+                                      onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                                    >
                                       <XCircle className="w-4 h-4 mr-2" />
                                       Refuser
                                     </Button>
@@ -224,17 +277,29 @@ const ApplicationsManager = () => {
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between">
                               <div>
-                                <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                <h4 className="font-semibold">{getCandidateName(application)}</h4>
                                 <p className="text-sm text-muted-foreground">
-                                  {getJobTitle(application.job_id)}
+                                  {application.jobs?.title || 'Offre supprimée'}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(application.applied_at).toLocaleDateString('fr-FR')}
                                 </p>
                               </div>
                               <div className="flex space-x-2">
-                                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                                <Button 
+                                  size="sm" 
+                                  className="bg-green-600 hover:bg-green-700"
+                                  onClick={() => updateApplicationStatus(application.id, 'accepted')}
+                                >
                                   <CheckCircle className="w-4 h-4 mr-2" />
                                   Accepter
                                 </Button>
-                                <Button variant="outline" size="sm" className="text-red-600">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-red-600"
+                                  onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                                >
                                   <XCircle className="w-4 h-4 mr-2" />
                                   Refuser
                                 </Button>
@@ -263,9 +328,12 @@ const ApplicationsManager = () => {
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between">
                               <div>
-                                <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                <h4 className="font-semibold">{getCandidateName(application)}</h4>
                                 <p className="text-sm text-muted-foreground">
-                                  {getJobTitle(application.job_id)}
+                                  {application.jobs?.title || 'Offre supprimée'}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Acceptée le {new Date(application.updated_at).toLocaleDateString('fr-FR')}
                                 </p>
                               </div>
                               <Button variant="outline" size="sm">
@@ -296,9 +364,12 @@ const ApplicationsManager = () => {
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between">
                               <div>
-                                <h4 className="font-semibold">Candidat #{application.id.slice(0, 8)}</h4>
+                                <h4 className="font-semibold">{getCandidateName(application)}</h4>
                                 <p className="text-sm text-muted-foreground">
-                                  {getJobTitle(application.job_id)}
+                                  {application.jobs?.title || 'Offre supprimée'}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Refusée le {new Date(application.updated_at).toLocaleDateString('fr-FR')}
                                 </p>
                               </div>
                               <Button variant="outline" size="sm">
