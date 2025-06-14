@@ -45,8 +45,27 @@ const ProfessionalProfileManager = () => {
     return {
       ...simpleTemplate,
       description: `Template ${simpleTemplate.style} avec design ${simpleTemplate.name.toLowerCase()}`,
-      preview: `photo-1649972904349-6e44c42644a7`, // Using a default preview image
+      preview: `photo-1649972904349-6e44c42644a7`,
       isPremium: false
+    };
+  };
+
+  // Convert profile data to TemplatePreview format
+  const convertProfileForPreview = (profile: any) => {
+    return {
+      personalInfo: profile.personal_info || {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        address: '',
+        professionalTitle: '',
+        summary: '',
+        photoUrl: ''
+      },
+      experience: profile.experience || [],
+      education: profile.education || [],
+      skills: profile.skills || []
     };
   };
 
@@ -115,7 +134,8 @@ const ProfessionalProfileManager = () => {
 
   const handleGeneratePDF = (profile: any) => {
     try {
-      generatePDF(profile);
+      const formattedProfile = convertProfileForPreview(profile);
+      generatePDF(formattedProfile);
       toast({
         title: 'CV généré',
         description: 'Votre CV a été téléchargé avec succès.',
@@ -303,7 +323,10 @@ const ProfessionalProfileManager = () => {
             <DialogTitle>Aperçu de votre CV</DialogTitle>
           </DialogHeader>
           {selectedProfile && selectedTemplate && (
-            <TemplatePreview data={selectedProfile} template={selectedTemplate} />
+            <TemplatePreview 
+              data={convertProfileForPreview(selectedProfile)} 
+              template={selectedTemplate} 
+            />
           )}
         </DialogContent>
       </Dialog>
