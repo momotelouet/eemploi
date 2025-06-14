@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useJobApplication } from '@/hooks/useJobApplication';
+import { toast } from 'sonner';
 import CVSelector from './CVSelector';
 
 interface ApplicationModalProps {
@@ -30,7 +32,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
   const handleSubmit = async () => {
     // Vérifier qu'un CV a été sélectionné
     if (!cvData.cvUrl && !cvData.cvFile && !cvData.cvProfileId) {
-      alert('Veuillez sélectionner un CV avant de postuler.');
+      toast.error('Veuillez sélectionner un CV avant de postuler.');
       return;
     }
 
@@ -43,6 +45,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
     );
     
     if (success) {
+      toast.success(`Votre candidature pour le poste "${jobTitle}" chez ${companyName} a été envoyée avec succès ! 🎉`);
       onClose();
       setCoverLetter('');
       setCvData({ type: 'platform' });
