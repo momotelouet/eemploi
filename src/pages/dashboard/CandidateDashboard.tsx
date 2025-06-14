@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
@@ -11,10 +13,14 @@ import ImprovedCandidateProfileManager from '@/components/candidate/ImprovedCand
 import ApplicationsList from '@/components/applications/ApplicationsList';
 import CVOptimizer from '@/components/ai/CVOptimizer';
 import AIChat from '@/components/ai/AIChat';
+import InterviewSimulator from '@/components/tools/InterviewSimulator';
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
   const { profile, loading } = useUserProfile();
+  const navigate = useNavigate();
+  const [showCreateCV, setShowCreateCV] = useState(false);
+  const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
 
   if (loading) {
     return (
@@ -25,6 +31,18 @@ const CandidateDashboard = () => {
       </div>
     );
   }
+
+  const handleCreateCV = () => {
+    setShowCreateCV(true);
+  };
+
+  const handleSearchJobs = () => {
+    navigate('/emplois');
+  };
+
+  const handleInterviewSimulation = () => {
+    setShowInterviewSimulator(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -147,19 +165,28 @@ const CandidateDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors">
+              <div 
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                onClick={handleCreateCV}
+              >
                 <FileText className="w-6 h-6 text-blue-600 mb-2" />
                 <h4 className="font-medium">Créer un nouveau CV</h4>
                 <p className="text-sm text-muted-foreground">Utilisez nos templates modernes</p>
               </div>
               
-              <div className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors">
+              <div 
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                onClick={handleSearchJobs}
+              >
                 <Briefcase className="w-6 h-6 text-green-600 mb-2" />
                 <h4 className="font-medium">Rechercher des emplois</h4>
                 <p className="text-sm text-muted-foreground">Trouvez votre prochain défi</p>
               </div>
               
-              <div className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors">
+              <div 
+                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                onClick={handleInterviewSimulation}
+              >
                 <Calendar className="w-6 h-6 text-purple-600 mb-2" />
                 <h4 className="font-medium">Simuler un entretien</h4>
                 <p className="text-sm text-muted-foreground">Préparez-vous efficacement</p>
@@ -167,6 +194,26 @@ const CandidateDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Dialog pour créer un CV */}
+        <Dialog open={showCreateCV} onOpenChange={setShowCreateCV}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Créer un nouveau CV</DialogTitle>
+            </DialogHeader>
+            <ProfessionalProfileManager />
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog pour simuler un entretien */}
+        <Dialog open={showInterviewSimulator} onOpenChange={setShowInterviewSimulator}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Simulateur d'entretien</DialogTitle>
+            </DialogHeader>
+            <InterviewSimulator />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
