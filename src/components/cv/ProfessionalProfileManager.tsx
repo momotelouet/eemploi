@@ -135,7 +135,10 @@ const ProfessionalProfileManager = () => {
   const handleGeneratePDF = (profile: any) => {
     try {
       const formattedProfile = convertProfileForPreview(profile);
-      generatePDF(formattedProfile);
+      const template = getTemplateById(profile.template_id);
+      const fullTemplate = convertToFullTemplate(template);
+      
+      generatePDF(formattedProfile, fullTemplate);
       toast({
         title: 'CV généré',
         description: 'Votre CV a été téléchargé avec succès.',

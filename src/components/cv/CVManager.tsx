@@ -45,7 +45,7 @@ const CVManager = () => {
     }
 
     try {
-      generatePDF(cvData);
+      generatePDF(cvData, selectedTemplate || undefined);
       toast({
         title: 'CV généré',
         description: 'Votre CV a été généré et téléchargé avec succès.',
