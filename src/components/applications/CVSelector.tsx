@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,8 @@ import { FileText, Upload, Eye } from 'lucide-react';
 import { useCVProfiles } from '@/hooks/useCVProfiles';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface CVSelectorProps {
   onCVSelect: (data: {
@@ -54,13 +57,13 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
       // Validate file type
       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Format non supporté. Veuillez utiliser un fichier PDF ou Word.');
+        toast.error('Format non supporté. Veuillez utiliser un fichier PDF ou Word.');
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Fichier trop volumineux. La taille maximale autorisée est de 5 MB.');
+        toast.error('Fichier trop volumineux. La taille maximale autorisée est de 5 MB.');
         return;
       }
 
@@ -78,6 +81,36 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
       type: 'platform',
       cvProfileId: profileId
     });
+  };
+
+  const generateCVPdf = async (profileId: string) => {
+    try {
+      // Récupérer les données du profil CV
+      const { data: cvProfile, error } = await supabase
+        .from('cv_profiles')
+        .select('*')
+        .eq('id', profileId)
+        .single();
+
+      if (error) throw error;
+
+      // Appeler la fonction Edge pour générer le PDF
+      const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-cv-pdf', {
+        body: { cvProfile }
+      });
+
+      if (pdfError) throw pdfError;
+
+      // Créer et télécharger le PDF
+      const pdfBlob = new Blob([new Uint8Array(pdfData)], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
+      window.open(url, '_blank');
+      
+      toast.success('CV généré avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la génération du CV:', error);
+      toast.error('Erreur lors de la génération du CV');
+    }
   };
 
   return (
@@ -121,7 +154,7 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {/* TODO: Implement preview */}}
+                              onClick={() => generateCVPdf(profile.id!)}
                             >
                               <Eye className="w-4 h-4" />
                             </Button>

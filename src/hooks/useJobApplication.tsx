@@ -53,7 +53,7 @@ export const useJobApplication = () => {
         .select('id')
         .eq('job_id', jobId)
         .eq('candidate_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (existingApplication) {
         toast.error('Vous avez déjà postulé à cette offre');
@@ -73,18 +73,33 @@ export const useJobApplication = () => {
       }
 
       // Create new application
+      const applicationData: any = {
+        job_id: jobId,
+        candidate_id: user.id,
+        status: 'pending'
+      };
+
+      // Add optional fields only if they exist
+      if (coverLetter) {
+        applicationData.cover_letter = coverLetter;
+      }
+      
+      if (finalCvUrl) {
+        applicationData.cv_url = finalCvUrl;
+      }
+      
+      if (selectedCVProfileId) {
+        applicationData.cv_profile_id = selectedCVProfileId;
+      }
+
       const { error } = await supabase
         .from('applications')
-        .insert({
-          job_id: jobId,
-          candidate_id: user.id,
-          cover_letter: coverLetter,
-          cv_url: finalCvUrl,
-          cv_profile_id: selectedCVProfileId,
-          status: 'pending'
-        });
+        .insert(applicationData);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Application error:', error);
+        throw error;
+      }
 
       toast.success('Votre candidature a été envoyée avec succès !');
       return true;

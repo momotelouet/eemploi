@@ -14,6 +14,7 @@ export type Database = {
           applied_at: string
           candidate_id: string
           cover_letter: string | null
+          cv_profile_id: string | null
           cv_url: string | null
           id: string
           job_id: string
@@ -24,6 +25,7 @@ export type Database = {
           applied_at?: string
           candidate_id: string
           cover_letter?: string | null
+          cv_profile_id?: string | null
           cv_url?: string | null
           id?: string
           job_id: string
@@ -34,6 +36,7 @@ export type Database = {
           applied_at?: string
           candidate_id?: string
           cover_letter?: string | null
+          cv_profile_id?: string | null
           cv_url?: string | null
           id?: string
           job_id?: string
@@ -41,6 +44,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "applications_cv_profile_id_fkey"
+            columns: ["cv_profile_id"]
+            isOneToOne: false
+            referencedRelation: "cv_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "applications_job_id_fkey"
             columns: ["job_id"]
