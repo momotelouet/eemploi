@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,8 @@ import { Award, Download, Calendar, TrendingUp } from 'lucide-react';
 import { useUserAssessments, Assessment } from '@/hooks/useAssessment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const AssessmentResults = () => {
   const { data: assessments, isLoading } = useUserAssessments();
@@ -29,8 +30,54 @@ const AssessmentResults = () => {
   };
 
   const downloadCertificate = async (assessment: Assessment) => {
-    // TODO: Implémenter la génération de certificat PDF
-    console.log('Téléchargement du certificat pour:', assessment.id);
+    try {
+      toast.loading('Génération du certificat en cours...');
+      
+      const { data, error } = await supabase.functions.invoke('generate-certificate', {
+        body: { assessmentId: assessment.id }
+      });
+
+      if (error) {
+        console.error('Erreur lors de la génération du certificat:', error);
+        toast.error('Erreur lors de la génération du certificat');
+        return;
+      }
+
+      if (data?.html) {
+        // Créer un blob avec le HTML et le télécharger
+        const htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Certificat d'Évaluation - eemploi.com</title>
+          </head>
+          <body>
+            ${data.html}
+          </body>
+          </html>
+        `;
+        
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        
+        // Créer un lien de téléchargement
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `certificat-evaluation-${assessment.id.slice(0, 8)}.html`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast.success('Certificat téléchargé avec succès !');
+      } else {
+        toast.error('Erreur lors de la génération du certificat');
+      }
+    } catch (error) {
+      console.error('Erreur lors du téléchargement du certificat:', error);
+      toast.error('Erreur lors du téléchargement du certificat');
+    }
   };
 
   if (isLoading) {
