@@ -33,32 +33,54 @@ export const useJobApplications = () => {
         console.log('Fetching applications for recruiter:', user.id);
         
         // Récupérer toutes les candidatures pour les offres du recruteur
-        const { data, error } = await supabase
+        const { data: applicationsData, error: applicationsError } = await supabase
           .from('applications')
           .select(`
             *,
             jobs (
               *,
               companies (*)
-            ),
-            candidate_profiles!applications_candidate_id_fkey (
-              *,
-              profiles (
-                first_name,
-                last_name
-              )
             )
           `)
           .eq('jobs.posted_by', user.id)
           .order('applied_at', { ascending: false });
 
-        if (error) {
-          console.error('Error fetching applications:', error);
-          throw error;
+        if (applicationsError) {
+          console.error('Error fetching applications:', applicationsError);
+          throw applicationsError;
         }
 
-        console.log('Applications fetched:', data);
-        setApplications(data || []);
+        console.log('Applications fetched:', applicationsData);
+
+        if (!applicationsData || applicationsData.length === 0) {
+          setApplications([]);
+          return;
+        }
+
+        // Récupérer les profils des candidats séparément
+        const candidateIds = applicationsData.map(app => app.candidate_id);
+        const { data: candidateProfiles, error: profilesError } = await supabase
+          .from('candidate_profiles')
+          .select(`
+            *,
+            profiles (
+              first_name,
+              last_name
+            )
+          `)
+          .in('user_id', candidateIds);
+
+        if (profilesError) {
+          console.error('Error fetching candidate profiles:', profilesError);
+        }
+
+        // Combiner les données
+        const applicationsWithProfiles = applicationsData.map(app => ({
+          ...app,
+          candidate_profiles: candidateProfiles?.find(profile => profile.user_id === app.candidate_id) || undefined
+        }));
+
+        setApplications(applicationsWithProfiles);
       } catch (err) {
         console.error('Error fetching job applications:', err);
         setApplications([]);
