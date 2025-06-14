@@ -10,6 +10,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApplications } from '@/hooks/useApplications';
 import { useCVProfiles } from '@/hooks/useCVProfiles';
+import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
 import AIEnhancedProfileManager from '@/components/candidate/AIEnhancedProfileManager';
 import ApplicationsList from '@/components/applications/ApplicationsList';
@@ -23,6 +24,7 @@ const CandidateDashboard = () => {
   const { profile, loading } = useUserProfile();
   const { applications, loading: applicationsLoading } = useApplications();
   const { profiles: cvProfiles, loading: cvLoading } = useCVProfiles();
+  const { profile: candidateProfile, loading: candidateLoading } = useCandidateProfile(user?.id);
   const navigate = useNavigate();
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
@@ -49,16 +51,48 @@ const CandidateDashboard = () => {
     setShowInterviewSimulator(true);
   };
 
-  // Calculate profile completion percentage
+  // Calculate profile completion percentage based on candidate profile
   const calculateProfileCompletion = () => {
-    if (!profile) return 0;
-    const fields = [
-      profile.first_name,
-      profile.last_name,
-      // Add more fields as needed from candidate_profiles if available
+    if (!candidateProfile) return 0;
+    
+    const profileFields = [
+      // Informations personnelles de base
+      candidateProfile.phone,
+      candidateProfile.address,
+      candidateProfile.city,
+      candidateProfile.country,
+      
+      // Profil professionnel
+      candidateProfile.professional_summary,
+      candidateProfile.bio,
+      candidateProfile.experience_years,
+      
+      // Compétences et formation
+      candidateProfile.skills && candidateProfile.skills.length > 0 ? 'skills' : null,
+      candidateProfile.languages && candidateProfile.languages.length > 0 ? 'languages' : null,
+      candidateProfile.education,
+      
+      // Liens professionnels
+      candidateProfile.linkedin_url,
+      candidateProfile.portfolio_url,
+      
+      // Photo de profil
+      candidateProfile.profile_picture_url,
+      
+      // CV
+      candidateProfile.cv_file_url
     ];
-    const completedFields = fields.filter(field => field && field.trim() !== '').length;
-    return Math.round((completedFields / fields.length) * 100);
+
+    // Informations de base du profil utilisateur
+    const basicFields = [
+      profile?.first_name,
+      profile?.last_name
+    ];
+
+    const allFields = [...profileFields, ...basicFields];
+    const completedFields = allFields.filter(field => field && field !== '').length;
+    
+    return Math.round((completedFields / allFields.length) * 100);
   };
 
   // Count interviews (applications with status 'interview' or similar)
@@ -129,7 +163,9 @@ const CandidateDashboard = () => {
                 <Star className="w-8 h-8 text-yellow-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">Profil Complété</p>
-                  <p className="text-2xl font-bold">{calculateProfileCompletion()}%</p>
+                  <p className="text-2xl font-bold">
+                    {candidateLoading ? '...' : `${calculateProfileCompletion()}%`}
+                  </p>
                 </div>
               </div>
             </CardContent>
