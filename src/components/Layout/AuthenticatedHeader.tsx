@@ -1,136 +1,98 @@
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Search, User, Bell, LogOut } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+  Briefcase,
+  Home,
+  LogOut,
+  Settings,
+  User,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 const AuthenticatedHeader = () => {
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const { profile } = useUserProfile();
 
-  const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de se déconnecter",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Déconnexion réussie",
-        description: "À bientôt sur eemploi!"
-      });
-    }
-  };
-
-  const getInitials = () => {
-    if (!user?.user_metadata) return "U";
-    const firstName = user.user_metadata.first_name || "";
-    const lastName = user.user_metadata.last_name || "";
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || user.email?.charAt(0).toUpperCase() || "U";
-  };
-
-  const getUserName = () => {
-    if (!user?.user_metadata) return user?.email;
-    const firstName = user.user_metadata.first_name || "";
-    const lastName = user.user_metadata.last_name || "";
-    return `${firstName} ${lastName}`.trim() || user.email;
-  };
-
-  const getUserType = () => {
-    return user?.user_metadata?.user_type || "candidat";
-  };
-
-  const getDashboardLink = () => {
-    const userType = getUserType();
-    switch (userType) {
-      case "recruteur":
-        return "/dashboard/recruteur";
-      case "admin":
-        return "/dashboard/admin";
-      default:
-        return "/dashboard/candidat";
-    }
+  const handleLogout = async () => {
+    await logout();
+    navigate('/auth/login');
   };
 
   return (
-    <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <header className="border-b bg-white sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">E</span>
+            <div className="w-8 h-8 bg-eemploi-primary rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">E</span>
             </div>
-            <span className="text-2xl font-bold gradient-text">eemploi</span>
+            <span className="font-bold text-xl">eEmploi</span>
           </Link>
 
+          {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/emplois" className="text-foreground hover:text-eemploi-primary transition-colors">
+            <Link to="/emplois" className="text-gray-600 hover:text-eemploi-primary transition-colors">
               Emplois
             </Link>
-            <Link to="/entreprises" className="text-foreground hover:text-eemploi-primary transition-colors">
+            <Link to="/entreprises" className="text-gray-600 hover:text-eemploi-primary transition-colors">
               Entreprises
             </Link>
-            <Link to="/a-propos" className="text-foreground hover:text-eemploi-primary transition-colors">
-              À propos
+            <Link to="/outils" className="text-gray-600 hover:text-eemploi-primary transition-colors">
+              Outils Carrière
             </Link>
-            <Link to="/contact" className="text-foreground hover:text-eemploi-primary transition-colors">
-              Contact
-            </Link>
+            {profile?.user_type === 'recruteur' && (
+              <Link to="/recruteur/hub" className="text-gray-600 hover:text-eemploi-primary transition-colors">
+                Hub Recruteur
+              </Link>
+            )}
           </nav>
 
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <Search className="w-4 h-4 mr-2" />
-              Rechercher
-            </Button>
-            
-            <Button variant="ghost" size="sm">
-              <Bell className="w-4 h-4" />
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-eemploi-primary text-white">
-                      {getInitials()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex flex-col space-y-1 p-2">
-                  <p className="text-sm font-medium leading-none">{getUserName()}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
-                  </p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to={getDashboardLink()} className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Mon tableau de bord</span>
-                  </Link>
+          {/* User Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url} alt={profile?.first_name} />
+                  <AvatarFallback>{profile?.first_name?.charAt(0)}{profile?.last_name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuItem className="flex items-center space-x-2">
+                <User className="h-4 w-4 mr-2" />
+                <span>{profile?.first_name} {profile?.last_name}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center space-x-2">
+                <Mail className="h-4 w-4 mr-2" />
+                <span>{profile?.email}</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/dashboard/candidat')} className="flex items-center space-x-2">
+                <Home className="h-4 w-4 mr-2" />
+                <span>Tableau de bord</span>
+              </DropdownMenuItem>
+              {profile?.user_type === 'recruteur' && (
+                <DropdownMenuItem onClick={() => navigate('/recruteur/hub')} className="flex items-center space-x-2">
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  <span>Espace Recruteur</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Se déconnecter</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              )}
+              <DropdownMenuItem className="flex items-center space-x-2">
+                <Settings className="h-4 w-4 mr-2" />
+                <span>Paramètres</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="flex items-center space-x-2">
+                <LogOut className="h-4 w-4 mr-2" />
+                <span>Se déconnecter</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
