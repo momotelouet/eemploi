@@ -26,21 +26,36 @@ serve(async (req) => {
     // Récupérer les données de l'évaluation
     const { data: assessment, error: assessmentError } = await supabase
       .from('candidate_assessments')
-      .select(`
-        *,
-        profiles:user_id (first_name, last_name)
-      `)
+      .select('*')
       .eq('id', assessmentId)
       .single();
 
-    if (assessmentError) throw assessmentError;
+    if (assessmentError) {
+      console.error('Assessment error:', assessmentError);
+      throw assessmentError;
+    }
+
+    // Récupérer les informations du profil séparément
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', assessment.user_id)
+      .single();
+
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      // Continuer sans le profil si non trouvé
+    }
+
+    // Combiner les données
+    const assessmentWithProfile = {
+      ...assessment,
+      profiles: profile || { first_name: '', last_name: '' }
+    };
 
     // Générer le contenu HTML du certificat
-    const certificateHtml = generateCertificateHTML(assessment);
+    const certificateHtml = generateCertificateHTML(assessmentWithProfile);
 
-    // TODO: Intégrer avec un service de génération PDF comme Puppeteer ou jsPDF
-    // Pour l'instant, on retourne le HTML
-    
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -70,7 +85,7 @@ serve(async (req) => {
 });
 
 function generateCertificateHTML(assessment: any): string {
-  const candidateName = `${assessment.profiles?.first_name || ''} ${assessment.profiles?.last_name || ''}`.trim();
+  const candidateName = `${assessment.profiles?.first_name || ''} ${assessment.profiles?.last_name || ''}`.trim() || 'Candidat';
   const completedDate = new Date(assessment.completed_at).toLocaleDateString('fr-FR');
   
   const personalityScore = assessment.personality_score?.score || 0;
@@ -85,6 +100,10 @@ function generateCertificateHTML(assessment: any): string {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Certificat d'Évaluation Professionnelle</title>
         <style>
+            @media print {
+                body { margin: 0; }
+                .certificate { box-shadow: none; }
+            }
             body {
                 font-family: 'Arial', sans-serif;
                 margin: 0;
@@ -220,9 +239,29 @@ function generateCertificateHTML(assessment: any): string {
             .validation p {
                 margin: 2px 0;
             }
+            .print-button {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #2196F3;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                z-index: 1000;
+            }
+            .print-button:hover {
+                background: #1976D2;
+            }
+            @media print {
+                .print-button { display: none; }
+            }
         </style>
     </head>
     <body>
+        <button class="print-button" onclick="window.print()">Imprimer en PDF</button>
         <div class="certificate">
             <div class="logo">
                 <h1>eemploi.com</h1>
