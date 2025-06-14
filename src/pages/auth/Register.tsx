@@ -10,7 +10,7 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Register = () => {
-  const { user, register, loading } = useAuth();
+  const { user, signUp, loading } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -48,11 +48,14 @@ const Register = () => {
     }
     
     try {
-      await register(formData.email, formData.password, {
+      const { error } = await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName,
         user_type: 'candidat'
       });
+      if (error) {
+        setError('Erreur lors de l\'inscription. Veuillez réessayer.');
+      }
     } catch (err) {
       setError('Erreur lors de l\'inscription. Veuillez réessayer.');
     }

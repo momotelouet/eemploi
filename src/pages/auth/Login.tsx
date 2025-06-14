@@ -10,7 +10,7 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
-  const { user, login, loading } = useAuth();
+  const { user, signIn, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +25,10 @@ const Login = () => {
     setError('');
     
     try {
-      await login(email, password);
+      const { error } = await signIn(email, password);
+      if (error) {
+        setError('Email ou mot de passe incorrect');
+      }
     } catch (err) {
       setError('Email ou mot de passe incorrect');
     }
