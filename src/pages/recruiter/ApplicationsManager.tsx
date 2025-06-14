@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -171,7 +170,7 @@ const ApplicationsManager = () => {
                                   <strong>Offre :</strong> {getJobTitle(application.job_id)}
                                 </p>
                                 <p className="text-sm text-muted-foreground mb-2">
-                                  <strong>Candidature :</strong> {new Date(application.created_at).toLocaleDateString('fr-FR')}
+                                  <strong>Candidature :</strong> {new Date(application.applied_at).toLocaleDateString('fr-FR')}
                                 </p>
                                 {application.cover_letter && (
                                   <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded mt-2">

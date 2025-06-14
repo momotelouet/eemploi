@@ -164,8 +164,8 @@ const RecruiterHub = () => {
       </div>
 
       <CreateJobModal 
-        isOpen={isCreateJobModalOpen}
-        onClose={() => setIsCreateJobModalOpen(false)}
+        open={isCreateJobModalOpen}
+        onOpenChange={setIsCreateJobModalOpen}
       />
     </div>
   );
