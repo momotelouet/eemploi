@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,7 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
   useEffect(() => {
     if (selectedOption === 'platform' && cvProfiles.length > 0) {
       const firstCV = cvProfiles[0];
-      setSelectedCVProfile(firstCV.id);
+      setSelectedCVProfile(firstCV.id!);
       onCVSelect({
         type: 'platform',
         cvProfileId: firstCV.id
@@ -109,13 +108,13 @@ const CVSelector = ({ onCVSelect, selectedOption, onOptionChange }: CVSelectorPr
                         {cvProfiles.map((profile) => (
                           <div key={profile.id} className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="flex items-center space-x-3">
-                              <RadioGroupItem value={profile.id} id={profile.id} />
+                              <RadioGroupItem value={profile.id!} id={profile.id!} />
                               <div>
-                                <Label htmlFor={profile.id} className="font-medium cursor-pointer">
-                                  {profile.template_name || 'CV Professionnel'}
+                                <Label htmlFor={profile.id!} className="font-medium cursor-pointer">
+                                  CV Professionnel ({profile.template_id})
                                 </Label>
                                 <p className="text-sm text-muted-foreground">
-                                  Créé le {new Date(profile.created_at).toLocaleDateString('fr-FR')}
+                                  Créé le {new Date(profile.created_at!).toLocaleDateString('fr-FR')}
                                 </p>
                               </div>
                             </div>

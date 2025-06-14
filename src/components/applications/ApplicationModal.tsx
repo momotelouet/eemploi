@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,9 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
     cvUrl?: string;
     cvFile?: File;
     cvProfileId?: string;
-  }>({});
+  }>({
+    type: 'platform'
+  });
   const { applyToJob, isApplying } = useJobApplication();
 
   const handleSubmit = async () => {
@@ -44,14 +45,14 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
     if (success) {
       onClose();
       setCoverLetter('');
-      setCvData({});
+      setCvData({ type: 'platform' });
     }
   };
 
   const handleClose = () => {
     onClose();
     setCoverLetter('');
-    setCvData({});
+    setCvData({ type: 'platform' });
     setSelectedCVOption('platform');
   };
 
