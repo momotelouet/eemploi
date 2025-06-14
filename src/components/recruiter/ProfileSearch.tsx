@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,8 +11,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
 
-type CandidateProfile = Tables<'candidate_profiles'> & {
-  profiles?: Tables<'profiles'>;
+type ProfileSearchResult = Tables<'candidate_profiles'> & {
+  profiles?: {
+    first_name: string;
+    last_name: string;
+  };
 };
 
 const ProfileSearch = () => {
@@ -25,7 +27,7 @@ const ProfileSearch = () => {
     experience: '',
     skills: ''
   });
-  const [profiles, setProfiles] = useState<CandidateProfile[]>([]);
+  const [profiles, setProfiles] = useState<ProfileSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalProfiles, setTotalProfiles] = useState(0);
 
