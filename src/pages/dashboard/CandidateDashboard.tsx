@@ -22,7 +22,7 @@ const CandidateDashboard = () => {
   const { user } = useAuth();
   const { profile, loading } = useUserProfile();
   const { applications, loading: applicationsLoading } = useApplications();
-  const { cvProfiles, loading: cvLoading } = useCVProfiles();
+  const { profiles: cvProfiles, loading: cvLoading } = useCVProfiles();
   const navigate = useNavigate();
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
