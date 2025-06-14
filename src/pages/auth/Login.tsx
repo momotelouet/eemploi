@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,26 +11,43 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const { user, signIn, loading } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
-  if (user) {
-    return <Navigate to="/dashboard/candidat" replace />;
+  // Rediriger selon le type d'utilisateur si déjà connecté
+  if (user && !loading) {
+    const userType = user.user_metadata?.user_type || "candidat";
+    switch (userType) {
+      case "recruteur":
+        return <Navigate to="/dashboard/recruteur" replace />;
+      case "admin":
+        return <Navigate to="/dashboard/admin" replace />;
+      default:
+        return <Navigate to="/dashboard/candidat" replace />;
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSigningIn(true);
     
     try {
       const { error } = await signIn(email, password);
       if (error) {
         setError('Email ou mot de passe incorrect');
+      } else {
+        // La redirection sera gérée par l'AuthContext et ProtectedRoute
+        // Pas besoin de navigate ici
       }
     } catch (err) {
       setError('Email ou mot de passe incorrect');
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -68,7 +85,7 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="votre@email.com"
                 required
-                disabled={loading}
+                disabled={loading || isSigningIn}
               />
             </div>
             
@@ -82,7 +99,7 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Votre mot de passe"
                   required
-                  disabled={loading}
+                  disabled={loading || isSigningIn}
                 />
                 <Button
                   type="button"
@@ -90,7 +107,7 @@ const Login = () => {
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled={loading}
+                  disabled={loading || isSigningIn}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -104,9 +121,9 @@ const Login = () => {
             <Button 
               type="submit" 
               className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90"
-              disabled={loading}
+              disabled={loading || isSigningIn}
             >
-              {loading ? (
+              {isSigningIn ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Connexion...
