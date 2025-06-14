@@ -8,6 +8,8 @@ import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot, Sea
 import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
+import { useApplications } from '@/hooks/useApplications';
+import { useCVProfiles } from '@/hooks/useCVProfiles';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
 import AIEnhancedProfileManager from '@/components/candidate/AIEnhancedProfileManager';
 import ApplicationsList from '@/components/applications/ApplicationsList';
@@ -19,6 +21,8 @@ import JobSearchAI from '@/components/ai/JobSearchAI';
 const CandidateDashboard = () => {
   const { user } = useAuth();
   const { profile, loading } = useUserProfile();
+  const { applications, loading: applicationsLoading } = useApplications();
+  const { cvProfiles, loading: cvLoading } = useCVProfiles();
   const navigate = useNavigate();
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
@@ -45,6 +49,23 @@ const CandidateDashboard = () => {
     setShowInterviewSimulator(true);
   };
 
+  // Calculate profile completion percentage
+  const calculateProfileCompletion = () => {
+    if (!profile) return 0;
+    const fields = [
+      profile.first_name,
+      profile.last_name,
+      // Add more fields as needed from candidate_profiles if available
+    ];
+    const completedFields = fields.filter(field => field && field.trim() !== '').length;
+    return Math.round((completedFields / fields.length) * 100);
+  };
+
+  // Count interviews (applications with status 'interview' or similar)
+  const interviewCount = applications.filter(app => 
+    app.status === 'interview' || app.status === 'interview_scheduled'
+  ).length;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -66,7 +87,9 @@ const CandidateDashboard = () => {
                 <FileText className="w-8 h-8 text-blue-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">CV Créés</p>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-2xl font-bold">
+                    {cvLoading ? '...' : cvProfiles.length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -78,7 +101,9 @@ const CandidateDashboard = () => {
                 <Briefcase className="w-8 h-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">Candidatures</p>
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-2xl font-bold">
+                    {applicationsLoading ? '...' : applications.length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -90,7 +115,9 @@ const CandidateDashboard = () => {
                 <TrendingUp className="w-8 h-8 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">Entretiens</p>
-                  <p className="text-2xl font-bold">4</p>
+                  <p className="text-2xl font-bold">
+                    {applicationsLoading ? '...' : interviewCount}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -102,7 +129,7 @@ const CandidateDashboard = () => {
                 <Star className="w-8 h-8 text-yellow-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">Profil Complété</p>
-                  <p className="text-2xl font-bold">85%</p>
+                  <p className="text-2xl font-bold">{calculateProfileCompletion()}%</p>
                 </div>
               </div>
             </CardContent>
