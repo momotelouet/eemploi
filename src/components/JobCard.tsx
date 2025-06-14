@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useJobApplication } from "@/hooks/useJobApplication";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCandidateProfile } from "@/hooks/useCandidateProfile";
 import type { Tables } from "@/integrations/supabase/types";
 
 type JobWithCompany = Tables<'jobs'> & {
@@ -31,6 +32,7 @@ interface JobCardProps {
 const JobCard = ({ job, id, title, company, location, type, salary, description, postedAt }: JobCardProps) => {
   const { user } = useAuth();
   const { applyToJob, isApplying } = useJobApplication();
+  const { profile: candidateProfile } = useCandidateProfile(user?.id);
 
   const formatSalary = (min: number | null, max: number | null) => {
     if (!min && !max) return "Salaire à négocier";
@@ -83,7 +85,9 @@ const JobCard = ({ job, id, title, company, location, type, salary, description,
       return;
     }
     
-    await applyToJob(jobData.id);
+    // Use candidate profile CV if available for quick apply
+    const cvUrl = candidateProfile?.cv_file_url;
+    await applyToJob(jobData.id, undefined, cvUrl);
   };
 
   return (

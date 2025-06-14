@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useJobApplication } from '@/hooks/useJobApplication';
+import CVSelector from './CVSelector';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -16,29 +17,65 @@ interface ApplicationModalProps {
 
 const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: ApplicationModalProps) => {
   const [coverLetter, setCoverLetter] = useState('');
+  const [selectedCVOption, setSelectedCVOption] = useState('platform');
+  const [cvData, setCvData] = useState<{
+    type: 'platform' | 'upload' | 'profile';
+    cvUrl?: string;
+    cvFile?: File;
+    cvProfileId?: string;
+  }>({});
   const { applyToJob, isApplying } = useJobApplication();
 
   const handleSubmit = async () => {
-    const success = await applyToJob(jobId, coverLetter);
+    // Vérifier qu'un CV a été sélectionné
+    if (!cvData.cvUrl && !cvData.cvFile && !cvData.cvProfileId) {
+      alert('Veuillez sélectionner un CV avant de postuler.');
+      return;
+    }
+
+    const success = await applyToJob(
+      jobId, 
+      coverLetter,
+      cvData.cvUrl,
+      cvData.cvFile,
+      cvData.cvProfileId
+    );
+    
     if (success) {
       onClose();
       setCoverLetter('');
+      setCvData({});
     }
   };
 
+  const handleClose = () => {
+    onClose();
+    setCoverLetter('');
+    setCvData({});
+    setSelectedCVOption('platform');
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Postuler à l'offre</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
             <h3 className="font-semibold">{jobTitle}</h3>
             <p className="text-muted-foreground">{companyName}</p>
           </div>
 
+          {/* Sélecteur de CV */}
+          <CVSelector
+            onCVSelect={setCvData}
+            selectedOption={selectedCVOption}
+            onOptionChange={setSelectedCVOption}
+          />
+
+          {/* Lettre de motivation */}
           <div className="space-y-2">
             <Label htmlFor="coverLetter">Lettre de motivation (optionnelle)</Label>
             <Textarea
@@ -51,7 +88,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
           </div>
 
           <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={onClose} disabled={isApplying}>
+            <Button variant="outline" onClick={handleClose} disabled={isApplying}>
               Annuler
             </Button>
             <Button onClick={handleSubmit} disabled={isApplying}>

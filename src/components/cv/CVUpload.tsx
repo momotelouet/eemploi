@@ -5,8 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, FileText, Trash2, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-const CVUpload = () => {
+interface CVUploadProps {
+  onFileSelect?: (file: File) => void;
+  showAsDialog?: boolean;
+}
+
+const CVUpload = ({ onFileSelect, showAsDialog = true }: CVUploadProps) => {
   const { toast } = useToast();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -40,16 +47,20 @@ const CVUpload = () => {
     
     try {
       // Simulate upload process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setUploadedFile(file);
       
+      if (onFileSelect) {
+        onFileSelect(file);
+      }
+      
       toast({
-        title: "CV mis à jour avec succès",
-        description: "Votre CV a été téléchargé et sauvegardé.",
+        title: "CV sélectionné avec succès",
+        description: "Votre CV est prêt pour la candidature.",
       });
     } catch (error) {
       toast({
-        title: "Erreur lors du téléchargement",
+        title: "Erreur lors de la sélection",
         description: "Une erreur est survenue. Veuillez réessayer.",
         variant: "destructive"
       });
@@ -60,9 +71,12 @@ const CVUpload = () => {
 
   const handleRemoveFile = () => {
     setUploadedFile(null);
+    if (onFileSelect) {
+      onFileSelect(null as any);
+    }
     toast({
-      title: "CV supprimé",
-      description: "Votre CV a été retiré du système.",
+      title: "CV retiré",
+      description: "Le fichier a été retiré de la sélection.",
     });
   };
 
@@ -79,6 +93,91 @@ const CVUpload = () => {
     }
   };
 
+  const content = (
+    <div className="space-y-4">
+      {!uploadedFile ? (
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="font-medium mb-2">Télécharger votre CV</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Formats acceptés: PDF, DOC, DOCX (max 5 MB)
+              </p>
+              <Label htmlFor="cv-upload" className="cursor-pointer">
+                <Input
+                  id="cv-upload"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                <Button 
+                  className="bg-eemploi-primary hover:bg-eemploi-primary/90"
+                  disabled={isUploading}
+                  asChild
+                >
+                  <span>
+                    {isUploading ? 'Sélection...' : 'Choisir un fichier'}
+                  </span>
+                </Button>
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <FileText className="w-8 h-8 text-eemploi-primary" />
+                <div>
+                  <p className="font-medium truncate max-w-32">{uploadedFile.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="ghost" size="sm" onClick={handleDownload}>
+                  <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleRemoveFile}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="cv-replace" className="cursor-pointer">
+                <Input
+                  id="cv-replace"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={isUploading}
+                  asChild
+                >
+                  <span>Remplacer le fichier</span>
+                </Button>
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
+  if (!showAsDialog) {
+    return content;
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -91,83 +190,7 @@ const CVUpload = () => {
         <DialogHeader>
           <DialogTitle>Mettre à jour votre CV</DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          {!uploadedFile ? (
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="font-medium mb-2">Télécharger votre CV</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Formats acceptés: PDF, DOC, DOCX (max 5 MB)
-                  </p>
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      disabled={isUploading}
-                    />
-                    <Button 
-                      className="bg-eemploi-primary hover:bg-eemploi-primary/90"
-                      disabled={isUploading}
-                      asChild
-                    >
-                      <span>
-                        {isUploading ? 'Téléchargement...' : 'Choisir un fichier'}
-                      </span>
-                    </Button>
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <FileText className="w-8 h-8 text-eemploi-primary" />
-                    <div>
-                      <p className="font-medium truncate max-w-32">{uploadedFile.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button variant="ghost" size="sm" onClick={handleDownload}>
-                      <Download className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={handleRemoveFile}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      disabled={isUploading}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      disabled={isUploading}
-                      asChild
-                    >
-                      <span>Remplacer le fichier</span>
-                    </Button>
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        {content}
       </DialogContent>
     </Dialog>
   );

@@ -8,7 +8,37 @@ export const useJobApplication = () => {
   const { user } = useAuth();
   const [isApplying, setIsApplying] = useState(false);
 
-  const applyToJob = async (jobId: string, coverLetter?: string, cvUrl?: string) => {
+  const uploadCV = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/applications/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('candidate-files')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('candidate-files')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading CV:', error);
+      return null;
+    }
+  };
+
+  const applyToJob = async (
+    jobId: string, 
+    coverLetter?: string, 
+    cvUrl?: string, 
+    cvFile?: File,
+    selectedCVProfileId?: string
+  ) => {
     if (!user) {
       toast.error('Vous devez être connecté pour postuler');
       return false;
@@ -30,6 +60,18 @@ export const useJobApplication = () => {
         return false;
       }
 
+      let finalCvUrl = cvUrl;
+
+      // If a CV file was uploaded, upload it first
+      if (cvFile) {
+        const uploadedUrl = await uploadCV(cvFile);
+        if (!uploadedUrl) {
+          toast.error('Erreur lors du téléchargement du CV');
+          return false;
+        }
+        finalCvUrl = uploadedUrl;
+      }
+
       // Create new application
       const { error } = await supabase
         .from('applications')
@@ -37,7 +79,8 @@ export const useJobApplication = () => {
           job_id: jobId,
           candidate_id: user.id,
           cover_letter: coverLetter,
-          cv_url: cvUrl,
+          cv_url: finalCvUrl,
+          cv_profile_id: selectedCVProfileId,
           status: 'pending'
         });
 
