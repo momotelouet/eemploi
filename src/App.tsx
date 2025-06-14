@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { QueryClient } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from "@/components/ui/toaster";
 
 import Layout from '@/components/Layout/Layout';
 import Index from '@/pages/Index';
@@ -11,23 +12,24 @@ import Companies from '@/pages/Companies';
 import CompanyDetails from '@/pages/CompanyDetails';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
-import Auth from '@/pages/Auth';
-import Login from '@/pages/Auth/Login';
-import Register from '@/pages/Auth/Register';
+import Login from '@/pages/auth/Login';
+import Register from '@/pages/auth/Register';
 import NotFound from '@/pages/NotFound';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
 import CandidateDashboard from '@/pages/dashboard/CandidateDashboard';
 import RecruiterDashboard from '@/pages/dashboard/RecruiterDashboard';
 import AdminDashboard from '@/pages/dashboard/AdminDashboard';
 import RecruiterHub from '@/pages/recruiter/RecruiterHub';
-import ApplicationsManager from '@/pages/applications/ApplicationsManager';
+import ApplicationsManager from '@/pages/recruiter/ApplicationsManager';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 import Tools from "@/pages/Tools";
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
           <div className="min-h-screen flex flex-col">
@@ -57,7 +59,6 @@ function App() {
               </Route>
               
               {/* Auth Routes (without layout) */}
-              <Route path="/auth" element={<Auth />} />
               <Route path="/auth/login" element={<Login />} />
               <Route path="/auth/register" element={<Register />} />
               
@@ -67,7 +68,7 @@ function App() {
           </div>
         </Router>
       </AuthProvider>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 
