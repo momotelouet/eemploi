@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { CVTemplate } from '@/components/cv/CVTemplates';
 
@@ -223,17 +222,36 @@ export const useCVPDF = () => {
       return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
     };
 
-    // Helper function to convert HTML to text while preserving basic formatting
+    // Enhanced HTML to text conversion that properly handles lists
     const htmlToText = (html: string): string => {
       return html
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<\/p>/gi, '\n')
-        .replace(/<p>/gi, '')
-        .replace(/<li>/gi, '• ')
+        // Handle unordered lists first
+        .replace(/<ul[^>]*>/gi, '\n')
+        .replace(/<\/ul>/gi, '\n')
+        // Handle ordered lists
+        .replace(/<ol[^>]*>/gi, '\n')
+        .replace(/<\/ol>/gi, '\n')
+        // Convert list items to bullet points
+        .replace(/<li[^>]*>/gi, '• ')
         .replace(/<\/li>/gi, '\n')
-        .replace(/<ul>|<\/ul>|<ol>|<\/ol>/gi, '')
+        // Handle paragraphs
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<p[^>]*>/gi, '')
+        // Handle line breaks
+        .replace(/<br\s*\/?>/gi, '\n')
+        // Handle bold, italic, underline (keep the text, remove tags)
+        .replace(/<\/?strong>/gi, '')
+        .replace(/<\/?b>/gi, '')
+        .replace(/<\/?em>/gi, '')
+        .replace(/<\/?i>/gi, '')
+        .replace(/<\/?u>/gi, '')
+        // Remove any remaining HTML tags
         .replace(/<[^>]*>/g, '')
+        // Clean up multiple newlines
         .replace(/\n\s*\n/g, '\n')
+        // Clean up extra spaces
+        .replace(/\s+/g, ' ')
+        // Trim the result
         .trim();
     };
 
