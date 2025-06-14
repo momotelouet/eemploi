@@ -38,9 +38,9 @@ const Jobs = () => {
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                         job.companies?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation = !locationFilter || job.location?.includes(locationFilter);
-    const matchesContract = !contractFilter || job.contract_type === contractFilter;
+    const matchesContract = !contractFilter || job.job_type === contractFilter;
     
     return matchesSearch && matchesLocation && matchesContract;
   });
@@ -85,7 +85,7 @@ const Jobs = () => {
                 <SelectValue placeholder="Localisation" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les villes</SelectItem>
+                <SelectItem value="all">Toutes les villes</SelectItem>
                 <SelectItem value="Casablanca">Casablanca</SelectItem>
                 <SelectItem value="Rabat">Rabat</SelectItem>
                 <SelectItem value="Marrakech">Marrakech</SelectItem>
@@ -99,11 +99,11 @@ const Jobs = () => {
                 <SelectValue placeholder="Type de contrat" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les contrats</SelectItem>
-                <SelectItem value="CDI">CDI</SelectItem>
-                <SelectItem value="CDD">CDD</SelectItem>
-                <SelectItem value="Stage">Stage</SelectItem>
-                <SelectItem value="Freelance">Freelance</SelectItem>
+                <SelectItem value="all">Tous les contrats</SelectItem>
+                <SelectItem value="full-time">Temps plein</SelectItem>
+                <SelectItem value="part-time">Temps partiel</SelectItem>
+                <SelectItem value="contract">Contrat</SelectItem>
+                <SelectItem value="freelance">Freelance</SelectItem>
               </SelectContent>
             </Select>
             
@@ -171,7 +171,7 @@ const Jobs = () => {
                             <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
                               <div className="flex items-center">
                                 <Building className="w-4 h-4 mr-2" />
-                                {job.company_name || 'Entreprise confidentielle'}
+                                {job.companies?.name || 'Entreprise confidentielle'}
                               </div>
                               <div className="flex items-center">
                                 <MapPin className="w-4 h-4 mr-2" />
@@ -179,7 +179,7 @@ const Jobs = () => {
                               </div>
                               <div className="flex items-center">
                                 <Clock className="w-4 h-4 mr-2" />
-                                {job.contract_type || 'Non spécifié'}
+                                {job.job_type || 'Non spécifié'}
                               </div>
                             </div>
                           </div>
@@ -190,7 +190,7 @@ const Jobs = () => {
                               </Badge>
                             )}
                             <Badge variant="outline" className="group-hover:border-eemploi-primary transition-colors duration-300">
-                              {job.contract_type || 'CDI'}
+                              {job.job_type || 'Temps plein'}
                             </Badge>
                           </div>
                         </div>
@@ -204,22 +204,24 @@ const Jobs = () => {
                           </p>
                         )}
                         
-                        <div className="flex flex-wrap gap-2">
-                          {job.required_skills?.slice(0, 3).map((skill, skillIndex) => (
-                            <Badge 
-                              key={skillIndex} 
-                              variant="secondary" 
-                              className="group-hover:bg-eemploi-primary/10 transition-colors duration-300"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
-                          {job.required_skills && job.required_skills.length > 3 && (
-                            <Badge variant="secondary">
-                              +{job.required_skills.length - 3} autres
-                            </Badge>
-                          )}
-                        </div>
+                        {job.requirements && (
+                          <div className="flex flex-wrap gap-2">
+                            {job.requirements.split(',').slice(0, 3).map((skill, skillIndex) => (
+                              <Badge 
+                                key={skillIndex} 
+                                variant="secondary" 
+                                className="group-hover:bg-eemploi-primary/10 transition-colors duration-300"
+                              >
+                                {skill.trim()}
+                              </Badge>
+                            ))}
+                            {job.requirements.split(',').length > 3 && (
+                              <Badge variant="secondary">
+                                +{job.requirements.split(',').length - 3} autres
+                              </Badge>
+                            )}
+                          </div>
+                        )}
                       </div>
                       
                       <div className="flex flex-col gap-2 lg:min-w-[200px]">
