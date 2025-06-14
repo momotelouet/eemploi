@@ -36,26 +36,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-
-        // Redirection automatique après connexion réussie
+        
+        // Ne plus faire de redirection automatique ici pour éviter les conflits
         if (event === 'SIGNED_IN' && session?.user) {
           const userType = session.user.user_metadata?.user_type || "candidat";
           console.log('User type detected:', userType);
-          
-          // Utiliser setTimeout pour éviter les conflits de navigation
-          setTimeout(() => {
-            switch (userType) {
-              case "recruteur":
-                window.location.href = "/dashboard/recruteur";
-                break;
-              case "admin":
-                window.location.href = "/dashboard/admin";
-                break;
-              default:
-                window.location.href = "/dashboard/candidat";
-                break;
-            }
-          }, 100);
+          // La redirection sera gérée par ProtectedRoute ou Login
         }
       }
     );

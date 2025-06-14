@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,6 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const { user, signIn, loading } = useAuth();
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,10 +39,8 @@ const Login = () => {
       const { error } = await signIn(email, password);
       if (error) {
         setError('Email ou mot de passe incorrect');
-      } else {
-        // La redirection sera gérée par l'AuthContext et ProtectedRoute
-        // Pas besoin de navigate ici
       }
+      // Ne plus faire de navigation manuelle ici - laisser le système de redirection automatique faire son travail
     } catch (err) {
       setError('Email ou mot de passe incorrect');
     } finally {

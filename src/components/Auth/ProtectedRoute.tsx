@@ -15,10 +15,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredUserType }) => 
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth/login");
+      return;
     }
-  }, [user, loading, navigate]);
 
-  useEffect(() => {
     if (user && !loading) {
       const userType = user.user_metadata?.user_type || "candidat";
       
@@ -27,13 +26,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredUserType }) => 
       if (!requiredUserType) {
         switch (userType) {
           case "recruteur":
-            navigate("/dashboard/recruteur", { replace: true });
+            if (window.location.pathname !== "/dashboard/recruteur") {
+              navigate("/dashboard/recruteur", { replace: true });
+            }
             break;
           case "admin":
-            navigate("/dashboard/admin", { replace: true });
+            if (window.location.pathname !== "/dashboard/admin") {
+              navigate("/dashboard/admin", { replace: true });
+            }
             break;
           default:
-            navigate("/dashboard/candidat", { replace: true });
+            if (window.location.pathname !== "/dashboard/candidat") {
+              navigate("/dashboard/candidat", { replace: true });
+            }
             break;
         }
         return;
