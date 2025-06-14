@@ -17,8 +17,8 @@ const SearchSection = () => {
     // Navigate to jobs page with search parameters
     const params = new URLSearchParams();
     if (searchTerm) params.append('q', searchTerm);
-    if (location) params.append('location', location);
-    if (category) params.append('category', category);
+    if (location && location !== 'all') params.append('location', location);
+    if (category && category !== 'all') params.append('category', category);
     
     navigate(`/emplois?${params.toString()}`);
   };
@@ -74,7 +74,7 @@ const SearchSection = () => {
                   <SelectValue placeholder="Localisation" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les villes</SelectItem>
+                  <SelectItem value="all">Toutes les villes</SelectItem>
                   {topCities.map((city) => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
@@ -89,7 +89,7 @@ const SearchSection = () => {
                   <SelectValue placeholder="Secteur d'activité" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les secteurs</SelectItem>
+                  <SelectItem value="all">Tous les secteurs</SelectItem>
                   <SelectItem value="informatique">Informatique & Tech</SelectItem>
                   <SelectItem value="finance">Finance & Banque</SelectItem>
                   <SelectItem value="marketing">Marketing & Communication</SelectItem>

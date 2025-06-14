@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,8 +38,8 @@ const Jobs = () => {
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          job.companies?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLocation = !locationFilter || job.location?.includes(locationFilter);
-    const matchesContract = !contractFilter || job.job_type === contractFilter;
+    const matchesLocation = !locationFilter || locationFilter === 'all' || job.location?.includes(locationFilter);
+    const matchesContract = !contractFilter || contractFilter === 'all' || job.job_type === contractFilter;
     
     return matchesSearch && matchesLocation && matchesContract;
   });
