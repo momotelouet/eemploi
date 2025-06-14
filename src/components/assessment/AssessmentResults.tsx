@@ -10,7 +10,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const AssessmentResults = () => {
-  const { data: assessments, loading } = useUserAssessments();
+  const { data: assessments, isLoading } = useUserAssessments();
 
   const getScoreColor = (score: number, maxScore: number) => {
     const percentage = (score / maxScore) * 100;
@@ -33,7 +33,7 @@ const AssessmentResults = () => {
     console.log('Téléchargement du certificat pour:', assessment.id);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (

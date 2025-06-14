@@ -20,7 +20,7 @@ interface AssessmentTestProps {
 }
 
 const AssessmentTest: React.FC<AssessmentTestProps> = ({ onComplete }) => {
-  const { data: questions, loading: questionsLoading } = useAssessmentQuestions();
+  const { data: questions, isLoading: questionsLoading } = useAssessmentQuestions();
   const createAssessment = useCreateAssessment();
   const submitResponse = useSubmitAssessmentResponse();
 
@@ -43,7 +43,7 @@ const AssessmentTest: React.FC<AssessmentTestProps> = ({ onComplete }) => {
 
   const startAssessment = async () => {
     try {
-      const assessment = await createAssessment.mutateAsync();
+      const assessment = await createAssessment.mutateAsync('complete');
       setCurrentAssessmentId(assessment.id);
       setIsStarted(true);
     } catch (error) {
