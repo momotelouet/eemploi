@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -57,14 +56,10 @@ export const useCandidateProfile = (candidateId: string | null = null) => {
     try {
       console.log('Updating profile with data:', updates);
       
-      // Préparer les données avec les types corrects
       const profileData = {
         user_id: candidateId,
         ...updates,
         updated_at: new Date().toISOString(),
-        // S'assurer que les arrays sont correctement formatés
-        skills: Array.isArray(updates.skills) ? updates.skills : [],
-        languages: Array.isArray(updates.languages) ? updates.languages : []
       };
 
       const { data, error } = await supabase
