@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { navigationItems } from './navigation';
+import { navigationItems } from './navigation.tsx';
 
 const HeaderNavigation = () => {
   return (

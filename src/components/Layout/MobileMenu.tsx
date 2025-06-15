@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { navigationItems } from './navigation';
+import { navigationItems } from './navigation.tsx';
 import { User, LogOut, FileText, Briefcase, LayoutDashboard, Users } from 'lucide-react';
 
 interface MobileMenuProps {
