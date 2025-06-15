@@ -16,19 +16,9 @@ export const generateAndStoreCertificate = async (
     }
 
     if (functionData?.html) {
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Certificat d'Évaluation - eemploi.com</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-        </head>
-        <body>
-          ${functionData.html}
-        </body>
-        </html>
-      `;
+      // FIX: The edge function already returns a full HTML document.
+      // We should not wrap it in another HTML structure.
+      const htmlContent = functionData.html;
 
       // 2. Préparer le fichier HTML pour storage
       const file = new File([htmlContent], `certificat-${assessment.id}.html`, { type: 'text/html' });
