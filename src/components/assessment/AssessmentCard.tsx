@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { generateAndStoreCertificate } from '@/lib/assessmentUtils';
 import AssessmentScore from './AssessmentScore';
+import jsPDF from 'jspdf';
 
 interface AssessmentCardProps {
   assessment: Assessment;
@@ -20,26 +22,35 @@ interface AssessmentCardProps {
 const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewAssessment, onDelete }) => {
   const queryClient = useQueryClient();
 
-  const downloadCertificate = async (assessment: Assessment) => {
-    const toastId = toast.loading('Génération de votre certificat...');
+  // Nouvelle version pour générer et télécharger le PDF du certificat côté client
+  const downloadCertificatePDF = async (assessment: Assessment) => {
+    const toastId = toast.loading('Récupération et génération du certificat PDF...');
 
     try {
       const result = await generateAndStoreCertificate(assessment);
 
-      if (result) {
-        const { publicUrl } = result;
-        
-        await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
+      if (result && result.htmlContent) {
+        // Génération du PDF
+        const doc = new jsPDF('p', 'pt', 'a4');
+        // On utilise .html pour rendre le HTML en PDF
+        await doc.html(result.htmlContent, {
+          margin: [20, 20, 20, 20],
+          autoPaging: 'text',
+          width: 800, // large width for readability
+        });
 
-        window.open(publicUrl, '_blank');
-        
-        toast.success("Certificat généré ! Il s'ouvre dans un nouvel onglet et est sauvegardé sur votre profil.", { id: toastId });
+        // Télécharger le PDF
+        doc.save(`certificat-evaluation-${assessment.id.slice(0, 8)}.pdf`);
+        toast.success('Certificat PDF généré et téléchargé !', { id: toastId });
+
+        // On rafraîchit le cache Supabase si besoin
+        await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
       } else {
         toast.error('Erreur lors de la génération du certificat', { id: toastId });
       }
     } catch (error) {
-      console.error('Erreur lors du téléchargement du certificat:', error);
-      toast.error('Erreur lors du téléchargement du certificat', { id: toastId });
+      console.error('Erreur lors de la génération ou du téléchargement du certificat PDF:', error);
+      toast.error('Erreur lors du téléchargement du certificat PDF', { id: toastId });
     }
   };
 
@@ -121,11 +132,11 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
               Reprendre
             </Button>
             <Button 
-              onClick={() => downloadCertificate(assessment)}
+              onClick={() => downloadCertificatePDF(assessment)}
               size="sm"
             >
               <Download className="w-4 h-4 mr-2" />
-              <span>{assessment.certificate_url ? 'Voir' : 'Certificat'}</span>
+              <span>Télécharger PDF</span>
             </Button>
             <Button
               variant="destructive"
@@ -142,3 +153,4 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
 };
 
 export default AssessmentCard;
+
