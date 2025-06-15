@@ -51,7 +51,7 @@ function App() {
                 <Route path="admin" element={<AdminDashboard />} />
               </Route>
               
-              <Route path="/recruteur" element={<ProtectedRoute />}>
+              <Route path="/recruteur" element={<ProtectedRoute requiredUserType="recruteur" />}>
                 <Route path="hub" element={<RecruiterHub />} />
                 <Route path="candidatures" element={<ApplicationsManager />} />
               </Route>
