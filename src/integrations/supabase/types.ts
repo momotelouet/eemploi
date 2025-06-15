@@ -499,6 +499,44 @@ export type Database = {
         }
         Relationships: []
       }
+      recruiter_profiles: {
+        Row: {
+          company_logo_url: string | null
+          company_name: string | null
+          company_website: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_website?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_website?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recruiter_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_points: {
         Row: {
           created_at: string
