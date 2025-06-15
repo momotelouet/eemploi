@@ -13,7 +13,9 @@ export type Database = {
         Row: {
           applied_at: string
           candidate_id: string
+          certificate_url: string | null
           cover_letter: string | null
+          cover_letter_url: string | null
           cv_profile_id: string | null
           cv_url: string | null
           id: string
@@ -24,7 +26,9 @@ export type Database = {
         Insert: {
           applied_at?: string
           candidate_id: string
+          certificate_url?: string | null
           cover_letter?: string | null
+          cover_letter_url?: string | null
           cv_profile_id?: string | null
           cv_url?: string | null
           id?: string
@@ -35,7 +39,9 @@ export type Database = {
         Update: {
           applied_at?: string
           candidate_id?: string
+          certificate_url?: string | null
           cover_letter?: string | null
+          cover_letter_url?: string | null
           cv_profile_id?: string | null
           cv_url?: string | null
           id?: string
