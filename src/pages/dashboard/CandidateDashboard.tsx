@@ -31,7 +31,7 @@ const CandidateDashboard = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'cv');
+  const activeTab = searchParams.get('tab') || 'cv';
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
   const [showAssessmentTest, setShowAssessmentTest] = useState(false);
@@ -47,7 +47,6 @@ const CandidateDashboard = () => {
   }
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value);
     setSearchParams({ tab: value });
   };
 
@@ -379,3 +378,4 @@ const CandidateDashboard = () => {
 };
 
 export default CandidateDashboard;
+
