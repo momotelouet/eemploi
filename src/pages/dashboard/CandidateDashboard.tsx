@@ -1,9 +1,6 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot, Search, Award } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,10 +13,13 @@ import CandidateProfileManager from '@/components/candidate/CandidateProfileMana
 import ApplicationsList from '@/components/applications/ApplicationsList';
 import CVOptimizer from '@/components/ai/CVOptimizer';
 import AIChat from '@/components/ai/AIChat';
-import InterviewAI from '@/components/ai/InterviewAI';
 import JobSearchAI from '@/components/ai/JobSearchAI';
-import AssessmentTest from '@/components/assessment/AssessmentTest';
 import AssessmentResults from '@/components/assessment/AssessmentResults';
+import CandidateDashboardHeader from './CandidateDashboardHeader';
+import CandidateQuickStats from './CandidateQuickStats';
+import CandidateQuickActions from './CandidateQuickActions';
+import CandidateDialogs from './CandidateDialogs';
+import { Award, Bot, Briefcase, FileText, Search, Star, TrendingUp, User } from 'lucide-react';
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
@@ -65,64 +65,42 @@ const CandidateDashboard = () => {
     setShowAssessmentTest(true);
   };
 
-  // Calculate profile completion percentage based on candidate profile
   const calculateProfileCompletion = () => {
     if (!candidateProfile) return 0;
-    
-    // Cast to any to access newly added columns
     const profileData = candidateProfile as any;
-
     const profileFields = [
-      // Informations personnelles de base
       profileData.phone,
       profileData.address,
       profileData.city,
       profileData.country,
-      
-      // Profil professionnel
       profileData.professional_summary,
       profileData.bio,
-      
-      // Structured data
       profileData.experience && profileData.experience.length > 0 ? 'experience' : null,
       profileData.education_structured && profileData.education_structured.length > 0 ? 'education' : null,
       profileData.certifications && profileData.certifications.length > 0 ? 'certifications' : null,
       profileData.projects && profileData.projects.length > 0 ? 'projects' : null,
-
-      // Existing fields
       profileData.experience_years,
       profileData.skills && profileData.skills.length > 0 ? 'skills' : null,
       profileData.languages && profileData.languages.length > 0 ? 'languages' : null,
       profileData.education,
-      
-      // Liens professionnels
       profileData.linkedin_url,
       profileData.portfolio_url,
-      
-      // Photo de profil
       profileData.profile_picture_url,
-      
-      // CV
-      profileData.cv_file_url
+      profileData.cv_file_url,
     ];
-
-    // Informations de base du profil utilisateur
     const basicFields = [
       profile?.first_name,
       profile?.last_name
     ];
-
     const allFields = [...profileFields, ...basicFields];
     const completedFields = allFields.filter(field => {
       if (!field) return false;
       if (Array.isArray(field)) return field.length > 0;
       return field !== '';
     }).length;
-    
     return Math.round((completedFields / allFields.length) * 100);
   };
 
-  // Count interviews (applications with status 'interview' or similar)
   const interviewCount = applications.filter(app => 
     app.status === 'interview' || app.status === 'interview_scheduled'
   ).length;
@@ -130,76 +108,22 @@ const CandidateDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* En-tête du dashboard */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">
-            Bonjour {profile?.first_name || user?.email?.split('@')[0]} ! 👋
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base">
-            Gérez votre profil professionnel et vos candidatures avec l'aide de l'IA
-          </p>
-        </div>
+        <CandidateDashboardHeader
+          firstName={profile?.first_name}
+          email={user?.email}
+        />
 
-        {/* Statistiques rapides */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8">
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center">
-                <FileText className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
-                <div className="ml-2 md:ml-4">
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground">CV Créés</p>
-                  <p className="text-lg md:text-2xl font-bold">
-                    {cvLoading ? '...' : cvProfiles.length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <CandidateQuickStats
+          cvCount={cvProfiles.length}
+          applicationsCount={applications.length}
+          interviewCount={interviewCount}
+          profileCompletion={calculateProfileCompletion()}
+          loading={loading}
+          applicationsLoading={applicationsLoading}
+          candidateLoading={candidateLoading}
+          cvLoading={cvLoading}
+        />
 
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center">
-                <Briefcase className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
-                <div className="ml-2 md:ml-4">
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Candidatures</p>
-                  <p className="text-lg md:text-2xl font-bold">
-                    {applicationsLoading ? '...' : applications.length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center">
-                <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
-                <div className="ml-2 md:ml-4">
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Entretiens</p>
-                  <p className="text-lg md:text-2xl font-bold">
-                    {applicationsLoading ? '...' : interviewCount}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center">
-                <Star className="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
-                <div className="ml-2 md:ml-4">
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Profil Complété</p>
-                  <p className="text-lg md:text-2xl font-bold">
-                    {candidateLoading ? '...' : `${calculateProfileCompletion()}%`}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Contenu principal avec onglets */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className={`w-full ${isMobile ? 'grid-cols-2 h-auto flex-wrap' : 'grid-cols-7'} grid gap-1`}>
             <TabsTrigger value="cv" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
@@ -248,26 +172,15 @@ const CandidateDashboard = () => {
             <div className="space-y-6">
               <AssessmentResults />
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>Nouveau Test d'Évaluation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center space-y-4">
-                    <p className="text-muted-foreground">
-                      Passez un test complet de personnalité et compétences pour obtenir votre certificat professionnel
-                    </p>
-                    <div 
-                      className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
-                      onClick={handleStartAssessment}
-                    >
-                      <Award className="w-6 h-6 text-blue-600 mb-2 mx-auto" />
-                      <h4 className="font-medium">Commencer une nouvelle évaluation</h4>
-                      <p className="text-sm text-muted-foreground">Durée: 5-10 minutes</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="mt-4">
+                <CandidateQuickActions
+                  isMobile={isMobile}
+                  onCreateCV={handleCreateCV}
+                  onSearchJobs={handleSearchJobs}
+                  onInterviewSimulation={handleInterviewSimulation}
+                  onStartAssessment={handleStartAssessment}
+                />
+              </div>
             </div>
           </TabsContent>
 
@@ -288,89 +201,27 @@ const CandidateDashboard = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Actions rapides */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Actions Rapides</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-4 gap-4'}`}>
-              <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
-                onClick={handleCreateCV}
-              >
-                <FileText className="w-6 h-6 text-blue-600 mb-2 mx-auto" />
-                <h4 className="font-medium text-sm md:text-base">Créer un nouveau CV</h4>
-                <p className="text-xs md:text-sm text-muted-foreground">Utilisez nos templates modernes</p>
-              </div>
-              
-              <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
-                onClick={handleSearchJobs}
-              >
-                <Briefcase className="w-6 h-6 text-green-600 mb-2 mx-auto" />
-                <h4 className="font-medium text-sm md:text-base">Rechercher des emplois</h4>
-                <p className="text-xs md:text-sm text-muted-foreground">Trouvez votre prochain défi</p>
-              </div>
-              
-              <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
-                onClick={handleInterviewSimulation}
-              >
-                <Calendar className="w-6 h-6 text-purple-600 mb-2 mx-auto" />
-                <h4 className="font-medium text-sm md:text-base">Simuler un entretien</h4>
-                <p className="text-xs md:text-sm text-muted-foreground">Préparez-vous efficacement</p>
-              </div>
+        <CandidateQuickActions
+          isMobile={isMobile}
+          onCreateCV={handleCreateCV}
+          onSearchJobs={handleSearchJobs}
+          onInterviewSimulation={handleInterviewSimulation}
+          onStartAssessment={handleStartAssessment}
+        />
 
-              <div 
-                className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors text-center"
-                onClick={handleStartAssessment}
-              >
-                <Award className="w-6 h-6 text-yellow-600 mb-2 mx-auto" />
-                <h4 className="font-medium text-sm md:text-base">Test de personnalité</h4>
-                <p className="text-xs md:text-sm text-muted-foreground">Obtenez votre certificat</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Dialog pour créer un CV */}
-        <Dialog open={showCreateCV} onOpenChange={setShowCreateCV}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Créer un nouveau CV</DialogTitle>
-            </DialogHeader>
-            <ProfessionalProfileManager />
-          </DialogContent>
-        </Dialog>
-
-        {/* Dialog pour simuler un entretien */}
-        <Dialog open={showInterviewSimulator} onOpenChange={setShowInterviewSimulator}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Simulateur d'entretien IA</DialogTitle>
-            </DialogHeader>
-            <InterviewAI 
-              jobTitle="Poste généraliste"
-              candidateProfile={profile ? `${profile.first_name} ${profile.last_name}` : 'Candidat'}
-            />
-          </DialogContent>
-        </Dialog>
-
-        {/* Dialog pour le test d'évaluation */}
-        <Dialog open={showAssessmentTest} onOpenChange={setShowAssessmentTest}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Test de Personnalité et Compétences</DialogTitle>
-            </DialogHeader>
-            <AssessmentTest 
-              onComplete={() => {
-                setShowAssessmentTest(false);
-                window.location.reload(); // Recharger pour voir les nouveaux résultats
-              }}
-            />
-          </DialogContent>
-        </Dialog>
+        <CandidateDialogs
+          showCreateCV={showCreateCV}
+          setShowCreateCV={setShowCreateCV}
+          showInterviewSimulator={showInterviewSimulator}
+          setShowInterviewSimulator={setShowInterviewSimulator}
+          showAssessmentTest={showAssessmentTest}
+          setShowAssessmentTest={setShowAssessmentTest}
+          userProfile={profile}
+          onAssessmentComplete={() => {
+            setShowAssessmentTest(false);
+            window.location.reload();
+          }}
+        />
       </div>
     </div>
   );
