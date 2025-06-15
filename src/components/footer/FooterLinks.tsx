@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 
 const footerSections = [
@@ -36,14 +35,6 @@ const footerSections = [
         { label: 'Équipe', href: '/about' },
         { label: 'Carrières', href: '/emplois' },
         { label: 'Presse', href: '/contact' },
-      ]
-    },
-    {
-      title: 'Légal',
-      links: [
-        { label: 'Politique de confidentialité', href: '/legal/privacy' },
-        { label: "Conditions d'utilisation", href: '/legal/terms' },
-        { label: 'Politique des cookies', href: '/legal/cookies' },
       ]
     }
   ];
