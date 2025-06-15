@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
   const { user } = useAuth();
   const [coverLetter, setCoverLetter] = useState('');
   const [selectedCVOption, setSelectedCVOption] = useState('platform');
-  const [platformCVUrl, setPlatformCVUrl] = useState<string | undefined>();
+  const [selectedCvUrl, setSelectedCvUrl] = useState<string | undefined>();
   const [uploadedCVFile, setUploadedCVFile] = useState<File | undefined>();
   const [selectedCVProfileId, setSelectedCVProfileId] = useState<string | undefined>();
   const [attachCertificate, setAttachCertificate] = useState(true);
@@ -50,22 +51,22 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
     cvProfileId?: string;
   }) => {
     // Reset all CV data first
-    setPlatformCVUrl(undefined);
+    setSelectedCvUrl(undefined);
     setUploadedCVFile(undefined);
     setSelectedCVProfileId(undefined);
 
     // Set the one that was selected
     if (data.type === 'platform') {
-      setPlatformCVUrl(data.cvUrl);
+      setSelectedCVProfileId(data.cvProfileId);
     } else if (data.type === 'upload') {
       setUploadedCVFile(data.cvFile);
     } else if (data.type === 'profile') {
-      setSelectedCVProfileId(data.cvProfileId);
+      setSelectedCvUrl(data.cvUrl);
     }
   };
 
   const handleSubmit = async () => {
-    if (!platformCVUrl && !uploadedCVFile && !selectedCVProfileId) {
+    if (!selectedCvUrl && !uploadedCVFile && !selectedCVProfileId) {
       toast.error('Veuillez sélectionner un CV avant de postuler.');
       return;
     }
@@ -75,7 +76,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
     const success = await applyToJob(
       jobId, 
       coverLetter,
-      platformCVUrl,
+      selectedCvUrl,
       uploadedCVFile,
       selectedCVProfileId,
       certificateUrlToAttach
@@ -89,7 +90,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
   const handleClose = () => {
     onClose();
     setCoverLetter('');
-    setPlatformCVUrl(undefined);
+    setSelectedCvUrl(undefined);
     setUploadedCVFile(undefined);
     setSelectedCVProfileId(undefined);
     setSelectedCVOption('platform');
@@ -117,7 +118,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
                 <div className="flex items-center space-x-2 text-sm">
                   <FileText className="w-4 h-4 text-blue-600" />
                   <span>CV</span>
-                  {(platformCVUrl || uploadedCVFile || selectedCVProfileId) && (
+                  {(selectedCvUrl || uploadedCVFile || selectedCVProfileId) && (
                     <CheckCircle className="w-4 h-4 text-green-600 ml-2" />
                   )}
                 </div>
@@ -183,7 +184,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
             <Button variant="outline" onClick={handleClose} disabled={isApplying}>
               Annuler
             </Button>
-            <Button onClick={handleSubmit} disabled={isApplying || (!platformCVUrl && !uploadedCVFile && !selectedCVProfileId)}>
+            <Button onClick={handleSubmit} disabled={isApplying || (!selectedCvUrl && !uploadedCVFile && !selectedCVProfileId)}>
               {isApplying ? 'Envoi en cours...' : 'Envoyer ma candidature'}
             </Button>
           </div>
