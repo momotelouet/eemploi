@@ -86,8 +86,11 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       {/* Hero Section */}
       <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-eemploi-primary via-eemploi-primary to-eemploi-secondary"></div>
-        <div className="absolute inset-0 bg-black/10"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center" 
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1920&q=80')" }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-eemploi-primary/80 via-eemploi-primary/70 to-eemploi-secondary/80"></div>
         
         <div className="container mx-auto px-6 md:px-8 relative z-10">
           <div className="text-center max-w-5xl mx-auto">
