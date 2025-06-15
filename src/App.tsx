@@ -29,6 +29,13 @@ import LiveChatWidget from './components/chat/LiveChatWidget';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import TermsOfUse from './pages/legal/TermsOfUse';
 import CookiePolicy from './pages/legal/CookiePolicy';
+import CareerAdvice from './pages/CareerAdvice';
+import Blog from './pages/Blog';
+import Trends from './pages/Trends';
+import HRSolutions from './pages/HRSolutions';
+import Pricing from './pages/Pricing';
+import FAQ from './pages/FAQ';
+import Press from './pages/Press';
 
 const queryClient = new QueryClient();
 
@@ -53,6 +60,14 @@ function App() {
                 <Route path="/legal/terms" element={<TermsOfUse />} />
                 <Route path="/legal/cookies" element={<CookiePolicy />} />
                 
+                <Route path="/conseils-carriere" element={<CareerAdvice />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/tendances" element={<Trends />} />
+                <Route path="/solutions-rh" element={<HRSolutions />} />
+                <Route path="/tarifs" element={<Pricing />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/presse" element={<Press />} />
+
                 {/* Protected Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute />}>
                   <Route path="candidat" element={<CandidateDashboard />} />

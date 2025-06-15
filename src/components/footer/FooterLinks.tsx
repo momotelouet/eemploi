@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 
 const footerSections = [
@@ -6,7 +7,7 @@ const footerSections = [
       links: [
         { label: 'Rechercher un emploi', href: '/emplois' },
         { label: 'Créer un CV', href: '/dashboard/candidat' },
-        { label: 'Conseils carrière', href: '/about' },
+        { label: 'Conseils carrière', href: '/conseils-carriere' },
         { label: 'Simulateur de salaire', href: '/outils' },
       ]
     },
@@ -15,17 +16,17 @@ const footerSections = [
       links: [
         { label: 'Publier une offre', href: '/auth/register' },
         { label: 'Rechercher des candidats', href: '/auth/register' },
-        { label: 'Solutions RH', href: '/contact' },
-        { label: 'Tarifs', href: '/contact' },
+        { label: 'Solutions RH', href: '/solutions-rh' },
+        { label: 'Tarifs', href: '/tarifs' },
       ]
     },
     {
       title: 'Ressources',
       links: [
-        { label: 'Blog emploi', href: '/about' },
+        { label: 'Blog emploi', href: '/blog' },
         { label: 'Guide entretien', href: '/outils' },
-        { label: 'Tendances secteurs', href: '/about' },
-        { label: 'FAQ', href: '/contact' },
+        { label: 'Tendances secteurs', href: '/tendances' },
+        { label: 'FAQ', href: '/faq' },
       ]
     },
     {
@@ -34,7 +35,7 @@ const footerSections = [
         { label: 'Notre mission', href: '/about' },
         { label: 'Équipe', href: '/about' },
         { label: 'Carrières', href: '/emplois' },
-        { label: 'Presse', href: '/contact' },
+        { label: 'Presse', href: '/presse' },
       ]
     }
   ];
