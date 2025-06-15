@@ -108,7 +108,7 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId, app
             <TabsContent value="application"><ApplicationInfoTab application={application} /></TabsContent>
             <TabsContent value="profile"><ProfileInfoTab profile={profile} /></TabsContent>
             <TabsContent value="assessments"><AssessmentsInfoTab assessments={assessments} onDownloadCertificate={handleDownloadCertificate} /></TabsContent>
-            <TabsContent value="documents"><DocumentsInfoTab profile={profile} assessments={assessments} onDownloadCV={handleDownloadCV} onDownloadCertificate={handleDownloadCertificate} /></TabsContent>
+            <TabsContent value="documents"><DocumentsInfoTab application={application} profile={profile} assessments={assessments} onDownloadCV={handleDownloadCV} onDownloadCertificate={handleDownloadCertificate} /></TabsContent>
           </Tabs>
         </div>
         

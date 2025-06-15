@@ -1,51 +1,53 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Info } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface ApplicationInfoTabProps {
   application: Tables<'applications'> | null;
 }
 
+const getStatusBadge = (status: string | undefined | null) => {
+  if (!status) return <Badge variant="secondary">Inconnu</Badge>;
+  switch (status) {
+    case 'pending':
+      return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+    case 'accepted':
+      return <Badge className="bg-green-100 text-green-800">Acceptée</Badge>;
+    case 'rejected':
+      return <Badge className="bg-red-100 text-red-800">Refusée</Badge>;
+    default:
+      return <Badge variant="secondary">{status}</Badge>;
+  }
+};
+
 export const ApplicationInfoTab = ({ application }: ApplicationInfoTabProps) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center">
-          <FileText className="w-5 h-5 mr-2" />
-          Détails de la candidature
+          <Info className="w-5 h-5 mr-2" />
+          Informations sur la candidature
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="font-medium">Date de candidature :</p>
-          <p className="text-muted-foreground">
-            {application?.applied_at ? new Date(application.applied_at).toLocaleDateString('fr-FR') : 'Non spécifiée'}
+      <CardContent className="space-y-4 pt-6">
+        <div className="flex items-center space-x-2">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          <p>
+            <span className="font-medium">Date de candidature : </span>
+            <span className="text-muted-foreground">
+              {application?.applied_at ? new Date(application.applied_at).toLocaleDateString('fr-FR') : 'Non spécifiée'}
+            </span>
           </p>
         </div>
-        
-        {application?.cover_letter && (
-          <div>
-            <p className="font-medium mb-2">Lettre de motivation :</p>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="whitespace-pre-wrap">{application.cover_letter}</p>
-            </div>
-          </div>
-        )}
-        
-        {application?.cv_url && (
-          <div>
-            <p className="font-medium mb-2">CV joint à la candidature :</p>
-            <Button 
-              variant="outline" 
-              onClick={() => window.open(application.cv_url!, '_blank')}
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Voir le CV
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center space-x-2">
+           <p className="font-medium">Statut :</p>
+           {getStatusBadge(application?.status)}
+        </div>
+        <div className="text-sm text-muted-foreground pt-4 border-t mt-4">
+          La lettre de motivation, le CV et les certificats soumis avec cette candidature sont disponibles dans l'onglet "Documents".
+        </div>
       </CardContent>
     </Card>
   );
