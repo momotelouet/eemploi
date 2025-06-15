@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 const Register = () => {
   const { user, signUp, loading } = useAuth();
@@ -16,20 +16,28 @@ const Register = () => {
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    userType: 'candidat'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
 
   if (user) {
-    return <Navigate to="/dashboard/candidat" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleUserTypeChange = (value: 'candidat' | 'recruteur') => {
+    setFormData({
+      ...formData,
+      userType: value
     });
   };
 
@@ -51,7 +59,7 @@ const Register = () => {
       const { error } = await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName,
-        user_type: 'candidat'
+        user_type: formData.userType
       });
       if (error) {
         setError('Erreur lors de l\'inscription. Veuillez réessayer.');
@@ -113,6 +121,25 @@ const Register = () => {
                   disabled={loading}
                 />
               </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Je suis</Label>
+              <RadioGroup
+                defaultValue="candidat"
+                className="flex space-x-4"
+                onValueChange={handleUserTypeChange}
+                disabled={loading}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="candidat" id="r1" />
+                  <Label htmlFor="r1">Candidat</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="recruteur" id="r2" />
+                  <Label htmlFor="r2">Recruteur</Label>
+                </div>
+              </RadioGroup>
             </div>
             
             <div className="space-y-2">
