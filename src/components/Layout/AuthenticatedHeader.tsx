@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -171,7 +172,7 @@ const AuthenticatedHeader = () => {
                   <>
                     <DropdownMenuItem asChild>
                       <Link 
-                        to="/dashboard/candidat" 
+                        to="/dashboard/candidat?tab=profile" 
                         className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
                       >
                         <User className="mr-2 h-4 w-4" />
@@ -180,7 +181,7 @@ const AuthenticatedHeader = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link 
-                        to="/dashboard/candidat" 
+                        to="/dashboard/candidat?tab=cv" 
                         className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
                       >
                         <FileText className="mr-2 h-4 w-4" />
@@ -189,7 +190,7 @@ const AuthenticatedHeader = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link 
-                        to="/dashboard/candidat" 
+                        to="/dashboard/candidat?tab=applications" 
                         className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
                       >
                         <Briefcase className="mr-2 h-4 w-4" />
@@ -279,7 +280,7 @@ const AuthenticatedHeader = () => {
                 {userType === 'candidat' && (
                   <>
                     <Link
-                      to="/dashboard/candidat"
+                      to="/dashboard/candidat?tab=profile"
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
                       style={{ animationDelay: '0.6s' }}
@@ -288,7 +289,7 @@ const AuthenticatedHeader = () => {
                       <span>Mon profil</span>
                     </Link>
                     <Link
-                      to="/dashboard/candidat"
+                      to="/dashboard/candidat?tab=cv"
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
                       style={{ animationDelay: '0.7s' }}
@@ -297,7 +298,7 @@ const AuthenticatedHeader = () => {
                       <span>Mes CV</span>
                     </Link>
                     <Link
-                      to="/dashboard/candidat"
+                      to="/dashboard/candidat?tab=applications"
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
                       style={{ animationDelay: '0.8s' }}

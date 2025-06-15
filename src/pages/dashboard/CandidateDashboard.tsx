@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FileText, Briefcase, User, Star, TrendingUp, Calendar, MapPin, Bot, Search, Award } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApplications } from '@/hooks/useApplications';
@@ -29,6 +30,8 @@ const CandidateDashboard = () => {
   const { profile: candidateProfile, loading: candidateLoading } = useCandidateProfile(user?.id);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'cv');
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
   const [showAssessmentTest, setShowAssessmentTest] = useState(false);
@@ -42,6 +45,11 @@ const CandidateDashboard = () => {
       </div>
     );
   }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
+  };
 
   const handleCreateCV = () => {
     setShowCreateCV(true);
@@ -194,7 +202,7 @@ const CandidateDashboard = () => {
         </div>
 
         {/* Contenu principal avec onglets */}
-        <Tabs defaultValue="cv" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className={`w-full ${isMobile ? 'grid-cols-2 h-auto flex-wrap' : 'grid-cols-7'} grid gap-1`}>
             <TabsTrigger value="cv" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
               <FileText className="w-4 h-4" />
