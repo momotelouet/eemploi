@@ -13,7 +13,10 @@ import {
   Star,
   ArrowRight,
   CheckCircle,
-  Zap
+  Zap,
+  Shield,
+  Target,
+  Globe
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SearchSection from '@/components/SearchSection';
@@ -23,7 +26,7 @@ const Index = () => {
   const featuredJobs = [
     {
       id: 1,
-      title: "Développeur Full Stack",
+      title: "Développeur Full Stack Senior",
       company: "TechCorp Morocco",
       location: "Casablanca",
       salary: "15,000 - 25,000 MAD",
@@ -61,86 +64,92 @@ const Index = () => {
 
   const benefits = [
     {
-      icon: <Search className="w-8 h-8 text-eemploi-primary" />,
-      title: "Recherche Intelligente",
-      description: "Trouvez l'emploi parfait grâce à notre IA avancée"
+      icon: <Target className="w-10 h-10 text-eemploi-primary" />,
+      title: "Matching IA Avancé",
+      description: "Notre intelligence artificielle analyse votre profil pour vous proposer les offres les plus pertinentes",
+      color: "from-green-500 to-emerald-600"
     },
     {
-      icon: <Users className="w-8 h-8 text-eemploi-secondary" />,
-      title: "Réseau Professionnel",
-      description: "Connectez-vous avec les meilleurs recruteurs du Maroc"
+      icon: <Shield className="w-10 h-10 text-eemploi-secondary" />,
+      title: "Profils Vérifiés",
+      description: "Tous les profils et entreprises sont vérifiés pour garantir la qualité et la sécurité",
+      color: "from-blue-500 to-indigo-600"
     },
     {
-      icon: <Zap className="w-8 h-8 text-eemploi-accent" />,
-      title: "Candidature Express",
-      description: "Postulez en un clic avec votre profil optimisé"
+      icon: <Globe className="w-10 h-10 text-eemploi-accent" />,
+      title: "Réseau National",
+      description: "Accédez aux meilleures opportunités dans toutes les villes du Maroc",
+      color: "from-amber-500 to-orange-600"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section with enhanced animations */}
-      <section className="gradient-bg text-white py-20 overflow-hidden relative">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Votre <span className="text-eemploi-accent animate-bounce-gentle">carrière</span> commence ici
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+      {/* Hero Section */}
+      <section className="relative py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-eemploi-primary via-eemploi-primary to-eemploi-secondary"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        
+        <div className="container mx-auto px-6 md:px-8 relative z-10">
+          <div className="text-center max-w-5xl mx-auto">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
+              Votre carrière
+              <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                commence ici
+              </span>
             </h1>
-            <p className="text-xl mb-8 text-white/90 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-xl md:text-2xl text-white/90 mb-12 leading-relaxed max-w-3xl mx-auto">
               La plateforme de référence pour l'emploi au Maroc. Trouvez votre opportunité parmi 
-              <span className="font-bold text-eemploi-accent"> 15,000+ offres</span> d'emploi.
+              <span className="font-bold text-yellow-300"> 15,000+ offres</span> d'emploi vérifiées.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <Button size="lg" className="bg-white text-eemploi-primary hover:bg-white/90 hover:scale-105 transition-all duration-300 hover-lift">
-                <Search className="w-5 h-5 mr-2" />
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Button size="lg" className="btn-primary text-lg px-12 py-6 shadow-2xl hover:shadow-3xl">
+                <Search className="w-6 h-6 mr-3" />
                 Rechercher un emploi
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-eemploi-primary hover:scale-105 transition-all duration-300">
+              <Button size="lg" variant="outline" className="btn-secondary text-lg px-12 py-6">
                 Publier une offre
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-6 h-6 ml-3" />
               </Button>
             </div>
           </div>
         </div>
-        
-        {/* Animated background elements */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-bounce-gentle" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-10 right-10 w-16 h-16 bg-eemploi-accent/20 rounded-full animate-bounce-gentle" style={{ animationDelay: '1.5s' }}></div>
-        <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-eemploi-secondary/20 rounded-full animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
       </section>
 
-      {/* Search Section with enhanced styling */}
-      <section className="py-16 bg-white relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="transform -translate-y-8">
+      {/* Search Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-6 md:px-8">
+          <div className="transform -translate-y-16">
             <SearchSection />
           </div>
         </div>
       </section>
 
-      {/* Benefits Section with staggered animations */}
-      <section className="py-16 bg-gradient-to-r from-gray-50 to-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-3xl font-bold mb-4">Pourquoi choisir eemploi ?</h2>
-            <p className="text-muted-foreground text-lg">Des outils innovants pour votre réussite professionnelle</p>
+      {/* Benefits Section */}
+      <section className="py-24 bg-white relative">
+        <div className="container mx-auto px-6 md:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Pourquoi choisir eemploi ?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Une plateforme moderne conçue pour maximiser vos chances de réussite professionnelle
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {benefits.map((benefit, index) => (
               <Card 
                 key={index} 
-                className="text-center hover-lift glass-card animate-fade-in hover:shadow-xl transition-all duration-300 group"
-                style={{ animationDelay: `${index * 0.2}s` }}
+                className="professional-card group text-center border-0 p-8 hover:scale-105"
               >
                 <CardContent className="p-8">
-                  <div className="mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <div className={`w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br ${benefit.color} flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110`}>
                     {benefit.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-3">{benefit.title}</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900">{benefit.title}</h3>
+                  <p className="text-gray-600 leading-relaxed text-lg">{benefit.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -148,94 +157,106 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Stats Section with enhanced animations */}
+      {/* Stats Section */}
       <Stats />
 
-      {/* Featured Jobs with enhanced animations */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-3xl font-bold mb-4">Offres en vedette</h2>
-            <p className="text-muted-foreground text-lg">Les meilleures opportunités sélectionnées pour vous</p>
+      {/* Featured Jobs */}
+      <section className="py-24 bg-gradient-to-br from-gray-50 to-white">
+        <div className="container mx-auto px-6 md:px-8">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-eemploi-primary/10 text-eemploi-primary px-6 py-2 text-lg">
+              Offres Premium
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Opportunités en vedette
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Les meilleures offres sélectionnées par nos experts pour accélérer votre carrière
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {featuredJobs.map((job, index) => (
               <Card 
                 key={job.id} 
-                className="hover-lift group animate-fade-in hover:shadow-xl transition-all duration-300"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="professional-card group hover:scale-105 border-0"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <Badge className="bg-eemploi-primary/10 text-eemploi-primary group-hover:bg-eemploi-primary group-hover:text-white transition-all duration-300">
-                      ⭐ En vedette
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between mb-4">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2">
+                      ⭐ Premium
                     </Badge>
-                    <Badge variant="outline" className="group-hover:border-eemploi-primary transition-colors duration-300">
+                    <Badge variant="outline" className="border-eemploi-primary text-eemploi-primary">
                       {job.type}
                     </Badge>
                   </div>
-                  <CardTitle className="text-lg group-hover:text-eemploi-primary transition-colors duration-300">
+                  <CardTitle className="text-xl group-hover:text-eemploi-primary transition-colors duration-300">
                     {job.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-muted-foreground">
-                      <Building className="w-4 h-4 mr-2" />
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center text-gray-600">
+                      <Building className="w-5 h-5 mr-3 text-eemploi-primary" />
                       {job.company}
                     </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <MapPin className="w-4 h-4 mr-2" />
+                    <div className="flex items-center text-gray-600">
+                      <MapPin className="w-5 h-5 mr-3 text-eemploi-primary" />
                       {job.location}
                     </div>
-                    <div className="flex items-center text-eemploi-primary font-medium">
-                      <TrendingUp className="w-4 h-4 mr-2" />
+                    <div className="flex items-center text-eemploi-primary font-bold text-lg">
+                      <TrendingUp className="w-5 h-5 mr-3" />
                       {job.salary}
                     </div>
                   </div>
-                  <Button className="w-full group-hover:bg-eemploi-primary group-hover:scale-105 transition-all duration-300">
+                  <Button className="w-full btn-primary group-hover:shadow-xl">
                     Voir l'offre
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
           
-          <div className="text-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
+          <div className="text-center">
             <Link to="/emplois">
-              <Button size="lg" variant="outline" className="hover:bg-eemploi-primary hover:text-white hover:scale-105 transition-all duration-300">
+              <Button size="lg" variant="outline" className="btn-secondary text-lg px-12 py-4">
                 Voir toutes les offres
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-6 h-6 ml-3" />
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Top Companies with enhanced animations */}
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-3xl font-bold mb-4">Entreprises partenaires</h2>
-            <p className="text-muted-foreground text-lg">Rejoignez les leaders du marché marocain</p>
+      {/* Top Companies */}
+      <section className="py-24 bg-white">
+        <div className="container mx-auto px-6 md:px-8">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-eemploi-secondary/10 text-eemploi-secondary px-6 py-2 text-lg">
+              Partenaires de confiance
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Entreprises leaders
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Rejoignez les entreprises les plus innovantes et performantes du Maroc
+            </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {topCompanies.map((company, index) => (
               <Card 
                 key={index} 
-                className="text-center hover-lift p-6 group animate-fade-in hover:shadow-lg transition-all duration-300"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="professional-card group text-center p-8 hover:scale-110"
               >
-                <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                <div className="text-4xl mb-6 group-hover:scale-125 transition-transform duration-300">
                   {company.logo}
                 </div>
-                <h3 className="font-semibold text-sm mb-2 group-hover:text-eemploi-primary transition-colors duration-300">
+                <h3 className="font-bold text-lg mb-3 group-hover:text-eemploi-primary transition-colors duration-300">
                   {company.name}
                 </h3>
-                <Badge variant="outline" className="text-xs group-hover:border-eemploi-primary transition-colors duration-300">
+                <Badge variant="outline" className="group-hover:border-eemploi-primary group-hover:text-eemploi-primary transition-colors duration-300">
                   {company.jobs} offres
                 </Badge>
               </Card>
@@ -244,35 +265,36 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section with enhanced animations */}
-      <section className="py-16 gradient-bg text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="max-w-2xl mx-auto animate-fade-in">
-            <h2 className="text-3xl font-bold mb-4">Prêt à décrocher votre emploi de rêve ?</h2>
-            <p className="text-xl mb-8 text-white/90">
+      {/* CTA Section */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-eemploi-primary via-eemploi-primary to-eemploi-secondary"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+        
+        <div className="container mx-auto px-6 md:px-8 text-center relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
+              Prêt à décrocher votre emploi de rêve ?
+            </h2>
+            <p className="text-xl md:text-2xl text-white/90 mb-12 leading-relaxed">
               Rejoignez plus de 50,000 candidats qui ont trouvé leur emploi grâce à eemploi
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link to="/auth/register">
-                <Button size="lg" className="bg-white text-eemploi-primary hover:bg-white/90 hover:scale-105 transition-all duration-300">
-                  <CheckCircle className="w-5 h-5 mr-2" />
+                <Button size="lg" className="bg-white text-eemploi-primary hover:bg-gray-50 text-lg px-12 py-6 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300">
+                  <CheckCircle className="w-6 h-6 mr-3" />
                   Créer mon compte gratuit
                 </Button>
               </Link>
               <Link to="/emplois">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-eemploi-primary hover:scale-105 transition-all duration-300">
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-eemploi-primary text-lg px-12 py-6 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300">
                   Explorer les offres
-                  <Search className="w-5 h-5 ml-2" />
+                  <Search className="w-6 h-6 ml-3" />
                 </Button>
               </Link>
             </div>
           </div>
         </div>
-        
-        {/* Animated background elements */}
-        <div className="absolute top-10 right-10 w-24 h-24 bg-white/10 rounded-full animate-bounce-gentle" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute bottom-10 left-10 w-20 h-20 bg-eemploi-accent/20 rounded-full animate-bounce-gentle" style={{ animationDelay: '1s' }}></div>
       </section>
     </div>
   );

@@ -38,9 +38,9 @@
     --radius: 0.75rem;
 
     /* eemploi.com custom colors */
-    --eemploi-primary: 142 86% 28%; /* Vert marocain */
-    --eemploi-secondary: 0 84% 47%; /* Rouge marocain */
-    --eemploi-accent: 43 96% 56%; /* Or/Jaune */
+    --eemploi-primary: 142 86% 28%; /* Vert professionnel */
+    --eemploi-secondary: 220 91% 52%; /* Bleu corporate */
+    --eemploi-accent: 45 93% 58%; /* Or élégant */
     --eemploi-success: 142 76% 36%;
     --eemploi-warning: 38 92% 50%;
     --eemploi-error: 0 84% 60%;
@@ -77,8 +77,8 @@
 
     /* eemploi.com dark mode colors */
     --eemploi-primary: 142 86% 28%;
-    --eemploi-secondary: 0 84% 47%;
-    --eemploi-accent: 43 96% 56%;
+    --eemploi-secondary: 220 91% 52%;
+    --eemploi-accent: 45 93% 58%;
     --eemploi-success: 142 76% 36%;
     --eemploi-warning: 38 92% 50%;
     --eemploi-error: 0 84% 60%;
@@ -91,12 +91,28 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-bold tracking-tight;
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
   }
 }
 
@@ -113,32 +129,70 @@
   }
 
   .hover-lift {
-    @apply transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg;
+    @apply transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl;
   }
 
   .glass-card {
-    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl;
+    @apply bg-white/90 backdrop-blur-md border border-white/20 shadow-2xl;
+  }
+
+  .professional-card {
+    @apply bg-white/95 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500;
+  }
+
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(135deg, hsl(var(--eemploi-primary)), hsl(var(--eemploi-secondary)));
+    padding: 2px;
+    border-radius: 0.75rem;
+  }
+
+  .gradient-border > * {
+    @apply bg-white rounded-lg;
   }
 }
 
-/* Custom scrollbar */
+/* Enhanced scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-muted;
+  @apply bg-gray-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-eemploi-primary rounded-full;
+  @apply bg-gradient-to-b from-eemploi-primary to-eemploi-secondary rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-eemploi-primary/80;
+  @apply from-eemploi-primary/80 to-eemploi-secondary/80;
 }
 
-/* Smooth transitions for all interactive elements */
+/* Professional animations */
 button, a, input, select, textarea {
-  @apply transition-colors duration-200;
+  @apply transition-all duration-300;
+}
+
+/* Focus states */
+input:focus, textarea:focus, select:focus {
+  @apply ring-2 ring-eemploi-primary/20 border-eemploi-primary;
+}
+
+/* Professional button styles */
+.btn-primary {
+  @apply bg-gradient-to-r from-eemploi-primary to-eemploi-secondary text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+}
+
+.btn-secondary {
+  @apply bg-white text-eemploi-primary border-2 border-eemploi-primary font-semibold px-8 py-4 rounded-xl shadow-lg hover:bg-eemploi-primary hover:text-white transform hover:scale-105 transition-all duration-300;
+}
+
+/* Professional spacing */
+.section-padding {
+  @apply py-20 md:py-32;
+}
+
+.container-padding {
+  @apply px-6 md:px-8 lg:px-12;
 }
