@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin, Heart, MessageSquare } from 'lucide-react';
+import { useChat } from '@/contexts/ChatContext';
 
 const Footer = () => {
+  const { openChat } = useChat();
   const currentYear = new Date().getFullYear();
 
   const footerSections = [
@@ -163,10 +165,19 @@ const Footer = () => {
                     rel="noopener noreferrer"
                     className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-eemploi-primary transition-all duration-300 hover:scale-110 hover:shadow-lg"
                     style={{ animationDelay: `${index * 0.1}s` }}
+                    aria-label={social.label}
                   >
                     {social.icon}
                   </a>
                 ))}
+                <button
+                  onClick={openChat}
+                  aria-label="Ouvrir le chat en direct"
+                  className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-eemploi-primary transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                  style={{ animationDelay: `${socialLinks.length * 0.1}s` }}
+                >
+                  <MessageSquare className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
