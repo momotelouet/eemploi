@@ -10,7 +10,10 @@ const corsHeaders = {
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, {
+      status: 204, // No Content
+      headers: corsHeaders,
+    })
   }
 
   try {
@@ -18,7 +21,7 @@ serve(async (req: Request) => {
     const body = await req.json().catch(() => ({}))
     console.log('Live chat function invoked. Body:', JSON.stringify(body))
 
-    const assistantResponse = "Ceci est une réponse de test pour le débogage."
+    const assistantResponse = "C'est une réponse de test. Le problème de CORS devrait être résolu maintenant."
 
     return new Response(JSON.stringify({ response: assistantResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
