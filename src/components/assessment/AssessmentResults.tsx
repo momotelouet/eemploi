@@ -88,7 +88,8 @@ const AssessmentResults = () => {
         const { error: updateError } = await supabase
           .from('candidate_assessments')
           .update({ certificate_url: publicUrl, updated_at: new Date().toISOString() })
-          .eq('id', assessment.id);
+          .eq('id', assessment.id)
+          .select();
 
         if (updateError) throw updateError;
 

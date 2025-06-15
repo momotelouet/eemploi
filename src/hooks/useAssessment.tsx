@@ -61,7 +61,7 @@ export const useUserAssessments = () => {
         .from('candidate_assessments')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('completed_at', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
       return data as Assessment[];
