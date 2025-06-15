@@ -17,12 +17,13 @@ import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 interface ApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmitSuccess?: () => void;
   jobId: string;
   jobTitle: string;
   companyName: string;
 }
 
-const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: ApplicationModalProps) => {
+const ApplicationModal = ({ isOpen, onClose, onSubmitSuccess, jobId, jobTitle, companyName }: ApplicationModalProps) => {
   const { user } = useAuth();
   const [coverLetter, setCoverLetter] = useState('');
   const [selectedCVOption, setSelectedCVOption] = useState('platform');
@@ -83,6 +84,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
     );
     
     if (success) {
+      onSubmitSuccess?.();
       handleClose();
     }
   };

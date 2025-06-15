@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -37,7 +36,6 @@ const JobDetails = () => {
   const [similarJobs, setSimilarJobs] = useState<JobWithCompany[]>([]);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
-  const { applyToJob, isApplying } = useJobApplication();
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -104,7 +102,6 @@ const JobDetails = () => {
 
   const handleApplicationSubmit = () => {
     setHasApplied(true);
-    setIsApplicationModalOpen(false);
   };
 
   if (loading) {
@@ -317,25 +314,15 @@ const JobDetails = () => {
                   </div>
                 ) : (
                   <>
-                    <Button 
-                      size="lg" 
-                      className="w-full bg-eemploi-primary hover:bg-eemploi-primary/90"
-                      onClick={handleQuickApply}
-                      disabled={isApplying || !user}
-                    >
-                      {isApplying ? 'Envoi en cours...' : 'Postuler maintenant'}
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="w-full"
                       onClick={() => setIsApplicationModalOpen(true)}
                       disabled={!user}
                     >
-                      Postuler avec mon CV
+                      Postuler
                     </Button>
-
+                    
                     {!user && (
                       <p className="text-xs text-muted-foreground text-center">
                         Vous devez être connecté pour postuler
@@ -417,6 +404,7 @@ const JobDetails = () => {
       <ApplicationModal
         isOpen={isApplicationModalOpen}
         onClose={() => setIsApplicationModalOpen(false)}
+        onSubmitSuccess={handleApplicationSubmit}
         jobId={job.id}
         jobTitle={job.title}
         companyName={job.companies?.name || 'Entreprise non spécifiée'}
