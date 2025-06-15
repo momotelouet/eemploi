@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
-type ApplicationWithJobAndProfile = Tables<'applications'> & {
+export type ApplicationWithJobAndProfile = Tables<'applications'> & {
   jobs: Tables<'jobs'> & {
     companies?: Tables<'companies'>;
   };

@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -14,9 +13,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import CandidateDetailModal from "./CandidateDetailModal";
+import { getCandidateName } from "@/lib/recruiterUtils";
+import { StatusBadge } from "./StatusBadge";
+import type { ApplicationWithJobAndProfile } from "@/hooks/useJobApplications";
 
 interface ApplicationsTableProps {
-  applications: any[];
+  applications: ApplicationWithJobAndProfile[];
   onStatusUpdate?: () => void;
 }
 
@@ -25,27 +27,6 @@ const ApplicationsTable = ({ applications, onStatusUpdate }: ApplicationsTablePr
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const getCandidateName = (application: any) => {
-    if (application.candidate_profiles?.profiles) {
-      const profile = application.candidate_profiles.profiles;
-      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Candidat anonyme';
-    }
-    return `Candidat #${application.candidate_id.slice(0, 8)}`;
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
-      case 'accepted':
-        return <Badge className="bg-green-100 text-green-800">Acceptée</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-100 text-red-800">Refusée</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
 
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
     try {
@@ -110,7 +91,7 @@ const ApplicationsTable = ({ applications, onStatusUpdate }: ApplicationsTablePr
                 {new Date(application.applied_at).toLocaleDateString('fr-FR')}
               </TableCell>
               <TableCell>
-                {getStatusBadge(application.status)}
+                <StatusBadge status={application.status} />
               </TableCell>
               <TableCell>
                 <div className="flex space-x-2">
