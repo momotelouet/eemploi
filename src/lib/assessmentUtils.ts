@@ -34,6 +34,9 @@ export const generateAndStoreCertificate = async (
       const file = new File([htmlContent], `certificat-${assessment.id}.html`, { type: 'text/html' });
       const filePath = `${assessment.user_id}/certificates/${file.name}`;
 
+      // 2bis. Supprimer tout fichier existant (pour corriger les anciens bugs de type MIME)
+      await supabase.storage.from('candidate-files').remove([filePath]);
+
       // 3. Upload du certificat (upsert pour remplacement si existe déjà)
       const { error: uploadError } = await supabase.storage
         .from('candidate-files')
@@ -46,12 +49,14 @@ export const generateAndStoreCertificate = async (
         console.log('[Certificate] Fichier uploadé avec succès dans storage:', filePath);
       }
 
-      // 4. Récupération de l'URL publique (CORRIGÉ)
+      // 4. Récupération de l'URL publique
       const { data: urlData } = supabase.storage
         .from('candidate-files')
         .getPublicUrl(filePath);
 
       const publicUrl = urlData.publicUrl;
+      console.debug('[Certificate] URL brute fournie par Supabase :', publicUrl);
+
       if (!publicUrl) {
         console.error('[Certificate] Impossible de récupérer l\'URL publique du certificat');
         throw new Error("Impossible de récupérer l'URL publique du certificat.");
