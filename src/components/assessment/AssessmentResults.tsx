@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,9 +10,11 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AssessmentResults = () => {
   const { data: assessments, isLoading } = useUserAssessments();
+  const queryClient = useQueryClient();
 
   const getScoreColor = (score: number, maxScore: number) => {
     const percentage = (score / maxScore) * 100;
@@ -30,27 +33,30 @@ const AssessmentResults = () => {
   };
 
   const downloadCertificate = async (assessment: Assessment) => {
+    // If URL already exists, just open it in a new tab
+    if (assessment.certificate_url) {
+      window.open(assessment.certificate_url, '_blank');
+      return;
+    }
+
+    const toastId = toast.loading('Génération et sauvegarde du certificat en cours...');
+
     try {
-      toast.loading('Génération du certificat en cours...');
-      
-      const { data, error } = await supabase.functions.invoke('generate-certificate', {
+      const { data, error: functionError } = await supabase.functions.invoke('generate-certificate', {
         body: { assessmentId: assessment.id }
       });
 
-      if (error) {
-        console.error('Erreur lors de la génération du certificat:', error);
-        toast.error('Erreur lors de la génération du certificat');
-        return;
-      }
+      if (functionError) throw functionError;
 
       if (data?.html) {
-        // Créer un blob avec le HTML et le télécharger
+        // Create a blob with the HTML and download it
         const htmlContent = `
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="UTF-8">
             <title>Certificat d'Évaluation - eemploi.com</title>
+            <script src="https://cdn.tailwindcss.com"></script>
           </head>
           <body>
             ${data.html}
@@ -59,9 +65,38 @@ const AssessmentResults = () => {
         `;
         
         const blob = new Blob([htmlContent], { type: 'text/html' });
+        const file = new File([blob], `certificat-${assessment.id}.html`, { type: 'text/html' });
+
+        // 1. Upload to storage
+        const filePath = `certificates/${assessment.user_id}/${file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('candidate-files')
+          .upload(filePath, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        // 2. Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('candidate-files')
+          .getPublicUrl(filePath);
+
+        if (!publicUrl) {
+          throw new Error("Impossible de récupérer l'URL publique du certificat.");
+        }
+
+        // 3. Update candidate_assessments table
+        const { error: updateError } = await supabase
+          .from('candidate_assessments')
+          .update({ certificate_url: publicUrl, updated_at: new Date().toISOString() })
+          .eq('id', assessment.id);
+
+        if (updateError) throw updateError;
+
+        // 4. Invalidate query cache to refresh data across the app
+        await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
+
+        // 5. Trigger download for user
         const url = URL.createObjectURL(blob);
-        
-        // Créer un lien de téléchargement
         const link = document.createElement('a');
         link.href = url;
         link.download = `certificat-evaluation-${assessment.id.slice(0, 8)}.html`;
@@ -70,13 +105,13 @@ const AssessmentResults = () => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         
-        toast.success('Certificat téléchargé avec succès !');
+        toast.success('Certificat téléchargé et sauvegardé sur votre profil !', { id: toastId });
       } else {
-        toast.error('Erreur lors de la génération du certificat');
+        toast.error('Erreur lors de la génération du certificat', { id: toastId });
       }
     } catch (error) {
       console.error('Erreur lors du téléchargement du certificat:', error);
-      toast.error('Erreur lors du téléchargement du certificat');
+      toast.error('Erreur lors du téléchargement du certificat', { id: toastId });
     }
   };
 
@@ -223,7 +258,7 @@ const AssessmentResults = () => {
                   className="flex items-center space-x-2"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Télécharger le certificat</span>
+                  <span>{assessment.certificate_url ? 'Voir le certificat' : 'Télécharger le certificat'}</span>
                 </Button>
               </div>
             </CardContent>
