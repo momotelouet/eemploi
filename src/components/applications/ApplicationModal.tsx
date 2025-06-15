@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,13 +5,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useJobApplication } from '@/hooks/useJobApplication';
-import { useUserAssessments } from '@/hooks/useAssessment';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { FileText, Award, CheckCircle } from 'lucide-react';
 import CVSelector from './CVSelector';
 import CoverLetterGenerator from '@/components/cover-letter/CoverLetterGenerator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -32,12 +31,17 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
   const [attachCertificate, setAttachCertificate] = useState(true);
 
   const { applyToJob, isApplying } = useJobApplication();
-  const { data: assessments } = useUserAssessments();
+  const { profile: candidateProfile } = useCandidateProfile(user?.id || null);
 
-  // Get the latest completed assessment with certificate
-  const latestCertificate = assessments?.find(
-    assessment => assessment.status === 'completed' && assessment.certificate_url
-  );
+  // Get certificate URL directly from the candidate's profile
+  const latestCertificate = candidateProfile?.certificate_url
+    ? { certificate_url: candidateProfile.certificate_url }
+    : undefined;
+
+  useEffect(() => {
+    // Automatically check the box if a certificate exists
+    setAttachCertificate(!!latestCertificate);
+  }, [latestCertificate]);
 
   const handleCVSelect = (data: {
     type: 'platform' | 'upload' | 'profile';

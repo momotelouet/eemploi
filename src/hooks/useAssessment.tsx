@@ -104,6 +104,7 @@ export const useCreateAssessment = () => {
 
 export const useSubmitAssessmentResponse = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ 
@@ -208,6 +209,10 @@ export const useSubmitAssessmentResponse = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-assessments'] });
+      // Invalidate the candidate profile to pick up the new certificate_url
+      if (user?.id) {
+        queryClient.invalidateQueries({ queryKey: ['candidate-profile', user.id] });
+      }
       toast.success('Évaluation complétée avec succès ! Votre certificat est maintenant disponible.');
     },
     onError: (error) => {

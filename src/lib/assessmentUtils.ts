@@ -48,12 +48,24 @@ export const generateAndStoreCertificate = async (
         throw new Error("Impossible de récupérer l'URL publique du certificat.");
       }
 
+      // 1. Update the specific assessment entry
       const { error: updateError } = await supabase
         .from('candidate_assessments')
         .update({ certificate_url: publicUrl, updated_at: new Date().toISOString() })
         .eq('id', assessment.id);
 
       if (updateError) throw updateError;
+      
+      // 2. Also update the main candidate profile with this new certificate URL
+      const { error: profileUpdateError } = await supabase
+        .from('candidate_profiles')
+        .update({ certificate_url: publicUrl })
+        .eq('user_id', assessment.user_id);
+
+      if (profileUpdateError) {
+        // We log this as a warning but don't stop the process
+        console.warn("Le profil du candidat n'a pas pu être mis à jour avec l'URL du certificat:", profileUpdateError);
+      }
 
       return { publicUrl, htmlContent };
     }

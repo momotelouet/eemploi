@@ -193,6 +193,7 @@ export type Database = {
         Row: {
           address: string | null
           bio: string | null
+          certificate_url: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -214,6 +215,7 @@ export type Database = {
         Insert: {
           address?: string | null
           bio?: string | null
+          certificate_url?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -235,6 +237,7 @@ export type Database = {
         Update: {
           address?: string | null
           bio?: string | null
+          certificate_url?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
