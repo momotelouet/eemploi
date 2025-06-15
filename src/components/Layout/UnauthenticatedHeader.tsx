@@ -21,12 +21,11 @@ const UnauthenticatedHeader = () => {
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group animate-fade-in">
-            <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg">
-              <span className="text-white font-bold text-xl">E</span>
-            </div>
-            <span className="text-2xl font-bold gradient-text group-hover:scale-105 transition-transform duration-300">
-              eemploi
-            </span>
+            <img 
+              src="/lovable-uploads/9a2bda93-4784-4fc5-ae3c-dff4144290fe.png" 
+              alt="eemploi logo" 
+              className="h-8 w-auto group-hover:scale-105 transition-transform duration-300"
+            />
           </Link>
 
           {/* Desktop Navigation */}

@@ -67,12 +67,11 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="lg:col-span-2 animate-fade-in">
             <Link to="/" className="flex items-center space-x-2 mb-6 group">
-              <div className="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg">
-                <span className="text-white font-bold text-xl">E</span>
-              </div>
-              <span className="text-2xl font-bold gradient-text group-hover:scale-105 transition-transform duration-300">
-                eemploi
-              </span>
+              <img 
+                src="/lovable-uploads/4b6645ce-d82e-476e-8fcc-c99b2e585207.png" 
+                alt="eemploi logo" 
+                className="h-10 w-auto group-hover:scale-105 transition-transform duration-300"
+              />
             </Link>
             
             <p className="text-gray-300 mb-6 leading-relaxed">
