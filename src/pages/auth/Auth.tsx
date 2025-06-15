@@ -130,7 +130,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/lovable-uploads/79fb5607-6b8b-41b6-97e5-20f16492e405.png"
+            src="/lovable-uploads/c4a981c3-aebd-4354-aba4-83bdc73d810b.png"
             alt="eemploi logo"
             className="h-12 w-auto mx-auto mb-4"
           />
