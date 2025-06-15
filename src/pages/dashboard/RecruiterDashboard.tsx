@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,19 +18,21 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
-import { useJobApplications } from "@/hooks/useJobApplications";
+import { useJobApplications, type ApplicationWithJobAndProfile } from "@/hooks/useJobApplications";
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import CandidateDetailModal from "@/components/recruiter/CandidateDetailModal";
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
   const { jobs } = useRecruiterJobs();
   const { applications } = useJobApplications();
   const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<ApplicationWithJobAndProfile | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -289,7 +290,7 @@ const RecruiterDashboard = () => {
                         <div className="space-y-4">
                           {applications.slice(0, 5).map((application) => (
                             <div key={application.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                              <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-3 mb-2">
                                     <h4 className="font-medium">{getCandidateName(application)}</h4>
@@ -302,29 +303,15 @@ const RecruiterDashboard = () => {
                                     {new Date(application.applied_at).toLocaleDateString('fr-FR')}
                                   </p>
                                 </div>
-                                <div className="flex space-x-2">
-                                  {application.status === 'pending' && (
-                                    <>
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="text-green-600"
-                                        onClick={() => updateApplicationStatus(application.id, application.candidate_id, application.jobs?.title, 'accepted')}
-                                      >
-                                        <CheckCircle className="w-4 h-4 mr-2" />
-                                        Accepter
-                                      </Button>
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="text-red-600"
-                                        onClick={() => updateApplicationStatus(application.id, application.candidate_id, application.jobs?.title, 'rejected')}
-                                      >
-                                        <XCircle className="w-4 h-4 mr-2" />
-                                        Refuser
-                                      </Button>
-                                    </>
-                                  )}
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setSelectedApplication(application)}
+                                  >
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    Voir détails
+                                  </Button>
                                 </div>
                               </div>
                             </div>
@@ -418,6 +405,22 @@ const RecruiterDashboard = () => {
         open={isCreateJobModalOpen}
         onOpenChange={setIsCreateJobModalOpen}
       />
+
+      {selectedApplication && (
+        <CandidateDetailModal
+          isOpen={!!selectedApplication}
+          onClose={() => setSelectedApplication(null)}
+          candidateId={selectedApplication.candidate_id}
+          applicationId={selectedApplication.id}
+          applicationStatus={selectedApplication.status}
+          onStatusUpdate={(newStatus) => {
+            if(selectedApplication){
+              updateApplicationStatus(selectedApplication.id, selectedApplication.candidate_id, selectedApplication.jobs?.title, newStatus);
+            }
+            setSelectedApplication(null);
+          }}
+        />
+      )}
     </div>
   );
 };
