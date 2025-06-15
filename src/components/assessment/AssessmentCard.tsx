@@ -1,8 +1,9 @@
+
 import React, { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, Download, Calendar, TrendingUp, Edit, Trash2 } from 'lucide-react';
+import { Award, Calendar, TrendingUp, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { Assessment } from '@/hooks/useAssessment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -10,8 +11,6 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { generateAndStoreCertificate } from '@/lib/assessmentUtils';
 import AssessmentScore from './AssessmentScore';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 interface AssessmentCardProps {
   assessment: Assessment;
@@ -21,86 +20,30 @@ interface AssessmentCardProps {
 
 const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewAssessment, onDelete }) => {
   const queryClient = useQueryClient();
-  const [certHtml, setCertHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const hiddenCertRef = useRef<HTMLDivElement>(null);
 
-  // Correction : largeur fixe et rendu PDF A4 pleine page sans réduction
-  const downloadCertificatePDF = async (assessment: Assessment) => {
+  // Handler : ouvrir le certificat HTML (si déjà présent), sinon le générer puis ouvrir
+  const handleOpenCertificate = async () => {
+    if (assessment.certificate_url) {
+      window.open(assessment.certificate_url, '_blank', 'noopener,noreferrer');
+      return;
+    }
     setIsGenerating(true);
-    const toastId = toast.loading('Préparation du certificat PDF...');
+    const toastId = toast.loading('Génération du certificat HTML...');
     try {
       const result = await generateAndStoreCertificate(assessment);
-
-      if (result && result.htmlContent) {
-        setCertHtml(result.htmlContent);
-
-        setTimeout(async () => {
-          if (hiddenCertRef.current) {
-            // Fix A4 width in px : 794px (≈21cm à 96dpi)
-            hiddenCertRef.current.style.width = "794px";
-            hiddenCertRef.current.style.height = ""; // unset to auto-fit height
-
-            const canvas = await html2canvas(hiddenCertRef.current, {
-              scale: 2, // Option: meilleure résolution
-              useCORS: true,
-              backgroundColor: "#fff"
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-            // Format PDF A4 en points (pt) : 595x842pt (1pt=1/72in)
-            const pdf = new jsPDF('p', 'pt', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();   // ≈595pt
-            const pdfHeight = pdf.internal.pageSize.getHeight(); // ≈842pt
-
-            // L’image du canvas est générée à (canvas.width x canvas.height)
-            // On veut que le contenu HTML (794px de large) remplisse tout le PDF (a4) sans réduction
-            // Conversion px -> pt : 1px = 0.75pt (à 96dpi)
-            const a4PixelWidth = 794; // px
-            const a4PixelHeight = Math.round(a4PixelWidth * pdfHeight / pdfWidth); // respecte le ratio
-
-            // Adapter l’image pour remplir la page A4 : sa largeur en points doit = pdfWidth
-            // Si canvas a été généré en double largeure (scale:2) : ajuster !
-            const renderWidth = pdfWidth;
-            const renderHeight = (canvas.height / canvas.width) * renderWidth;
-
-            // Pour éviter de trop réduire, si la hauteur dépasse le PDF, ajuster
-            let offsetY = 0;
-            let finalRenderHeight = renderHeight;
-            if (renderHeight > pdfHeight) {
-              finalRenderHeight = pdfHeight;
-            } else if (renderHeight < pdfHeight) {
-              // centrer verticalement si besoin ? sinon coller en haut
-              offsetY = 0;
-            }
-
-            pdf.addImage(
-              imgData,
-              'PNG',
-              0, // x
-              offsetY, // y
-              renderWidth,
-              finalRenderHeight
-            );
-
-            pdf.save(`certificat-evaluation-${assessment.id.slice(0, 8)}.pdf`);
-            toast.success('Certificat PDF généré et téléchargé !', { id: toastId });
-            setCertHtml(null);
-            await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
-          }
-          setIsGenerating(false);
-        }, 350);
+      if (result?.publicUrl) {
+        toast.success('Certificat généré ! Ouverture...', { id: toastId });
+        await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
+        window.open(result.publicUrl, '_blank', 'noopener,noreferrer');
       } else {
-        setCertHtml(null);
-        toast.error('Erreur lors de la génération du certificat', { id: toastId });
-        setIsGenerating(false);
+        toast.error("Impossible de générer le certificat", { id: toastId });
       }
     } catch (error) {
-      setCertHtml(null);
-      setIsGenerating(false);
-      console.error('Erreur lors de la génération ou du téléchargement du certificat PDF:', error);
-      toast.error('Erreur lors du téléchargement du certificat PDF', { id: toastId });
+      toast.error("Erreur lors de la génération du certificat", { id: toastId });
+      console.error("Erreur certificat HTML:", error);
     }
+    setIsGenerating(false);
   };
 
   const personalityScore = assessment.personality_score?.score || 0;
@@ -182,12 +125,17 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
                 Reprendre
               </Button>
               <Button 
-                onClick={() => downloadCertificatePDF(assessment)}
+                onClick={handleOpenCertificate}
                 size="sm"
                 disabled={isGenerating}
+                variant="secondary"
               >
-                <Download className="w-4 h-4 mr-2" />
-                <span>{isGenerating ? "Génération..." : "Télécharger PDF"}</span>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                <span>
+                  {assessment.certificate_url
+                    ? "Voir le certificat HTML"
+                    : isGenerating ? "Génération…" : "Générer & Ouvrir le HTML"}
+                </span>
               </Button>
               <Button
                 variant="destructive"
@@ -200,23 +148,6 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
           </div>
         </CardContent>
       </Card>
-      {/* Zone cachée pour capturer le HTML du certificat (hors du viewport) */}
-      {certHtml && (
-        <div 
-          ref={hiddenCertRef}
-          style={{
-            position: 'fixed',
-            left: '-200vw',
-            top: 0,
-            zIndex: -999,
-            pointerEvents: 'none',
-            background: '#fff'
-          }}
-          // On peut donner une classe Tailwind supplémentaire si besoin
-        >
-          <div dangerouslySetInnerHTML={{ __html: certHtml }} />
-        </div>
-      )}
     </>
   );
 };
