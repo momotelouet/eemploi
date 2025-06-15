@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 142 86% 28%;
-    --primary-foreground: 355.7 100% 97.3%;
+    --primary: 190 100% 47%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -33,17 +33,21 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 86% 28%;
+    --ring: 190 100% 47%;
 
     --radius: 0.75rem;
 
-    /* eemploi.com custom colors */
-    --eemploi-primary: 142 86% 28%; /* Vert professionnel */
-    --eemploi-secondary: 220 91% 52%; /* Bleu corporate */
-    --eemploi-accent: 45 93% 58%; /* Or élégant */
-    --eemploi-success: 142 76% 36%;
-    --eemploi-warning: 38 92% 50%;
-    --eemploi-error: 0 84% 60%;
+    /* eemploi.com custom colors - Palette basée sur #0cc0df */
+    --eemploi-primary: 190 100% 47%; /* #0cc0df - Cyan principal */
+    --eemploi-secondary: 200 100% 35%; /* #0099cc - Bleu cyan foncé */
+    --eemploi-accent: 45 100% 55%; /* #ffcc00 - Jaune doré complémentaire */
+    --eemploi-success: 142 86% 28%; /* Vert succès */
+    --eemploi-warning: 38 92% 50%; /* Orange warning */
+    --eemploi-error: 0 84% 60%; /* Rouge erreur */
+    --eemploi-light: 190 100% 85%; /* #b3f0ff - Cyan très clair */
+    --eemploi-dark: 200 100% 20%; /* #003d4d - Bleu cyan très foncé */
+    --eemploi-gradient-start: 190 100% 47%; /* #0cc0df */
+    --eemploi-gradient-end: 200 100% 35%; /* #0099cc */
   }
 
   .dark {
@@ -56,8 +60,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 142 86% 28%;
-    --primary-foreground: 355.7 100% 97.3%;
+    --primary: 190 100% 47%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -73,15 +77,19 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 142 86% 28%;
+    --ring: 190 100% 47%;
 
     /* eemploi.com dark mode colors */
-    --eemploi-primary: 142 86% 28%;
-    --eemploi-secondary: 220 91% 52%;
-    --eemploi-accent: 45 93% 58%;
+    --eemploi-primary: 190 100% 47%;
+    --eemploi-secondary: 200 100% 35%;
+    --eemploi-accent: 45 100% 55%;
     --eemploi-success: 142 76% 36%;
     --eemploi-warning: 38 92% 50%;
     --eemploi-error: 0 84% 60%;
+    --eemploi-light: 190 100% 85%;
+    --eemploi-dark: 200 100% 20%;
+    --eemploi-gradient-start: 190 100% 47%;
+    --eemploi-gradient-end: 200 100% 35%;
   }
 }
 
@@ -118,7 +126,7 @@
 
 @layer components {
   .gradient-bg {
-    background: linear-gradient(135deg, hsl(var(--eemploi-primary)) 0%, hsl(var(--eemploi-secondary)) 100%);
+    background: linear-gradient(135deg, hsl(var(--eemploi-gradient-start)) 0%, hsl(var(--eemploi-gradient-end)) 100%);
   }
 
   .gradient-text {
@@ -150,6 +158,23 @@
   .gradient-border > * {
     @apply bg-white rounded-lg;
   }
+
+  /* Nouvelles classes pour la palette de couleurs */
+  .accent-highlight {
+    @apply bg-gradient-to-r from-yellow-400 to-orange-400;
+  }
+
+  .primary-gradient {
+    background: linear-gradient(135deg, #0cc0df 0%, #0099cc 100%);
+  }
+
+  .light-bg {
+    background-color: hsl(var(--eemploi-light));
+  }
+
+  .dark-bg {
+    background-color: hsl(var(--eemploi-dark));
+  }
 }
 
 /* Enhanced scrollbar */
@@ -162,11 +187,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-eemploi-primary to-eemploi-secondary rounded-full;
+  background: linear-gradient(to bottom, #0cc0df, #0099cc);
+  @apply rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply from-eemploi-primary/80 to-eemploi-secondary/80;
+  background: linear-gradient(to bottom, #0aa6c7, #0088bb);
 }
 
 /* Professional animations */
@@ -181,7 +207,8 @@ input:focus, textarea:focus, select:focus {
 
 /* Professional button styles */
 .btn-primary {
-  @apply bg-gradient-to-r from-eemploi-primary to-eemploi-secondary text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+  background: linear-gradient(135deg, #0cc0df 0%, #0099cc 100%);
+  @apply text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
 }
 
 .btn-secondary {
