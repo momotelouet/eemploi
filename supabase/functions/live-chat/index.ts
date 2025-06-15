@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -37,7 +37,18 @@ serve(async (req: Request) => {
     });
 
     const chatCompletion = await response.json();
-    const assistantResponse = chatCompletion.choices[0].message.content;
+
+    if (!response.ok) {
+      console.error('Error from OpenRouter:', chatCompletion);
+      throw new Error(chatCompletion.error?.message || 'Failed to get response from AI service.');
+    }
+
+    const assistantResponse = chatCompletion.choices?.[0]?.message?.content;
+
+    if (!assistantResponse) {
+      console.error('Invalid response structure from OpenRouter:', chatCompletion);
+      throw new Error('Invalid response from AI service.');
+    }
 
     return new Response(JSON.stringify({ response: assistantResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
