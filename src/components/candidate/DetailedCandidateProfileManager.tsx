@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useCandidateProfile } from "@/hooks/useCandidateProfile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +6,8 @@ import ExperienceEditor from './profile-editors/ExperienceEditor';
 import EducationEditor from './profile-editors/EducationEditor';
 import CertificationsEditor from "./profile-editors/CertificationsEditor";
 import ProjectsEditor from "./profile-editors/ProjectsEditor";
+import SkillsLanguagesEditor from "./profile-editors/SkillsLanguagesEditor";
+import CVUploadManager from "./profile-editors/CVUploadManager";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -130,12 +131,14 @@ const DetailedCandidateProfileManager = () => {
 
     return (
         <Tabs defaultValue="personal" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 mb-4">
                 <TabsTrigger value="personal">Personnel</TabsTrigger>
                 <TabsTrigger value="experience">Expériences</TabsTrigger>
                 <TabsTrigger value="education">Formation</TabsTrigger>
+                <TabsTrigger value="skills">Compétences</TabsTrigger>
                 <TabsTrigger value="certifications">Certifications</TabsTrigger>
                 <TabsTrigger value="projects">Projets</TabsTrigger>
+                <TabsTrigger value="cv">CV</TabsTrigger>
             </TabsList>
             <TabsContent value="personal">
                 <PersonalInfoEditor profile={profile} onUpdate={updateProfile} loading={loading}/>
@@ -146,11 +149,17 @@ const DetailedCandidateProfileManager = () => {
             <TabsContent value="education">
                 <EducationEditor profile={profile} onUpdate={updateProfile} />
             </TabsContent>
+            <TabsContent value="skills">
+                <SkillsLanguagesEditor profile={profile} onUpdate={updateProfile} />
+            </TabsContent>
             <TabsContent value="certifications">
                 <CertificationsEditor profile={profile} onUpdate={updateProfile} />
             </TabsContent>
-             <TabsContent value="projects">
+            <TabsContent value="projects">
                 <ProjectsEditor profile={profile} onUpdate={updateProfile} />
+            </TabsContent>
+            <TabsContent value="cv">
+                <CVUploadManager profile={profile} onUpdate={updateProfile} user={user} />
             </TabsContent>
         </Tabs>
     );
