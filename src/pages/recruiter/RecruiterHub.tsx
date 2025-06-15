@@ -49,6 +49,7 @@ const RecruiterHub = () => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           jobs={jobs}
+          applications={applications}
           onPublishOfferClick={openCreateJobModal}
         />
       </div>
