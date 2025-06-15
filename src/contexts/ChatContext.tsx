@@ -34,19 +34,20 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (!content.trim()) return;
 
     const userMessage: Message = { role: 'user', content };
-    const currentMessages = [...messages, userMessage];
-    setMessages(currentMessages);
+    const newMessages = [...messages, userMessage];
+    
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('live-chat', {
-        body: { messages: currentMessages.map(({role, content}) => ({role, content})) },
+        body: { messages: newMessages.map(({role, content}) => ({role, content})) },
       });
 
       if (error) throw error;
       
       const assistantMessage: Message = { role: 'assistant', content: data.response };
-      setMessages([...currentMessages, assistantMessage]);
+      setMessages((prevMessages) => [...prevMessages, assistantMessage]);
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
