@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { generateAndStoreCertificate } from '@/lib/assessmentUtils';
 
 export interface AssessmentQuestion {
   id: string;
@@ -172,7 +172,7 @@ export const useSubmitAssessmentResponse = () => {
       });
 
       // Mettre à jour l'évaluation avec les scores
-      const { data, error } = await supabase
+      const { data: updatedAssessment, error } = await supabase
         .from('candidate_assessments')
         .update({
           status: 'completed',
@@ -191,12 +191,24 @@ export const useSubmitAssessmentResponse = () => {
         throw error;
       }
 
-      console.log('Updated assessment:', data);
-      return data as Assessment;
+      console.log('Updated assessment:', updatedAssessment);
+
+      // Automatically generate and store the certificate
+      if (updatedAssessment) {
+        const certResult = await generateAndStoreCertificate(updatedAssessment);
+        if (certResult?.publicUrl) {
+          console.log('Certificate automatically generated and stored:', certResult.publicUrl);
+        } else {
+          console.warn('Failed to auto-generate certificate for assessment:', assessmentId);
+          toast.warning("L'évaluation est complétée, mais la génération automatique du certificat a échoué. Vous pourrez le regénérer plus tard depuis votre dashboard.");
+        }
+      }
+
+      return updatedAssessment as Assessment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-assessments'] });
-      toast.success('Évaluation complétée avec succès !');
+      toast.success('Évaluation complétée avec succès ! Votre certificat est maintenant disponible.');
     },
     onError: (error) => {
       toast.error('Erreur lors de la soumission de l\'évaluation');
