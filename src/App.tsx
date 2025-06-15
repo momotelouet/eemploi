@@ -26,6 +26,9 @@ import ApplicationsManager from '@/pages/recruiter/ApplicationsManager';
 
 import Tools from "@/pages/Tools";
 import LiveChatWidget from './components/chat/LiveChatWidget';
+import PrivacyPolicy from './pages/legal/PrivacyPolicy';
+import TermsOfUse from './pages/legal/TermsOfUse';
+import CookiePolicy from './pages/legal/CookiePolicy';
 
 const queryClient = new QueryClient();
 
@@ -46,6 +49,9 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/outils" element={<Tools />} />
+                <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+                <Route path="/legal/terms" element={<TermsOfUse />} />
+                <Route path="/legal/cookies" element={<CookiePolicy />} />
                 
                 {/* Protected Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute />}>
