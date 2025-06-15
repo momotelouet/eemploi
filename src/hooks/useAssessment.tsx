@@ -221,3 +221,30 @@ export const useSubmitAssessmentResponse = () => {
     },
   });
 };
+
+export const useDeleteAssessment = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (assessmentId: string) => {
+      const { error } = await supabase
+        .from('candidate_assessments')
+        .delete()
+        .eq('id', assessmentId);
+
+      if (error) {
+        throw error;
+      }
+      return assessmentId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-assessments', user?.id] });
+      toast.success('Évaluation supprimée avec succès.');
+    },
+    onError: (error) => {
+      toast.error("Erreur lors de la suppression de l'évaluation.");
+      console.error('Error deleting assessment:', error);
+    },
+  });
+};

@@ -168,7 +168,7 @@ const CandidateDashboard = () => {
           </TabsContent>
 
           <TabsContent value="assessment" className="mt-6">
-            <AssessmentResults />
+            <AssessmentResults onStartNewAssessment={handleStartAssessment} />
           </TabsContent>
 
           <TabsContent value="job-search" className="mt-6">

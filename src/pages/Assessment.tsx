@@ -1,12 +1,28 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, TrendingUp, Users, Star } from 'lucide-react';
 import AssessmentTest from '@/components/assessment/AssessmentTest';
 import AssessmentResults from '@/components/assessment/AssessmentResults';
+import { useUserAssessments } from '@/hooks/useAssessment';
 
 const Assessment = () => {
+  const [activeTab, setActiveTab] = useState('test');
+  const { data: assessments, isLoading } = useUserAssessments();
+
+  useEffect(() => {
+    if (!isLoading && assessments?.some(a => a.status === 'completed')) {
+      setActiveTab('results');
+    } else {
+      setActiveTab('test');
+    }
+  }, [isLoading, assessments]);
+
+  const handleTestComplete = () => {
+    setActiveTab('results');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -56,7 +72,7 @@ const Assessment = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="test" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="test" className="flex items-center space-x-2">
               <Star className="w-4 h-4" />
@@ -69,11 +85,11 @@ const Assessment = () => {
           </TabsList>
 
           <TabsContent value="test" className="space-y-6">
-            <AssessmentTest />
+            <AssessmentTest onComplete={handleTestComplete} />
           </TabsContent>
 
           <TabsContent value="results" className="space-y-6">
-            <AssessmentResults />
+            <AssessmentResults onStartNewAssessment={() => setActiveTab('test')} />
           </TabsContent>
         </Tabs>
 

@@ -1,20 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Award, Download, Calendar, TrendingUp } from 'lucide-react';
-import { useUserAssessments, Assessment } from '@/hooks/useAssessment';
+import { Award, Download, Calendar, TrendingUp, Edit, Trash2 } from 'lucide-react';
+import { useUserAssessments, Assessment, useDeleteAssessment } from '@/hooks/useAssessment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { generateAndStoreCertificate } from '@/lib/assessmentUtils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-const AssessmentResults = () => {
+interface AssessmentResultsProps {
+  onStartNewAssessment?: () => void;
+}
+
+const AssessmentResults: React.FC<AssessmentResultsProps> = ({ onStartNewAssessment }) => {
   const { data: assessments, isLoading } = useUserAssessments();
   const queryClient = useQueryClient();
+  const deleteAssessmentMutation = useDeleteAssessment();
+  const [assessmentToDelete, setAssessmentToDelete] = useState<Assessment | null>(null);
 
   const getScoreColor = (score: number, maxScore: number) => {
     const percentage = (score / maxScore) * 100;
@@ -207,21 +223,64 @@ const AssessmentResults = () => {
               <div className="flex justify-between items-center pt-4 border-t">
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <TrendingUp className="w-4 h-4" />
-                  <span>Résultats détaillés disponibles dans le certificat</span>
+                  <span>Résultats détaillés dans le certificat</span>
                 </div>
                 
-                <Button 
-                  onClick={() => downloadCertificate(assessment)}
-                  className="flex items-center space-x-2"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>{assessment.certificate_url ? 'Voir le certificat' : 'Télécharger le certificat'}</span>
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={onStartNewAssessment}
+                    disabled={!onStartNewAssessment}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Reprendre
+                  </Button>
+                  <Button 
+                    onClick={() => downloadCertificate(assessment)}
+                    size="sm"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    <span>{assessment.certificate_url ? 'Voir' : 'Certificat'}</span>
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => setAssessmentToDelete(assessment)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         );
       })}
+
+      <AlertDialog open={!!assessmentToDelete} onOpenChange={(open) => !open && setAssessmentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr(e) ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Votre résultat d'évaluation sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setAssessmentToDelete(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (assessmentToDelete) {
+                  deleteAssessmentMutation.mutate(assessmentToDelete.id);
+                  setAssessmentToDelete(null);
+                }
+              }}
+              disabled={deleteAssessmentMutation.isPending}
+            >
+              {deleteAssessmentMutation.isPending ? 'Suppression...' : 'Supprimer'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
