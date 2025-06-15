@@ -194,12 +194,15 @@ export type Database = {
           address: string | null
           bio: string | null
           certificate_url: string | null
+          certifications: Json
           city: string | null
           country: string | null
           created_at: string
           cv_file_name: string | null
           cv_file_url: string | null
           education: string | null
+          education_structured: Json
+          experience: Json
           experience_years: number | null
           id: string
           languages: string[] | null
@@ -208,6 +211,7 @@ export type Database = {
           portfolio_url: string | null
           professional_summary: string | null
           profile_picture_url: string | null
+          projects: Json
           skills: string[] | null
           updated_at: string
           user_id: string
@@ -216,12 +220,15 @@ export type Database = {
           address?: string | null
           bio?: string | null
           certificate_url?: string | null
+          certifications?: Json
           city?: string | null
           country?: string | null
           created_at?: string
           cv_file_name?: string | null
           cv_file_url?: string | null
           education?: string | null
+          education_structured?: Json
+          experience?: Json
           experience_years?: number | null
           id?: string
           languages?: string[] | null
@@ -230,6 +237,7 @@ export type Database = {
           portfolio_url?: string | null
           professional_summary?: string | null
           profile_picture_url?: string | null
+          projects?: Json
           skills?: string[] | null
           updated_at?: string
           user_id: string
@@ -238,12 +246,15 @@ export type Database = {
           address?: string | null
           bio?: string | null
           certificate_url?: string | null
+          certifications?: Json
           city?: string | null
           country?: string | null
           created_at?: string
           cv_file_name?: string | null
           cv_file_url?: string | null
           education?: string | null
+          education_structured?: Json
+          experience?: Json
           experience_years?: number | null
           id?: string
           languages?: string[] | null
@@ -252,6 +263,7 @@ export type Database = {
           portfolio_url?: string | null
           professional_summary?: string | null
           profile_picture_url?: string | null
+          projects?: Json
           skills?: string[] | null
           updated_at?: string
           user_id?: string

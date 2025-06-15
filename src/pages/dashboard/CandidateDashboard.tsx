@@ -12,7 +12,7 @@ import { useCVProfiles } from '@/hooks/useCVProfiles';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
-import AIEnhancedProfileManager from '@/components/candidate/AIEnhancedProfileManager';
+import DetailedCandidateProfileManager from '@/components/candidate/DetailedCandidateProfileManager';
 import ApplicationsList from '@/components/applications/ApplicationsList';
 import CVOptimizer from '@/components/ai/CVOptimizer';
 import AIChat from '@/components/ai/AIChat';
@@ -63,32 +63,41 @@ const CandidateDashboard = () => {
   const calculateProfileCompletion = () => {
     if (!candidateProfile) return 0;
     
+    // Cast to any to access newly added columns
+    const profileData = candidateProfile as any;
+
     const profileFields = [
       // Informations personnelles de base
-      candidateProfile.phone,
-      candidateProfile.address,
-      candidateProfile.city,
-      candidateProfile.country,
+      profileData.phone,
+      profileData.address,
+      profileData.city,
+      profileData.country,
       
       // Profil professionnel
-      candidateProfile.professional_summary,
-      candidateProfile.bio,
-      candidateProfile.experience_years,
+      profileData.professional_summary,
+      profileData.bio,
       
-      // Compétences et formation
-      candidateProfile.skills && candidateProfile.skills.length > 0 ? 'skills' : null,
-      candidateProfile.languages && candidateProfile.languages.length > 0 ? 'languages' : null,
-      candidateProfile.education,
+      // Structured data
+      profileData.experience && profileData.experience.length > 0 ? 'experience' : null,
+      profileData.education_structured && profileData.education_structured.length > 0 ? 'education' : null,
+      profileData.certifications && profileData.certifications.length > 0 ? 'certifications' : null,
+      profileData.projects && profileData.projects.length > 0 ? 'projects' : null,
+
+      // Existing fields
+      profileData.experience_years,
+      profileData.skills && profileData.skills.length > 0 ? 'skills' : null,
+      profileData.languages && profileData.languages.length > 0 ? 'languages' : null,
+      profileData.education,
       
       // Liens professionnels
-      candidateProfile.linkedin_url,
-      candidateProfile.portfolio_url,
+      profileData.linkedin_url,
+      profileData.portfolio_url,
       
       // Photo de profil
-      candidateProfile.profile_picture_url,
+      profileData.profile_picture_url,
       
       // CV
-      candidateProfile.cv_file_url
+      profileData.cv_file_url
     ];
 
     // Informations de base du profil utilisateur
@@ -98,7 +107,11 @@ const CandidateDashboard = () => {
     ];
 
     const allFields = [...profileFields, ...basicFields];
-    const completedFields = allFields.filter(field => field && field !== '').length;
+    const completedFields = allFields.filter(field => {
+      if (!field) return false;
+      if (Array.isArray(field)) return field.length > 0;
+      return field !== '';
+    }).length;
     
     return Math.round((completedFields / allFields.length) * 100);
   };
@@ -218,7 +231,7 @@ const CandidateDashboard = () => {
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6">
-            <AIEnhancedProfileManager />
+            <DetailedCandidateProfileManager />
           </TabsContent>
 
           <TabsContent value="applications" className="mt-6">
