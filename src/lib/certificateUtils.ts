@@ -27,7 +27,7 @@ export const generateCertificatePDFfromHTML = async (htmlContent: string): Promi
   }
 
   const canvas = await html2canvas(certificateElement, {
-    scale: 2, // Échelle supérieure pour une meilleure qualité
+    scale: 1.5, // Échelle ajustée pour un meilleur équilibre performance/qualité
     useCORS: true,
     backgroundColor: null,
     scrollY: -window.scrollY
