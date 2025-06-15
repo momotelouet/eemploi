@@ -1,8 +1,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import { useChat } from "@/contexts/ChatContext";
 import { Mail, Phone, MapPin, MessageSquare } from "lucide-react";
 
 const ContactMethods = () => {
+  const { openChat } = useChat();
+
   const contactMethods = [
     {
       icon: <Mail className="w-6 h-6" />,
@@ -46,7 +49,13 @@ const ContactMethods = () => {
             <p className="text-sm text-gray-600 mb-4 leading-relaxed">{method.description}</p>
             <a 
               href={method.action}
-              className="text-eemploi-primary hover:text-eemploi-secondary font-semibold transition-colors duration-300 hover:underline"
+              onClick={(e) => {
+                if (method.title === 'Chat en direct') {
+                  e.preventDefault();
+                  openChat();
+                }
+              }}
+              className="text-eemploi-primary hover:text-eemploi-secondary font-semibold transition-colors duration-300 hover:underline cursor-pointer"
             >
               {method.value}
             </a>

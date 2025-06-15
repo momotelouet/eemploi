@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ChatProvider } from '@/contexts/ChatContext';
 
 import Layout from '@/components/Layout/Layout';
 import Index from '@/pages/Index';
@@ -24,6 +25,7 @@ import RecruiterHub from '@/pages/recruiter/RecruiterHub';
 import ApplicationsManager from '@/pages/recruiter/ApplicationsManager';
 
 import Tools from "@/pages/Tools";
+import LiveChatWidget from './components/chat/LiveChatWidget';
 
 const queryClient = new QueryClient();
 
@@ -31,40 +33,43 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <Toaster />
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Index />} />
-              <Route path="/emplois" element={<Jobs />} />
-              <Route path="/emplois/:id" element={<JobDetails />} />
-              <Route path="/entreprises" element={<Companies />} />
-              <Route path="/entreprises/:id" element={<CompanyDetails />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/outils" element={<Tools />} />
-              
-              {/* Protected Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute />}>
-                <Route path="candidat" element={<CandidateDashboard />} />
-                <Route path="recruteur" element={<RecruiterDashboard />} />
-                <Route path="admin" element={<AdminDashboard />} />
+        <ChatProvider>
+          <Router>
+            <Toaster />
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Index />} />
+                <Route path="/emplois" element={<Jobs />} />
+                <Route path="/emplois/:id" element={<JobDetails />} />
+                <Route path="/entreprises" element={<Companies />} />
+                <Route path="/entreprises/:id" element={<CompanyDetails />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/outils" element={<Tools />} />
+                
+                {/* Protected Routes */}
+                <Route path="/dashboard" element={<ProtectedRoute />}>
+                  <Route path="candidat" element={<CandidateDashboard />} />
+                  <Route path="recruteur" element={<RecruiterDashboard />} />
+                  <Route path="admin" element={<AdminDashboard />} />
+                </Route>
+                
+                <Route path="/recruteur" element={<ProtectedRoute requiredUserType="recruteur" />}>
+                  <Route path="hub" element={<RecruiterHub />} />
+                  <Route path="candidatures" element={<ApplicationsManager />} />
+                </Route>
               </Route>
               
-              <Route path="/recruteur" element={<ProtectedRoute requiredUserType="recruteur" />}>
-                <Route path="hub" element={<RecruiterHub />} />
-                <Route path="candidatures" element={<ApplicationsManager />} />
-              </Route>
-            </Route>
-            
-            {/* Auth Routes (without layout) */}
-            <Route path="/auth/login" element={<Login />} />
-            <Route path="/auth/register" element={<Register />} />
-            
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
+              {/* Auth Routes (without layout) */}
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/register" element={<Register />} />
+              
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <LiveChatWidget />
+          </Router>
+        </ChatProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
