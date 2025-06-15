@@ -228,34 +228,41 @@ export const useDeleteAssessment = () => {
 
   return useMutation({
     mutationFn: async (assessmentId: string) => {
-      // First, delete related responses to avoid foreign key constraint errors
-      const { error: responsesError } = await supabase
-        .from('assessment_responses')
-        .delete()
-        .eq('assessment_id', assessmentId);
+      if (!user?.id) {
+        throw new Error("Utilisateur non authentifié.");
+      }
+      
+      // 1. Delete certificate from storage first.
+      const filePath = `${user.id}/certificates/certificat-${assessmentId}.pdf`;
+      const { error: storageError } = await supabase.storage
+        .from('candidate-files')
+        .remove([filePath]);
 
-      if (responsesError) {
-        console.error('Error deleting assessment responses:', responsesError);
-        throw responsesError;
+      // It's okay if the file doesn't exist, but other errors should be logged as warnings.
+      if (storageError && storageError.message !== 'The resource was not found') {
+        console.warn('Impossible de supprimer le certificat du stockage, il est possible qu\'il n\'existe pas ou qu\'une erreur soit survenue:', storageError.message);
       }
 
-      // Then, delete the assessment itself
-      const { error } = await supabase
+      // 2. Delete the assessment from the database.
+      // Related responses are deleted automatically due to `ON DELETE CASCADE`.
+      const { error: dbError } = await supabase
         .from('candidate_assessments')
         .delete()
         .eq('id', assessmentId);
 
-      if (error) {
-        throw error;
+      if (dbError) {
+        console.error('Erreur lors de la suppression de l\'évaluation de la base de données:', dbError);
+        throw dbError;
       }
+
       return assessmentId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-assessments', user?.id] });
-      toast.success('Évaluation supprimée avec succès.');
+      toast.success('Évaluation et certificat associé supprimés avec succès.');
     },
     onError: (error: Error) => {
-      toast.error(`Erreur lors de la suppression : ${error.message}`);
+      toast.error(`Erreur lors de la suppression de l'évaluation : ${error.message}`);
       console.error('Error deleting assessment:', error);
     },
   });
