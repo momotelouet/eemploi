@@ -25,55 +25,71 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
   const [isGenerating, setIsGenerating] = useState(false);
   const hiddenCertRef = useRef<HTMLDivElement>(null);
 
-  // Nouvelle génération du PDF AVEC le style rendu grâce à html2canvas
+  // Correction : largeur fixe et rendu PDF A4 pleine page sans réduction
   const downloadCertificatePDF = async (assessment: Assessment) => {
     setIsGenerating(true);
-    const toastId = toast.loading('Préparation du certificat PDF avec le style...');
+    const toastId = toast.loading('Préparation du certificat PDF...');
     try {
       const result = await generateAndStoreCertificate(assessment);
 
       if (result && result.htmlContent) {
         setCertHtml(result.htmlContent);
 
-        // On attend que le dom caché soit rendu
         setTimeout(async () => {
           if (hiddenCertRef.current) {
-            // Pour bien garder le style, largeur A4: 794px (≈21cm à 96dpi)
+            // Fix A4 width in px : 794px (≈21cm à 96dpi)
             hiddenCertRef.current.style.width = "794px";
+            hiddenCertRef.current.style.height = ""; // unset to auto-fit height
 
             const canvas = await html2canvas(hiddenCertRef.current, {
-              scale: 2, // meilleure résolution
+              scale: 2, // Option: meilleure résolution
               useCORS: true,
-              backgroundColor: "#fff", // Pour éviter le fond transparent
-              // Vous pouvez affiner selon la structure HTML
+              backgroundColor: "#fff"
             });
 
             const imgData = canvas.toDataURL('image/png');
+            // Format PDF A4 en points (pt) : 595x842pt (1pt=1/72in)
             const pdf = new jsPDF('p', 'pt', 'a4');
-            // Calculez le ratio pour bien remplir la feuille
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = canvas.width;
-            const imgHeight = canvas.height;
-            const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+            const pdfWidth = pdf.internal.pageSize.getWidth();   // ≈595pt
+            const pdfHeight = pdf.internal.pageSize.getHeight(); // ≈842pt
 
-            const finalImgWidth = imgWidth * ratio;
-            const finalImgHeight = imgHeight * ratio;
+            // L’image du canvas est générée à (canvas.width x canvas.height)
+            // On veut que le contenu HTML (794px de large) remplisse tout le PDF (a4) sans réduction
+            // Conversion px -> pt : 1px = 0.75pt (à 96dpi)
+            const a4PixelWidth = 794; // px
+            const a4PixelHeight = Math.round(a4PixelWidth * pdfHeight / pdfWidth); // respecte le ratio
 
-            pdf.addImage(imgData, 'PNG', 
-              (pdfWidth - finalImgWidth) / 2, // centré
-              30, // un peu de marge top
-              finalImgWidth, 
-              finalImgHeight
+            // Adapter l’image pour remplir la page A4 : sa largeur en points doit = pdfWidth
+            // Si canvas a été généré en double largeure (scale:2) : ajuster !
+            const renderWidth = pdfWidth;
+            const renderHeight = (canvas.height / canvas.width) * renderWidth;
+
+            // Pour éviter de trop réduire, si la hauteur dépasse le PDF, ajuster
+            let offsetY = 0;
+            let finalRenderHeight = renderHeight;
+            if (renderHeight > pdfHeight) {
+              finalRenderHeight = pdfHeight;
+            } else if (renderHeight < pdfHeight) {
+              // centrer verticalement si besoin ? sinon coller en haut
+              offsetY = 0;
+            }
+
+            pdf.addImage(
+              imgData,
+              'PNG',
+              0, // x
+              offsetY, // y
+              renderWidth,
+              finalRenderHeight
             );
 
             pdf.save(`certificat-evaluation-${assessment.id.slice(0, 8)}.pdf`);
-            toast.success('Certificat PDF généré et téléchargé avec le style !', { id: toastId });
+            toast.success('Certificat PDF généré et téléchargé !', { id: toastId });
             setCertHtml(null);
             await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
           }
           setIsGenerating(false);
-        }, 350); // léger délai pour que le dom se rende
+        }, 350);
       } else {
         setCertHtml(null);
         toast.error('Erreur lors de la génération du certificat', { id: toastId });
