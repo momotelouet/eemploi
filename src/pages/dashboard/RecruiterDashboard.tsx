@@ -72,7 +72,14 @@ const RecruiterDashboard = () => {
     }
   ];
 
-  const updateApplicationStatus = async (applicationId: string, newStatus: 'accepted' | 'rejected') => {
+  const updateApplicationStatus = async (applicationId: string, candidateId: string | undefined, jobTitle: string | undefined, newStatus: 'accepted' | 'rejected') => {
+    if (!candidateId || !jobTitle) {
+      toast.error('Erreur', {
+        description: 'Informations sur le candidat ou l\'offre manquantes.',
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('applications')
@@ -80,6 +87,21 @@ const RecruiterDashboard = () => {
         .eq('id', applicationId);
 
       if (error) throw error;
+
+      // Create notification for candidate
+      const { error: notificationError } = await supabase.from('notifications').insert({
+        user_id: candidateId,
+        title: 'Statut de votre candidature mis à jour',
+        message: `Votre candidature pour le poste "${jobTitle}" a été ${newStatus === 'accepted' ? 'acceptée' : 'refusée'}.`,
+        type: 'application_status'
+      });
+
+      if (notificationError) {
+        console.error('Failed to create notification:', notificationError);
+        toast.warning("Mise à jour réussie, mais impossible de notifier le candidat.", {
+          description: "Le candidat ne recevra pas de notification pour ce changement."
+        });
+      }
 
       toast.success('Statut mis à jour', {
         description: `La candidature a été ${newStatus === 'accepted' ? 'acceptée' : 'refusée'}.`,
@@ -287,7 +309,7 @@ const RecruiterDashboard = () => {
                                         size="sm" 
                                         variant="outline" 
                                         className="text-green-600"
-                                        onClick={() => updateApplicationStatus(application.id, 'accepted')}
+                                        onClick={() => updateApplicationStatus(application.id, application.candidate_id, application.jobs?.title, 'accepted')}
                                       >
                                         <CheckCircle className="w-4 h-4 mr-2" />
                                         Accepter
@@ -296,7 +318,7 @@ const RecruiterDashboard = () => {
                                         size="sm" 
                                         variant="outline" 
                                         className="text-red-600"
-                                        onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                                        onClick={() => updateApplicationStatus(application.id, application.candidate_id, application.jobs?.title, 'rejected')}
                                       >
                                         <XCircle className="w-4 h-4 mr-2" />
                                         Refuser

@@ -29,11 +29,14 @@ import {
   Wrench
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNotifications } from '@/hooks/useNotifications';
+import { NotificationsDropdown } from './Notifications';
 
 const AuthenticatedHeader = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { unreadCount } = useNotifications();
 
   const handleLogout = async () => {
     await logout();
@@ -106,17 +109,25 @@ const AuthenticatedHeader = () => {
             </Button>
 
             {/* Notifications */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="relative hover:bg-eemploi-primary/10 hover:text-eemploi-primary transition-all duration-300 hover:scale-105 animate-fade-in"
-              style={{ animationDelay: '0.7s' }}
-            >
-              <Bell className="w-4 h-4" />
-              <Badge className="absolute -top-1 -right-1 w-2 h-2 p-0 bg-eemploi-secondary animate-bounce-gentle">
-                <span className="sr-only">Nouvelles notifications</span>
-              </Badge>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="relative hover:bg-eemploi-primary/10 hover:text-eemploi-primary transition-all duration-300 hover:scale-105 animate-fade-in"
+                  style={{ animationDelay: '0.7s' }}
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-1 bg-eemploi-secondary text-white text-xs rounded-full animate-bounce-gentle">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                  )}
+                   <span className="sr-only">Ouvrir les notifications</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <NotificationsDropdown />
+            </DropdownMenu>
 
             {/* User Menu */}
             <DropdownMenu>
