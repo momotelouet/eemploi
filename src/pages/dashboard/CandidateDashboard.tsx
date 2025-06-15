@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +12,7 @@ import { useCVProfiles } from '@/hooks/useCVProfiles';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManager';
-import DetailedCandidateProfileManager from '@/components/candidate/DetailedCandidateProfileManager';
+import CandidateProfileManager from '@/components/candidate/CandidateProfileManager';
 import ApplicationsList from '@/components/applications/ApplicationsList';
 import CVOptimizer from '@/components/ai/CVOptimizer';
 import AIChat from '@/components/ai/AIChat';
@@ -238,7 +237,7 @@ const CandidateDashboard = () => {
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6">
-            <DetailedCandidateProfileManager />
+            <CandidateProfileManager />
           </TabsContent>
 
           <TabsContent value="applications" className="mt-6">
@@ -378,4 +377,3 @@ const CandidateDashboard = () => {
 };
 
 export default CandidateDashboard;
-
