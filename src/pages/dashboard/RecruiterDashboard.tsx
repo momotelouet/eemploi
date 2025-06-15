@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -359,11 +360,19 @@ const RecruiterDashboard = () => {
                   <Plus className="w-4 h-4 mr-2" />
                   Publier une offre
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/recruteur/hub', { state: { activeTab: 'search' } })}
+                >
                   <Users className="w-4 h-4 mr-2" />
                   Rechercher des candidats
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/recruteur/hub', { state: { activeTab: 'company' } })}
+                >
                   <Building className="w-4 h-4 mr-2" />
                   Gérer mon entreprise
                 </Button>

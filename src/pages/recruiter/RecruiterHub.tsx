@@ -1,6 +1,7 @@
 
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
 import { useJobApplications } from "@/hooks/useJobApplications";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,8 +12,15 @@ import QuickStats from "@/components/recruiter/hub/QuickStats";
 import RecruiterHubTabs from "@/components/recruiter/hub/RecruiterHubTabs";
 
 const RecruiterHub = () => {
+  const location = useLocation();
   const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
+  
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
   
   const { user } = useAuth();
   const { jobs } = useRecruiterJobs();
