@@ -1,7 +1,4 @@
-
 import { useParams } from "react-router-dom";
-import Header from "@/components/Layout/Header";
-import Footer from "@/components/Layout/Footer";
 import JobCard from "@/components/JobCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,8 +103,7 @@ Notre équipe de 300 experts passionnés travaille dans un environnement collabo
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div className="bg-background">
       
       {/* Company Header */}
       <section className="bg-gradient-to-r from-eemploi-primary to-eemploi-secondary py-12">
@@ -371,7 +367,6 @@ Notre équipe de 300 experts passionnés travaille dans un environnement collabo
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 };
