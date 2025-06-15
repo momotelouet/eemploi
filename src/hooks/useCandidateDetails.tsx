@@ -37,9 +37,9 @@ export const useCandidateDetails = (candidateId: string | null, applicationId: s
       try {
         const [profileRes, userProfileRes, assessmentsRes, applicationRes] = await Promise.all([
           supabase.from('candidate_profiles').select('*').eq('user_id', candidateId!).maybeSingle(),
-          supabase.from('profiles').select('*').eq('id', candidateId!).single(),
+          supabase.from('profiles').select('*').eq('id', candidateId!).maybeSingle(),
           supabase.from('candidate_assessments').select('*').eq('user_id', candidateId!).eq('status', 'completed').order('completed_at', { ascending: false }),
-          supabase.from('applications').select('*').eq('id', applicationId!).single(),
+          supabase.from('applications').select('*').eq('id', applicationId!).maybeSingle(),
         ]);
 
         if (profileRes.error) throw profileRes.error;
