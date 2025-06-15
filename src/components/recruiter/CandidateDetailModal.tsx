@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,7 +20,9 @@ import {
   GraduationCap,
   Briefcase,
   Languages,
-  Star
+  Star,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
@@ -35,6 +36,8 @@ interface CandidateDetailModalProps {
   onClose: () => void;
   candidateId: string;
   applicationId: string;
+  applicationStatus?: string;
+  onStatusUpdate?: (newStatus: 'accepted' | 'rejected') => void;
 }
 
 // Helper function to safely extract score from JSON
@@ -46,7 +49,7 @@ const getScoreFromJson = (jsonData: any): number => {
   return 0;
 };
 
-const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId }: CandidateDetailModalProps) => {
+const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId, applicationStatus, onStatusUpdate }: CandidateDetailModalProps) => {
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -181,7 +184,7 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId }: C
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Profil détaillé du candidat</span>
@@ -196,7 +199,7 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId }: C
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto pr-6">
           {/* En-tête du profil */}
           <div className="flex items-start space-x-4">
             <Avatar className="w-20 h-20">
@@ -506,6 +509,31 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId }: C
             </TabsContent>
           </Tabs>
         </div>
+        
+        <DialogFooter className="mt-auto pt-4 border-t">
+          <Button variant="outline" onClick={onClose}>
+            Fermer
+          </Button>
+          {applicationStatus === 'pending' && onStatusUpdate && (
+            <>
+              <Button
+                variant="outline"
+                className="text-red-600 hover:text-red-700"
+                onClick={() => onStatusUpdate('rejected')}
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Refuser
+              </Button>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => onStatusUpdate('accepted')}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Accepter la candidature
+              </Button>
+            </>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

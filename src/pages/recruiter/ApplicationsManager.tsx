@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +17,12 @@ import {
 import { useJobApplications } from "@/hooks/useJobApplications";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import CandidateDetailModal from "@/components/recruiter/CandidateDetailModal";
 
 const ApplicationsManager = () => {
   const { applications, loading } = useJobApplications();
   const { toast } = useToast();
+  const [selectedApplication, setSelectedApplication] = useState<any | null>(null);
 
   // Calculer les statistiques
   const pendingApplications = applications.filter(app => app.status === 'pending');
@@ -222,32 +224,14 @@ const ApplicationsManager = () => {
                                 )}
                               </div>
                               <div className="flex space-x-2 ml-4">
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => setSelectedApplication(application)}
+                                >
                                   <Eye className="w-4 h-4 mr-2" />
-                                  Voir
+                                  Voir détails
                                 </Button>
-                                {application.status === 'pending' && (
-                                  <>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="text-green-600 hover:text-green-700"
-                                      onClick={() => updateApplicationStatus(application.id, 'accepted')}
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-2" />
-                                      Accepter
-                                    </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="text-red-600 hover:text-red-700"
-                                      onClick={() => updateApplicationStatus(application.id, 'rejected')}
-                                    >
-                                      <XCircle className="w-4 h-4 mr-2" />
-                                      Refuser
-                                    </Button>
-                                  </>
-                                )}
                                 <Button variant="outline" size="sm">
                                   <Mail className="w-4 h-4 mr-2" />
                                   Contacter
@@ -287,21 +271,12 @@ const ApplicationsManager = () => {
                               </div>
                               <div className="flex space-x-2">
                                 <Button 
-                                  size="sm" 
-                                  className="bg-green-600 hover:bg-green-700"
-                                  onClick={() => updateApplicationStatus(application.id, 'accepted')}
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Accepter
-                                </Button>
-                                <Button 
                                   variant="outline" 
-                                  size="sm" 
-                                  className="text-red-600"
-                                  onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                                  size="sm"
+                                  onClick={() => setSelectedApplication(application)}
                                 >
-                                  <XCircle className="w-4 h-4 mr-2" />
-                                  Refuser
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Voir détails
                                 </Button>
                               </div>
                             </div>
@@ -388,6 +363,19 @@ const ApplicationsManager = () => {
           </CardContent>
         </Card>
       </div>
+      {selectedApplication && (
+        <CandidateDetailModal
+          isOpen={!!selectedApplication}
+          onClose={() => setSelectedApplication(null)}
+          candidateId={selectedApplication.candidate_id}
+          applicationId={selectedApplication.id}
+          applicationStatus={selectedApplication.status}
+          onStatusUpdate={(newStatus) => {
+            updateApplicationStatus(selectedApplication.id, newStatus);
+            setSelectedApplication(null);
+          }}
+        />
+      )}
     </div>
   );
 };
