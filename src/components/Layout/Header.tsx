@@ -14,7 +14,7 @@ const Header = () => {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <img 
-                src="/lovable-uploads/9a2bda93-4784-4fc5-ae3c-dff4144290fe.png" 
+                src="/lovable-uploads/14356a73-41bf-4180-92fc-93e01ceec4b5.png" 
                 alt="eemploi logo" 
                 className="h-8 w-auto"
               />
@@ -33,7 +33,7 @@ const Header = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <img 
-              src="/lovable-uploads/9a2bda93-4784-4fc5-ae3c-dff4144290fe.png" 
+              src="/lovable-uploads/14356a73-41bf-4180-92fc-93e01ceec4b5.png" 
               alt="eemploi logo" 
               className="h-8 w-auto"
             />

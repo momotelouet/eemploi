@@ -68,7 +68,7 @@ const Footer = () => {
           <div className="lg:col-span-2 animate-fade-in">
             <Link to="/" className="flex items-center space-x-2 mb-6 group">
               <img 
-                src="/lovable-uploads/4b6645ce-d82e-476e-8fcc-c99b2e585207.png" 
+                src="/lovable-uploads/83a720d8-9a18-49c0-853f-30c38bd13835.png" 
                 alt="eemploi logo" 
                 className="h-10 w-auto group-hover:scale-105 transition-transform duration-300"
               />
