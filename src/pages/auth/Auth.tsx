@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -130,12 +129,11 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">E</span>
-            </div>
-            <span className="text-3xl font-bold gradient-text">eemploi</span>
-          </div>
+          <img
+            src="/lovable-uploads/79fb5607-6b8b-41b6-97e5-20f16492e405.png"
+            alt="eemploi logo"
+            className="h-12 w-auto mx-auto mb-4"
+          />
           <p className="text-muted-foreground">La plateforme d'emploi du Maroc</p>
         </div>
 
