@@ -168,19 +168,7 @@ const CandidateDashboard = () => {
           </TabsContent>
 
           <TabsContent value="assessment" className="mt-6">
-            <div className="space-y-6">
-              <AssessmentResults />
-              
-              <div className="mt-4">
-                <CandidateQuickActions
-                  isMobile={isMobile}
-                  onCreateCV={handleCreateCV}
-                  onSearchJobs={handleSearchJobs}
-                  onInterviewSimulation={handleInterviewSimulation}
-                  onStartAssessment={handleStartAssessment}
-                />
-              </div>
-            </div>
+            <AssessmentResults />
           </TabsContent>
 
           <TabsContent value="job-search" className="mt-6">
