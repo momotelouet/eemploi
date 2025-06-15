@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
@@ -16,54 +16,65 @@ export interface CandidateDetails {
   application: Application | null;
 }
 
-export const useCandidateDetails = (candidateId: string | null, applicationId: string | null, enabled: boolean) => {
-  const [details, setDetails] = useState<CandidateDetails>({
-    profile: null,
-    userProfile: null,
-    assessments: [],
-    application: null,
-  });
-  const [loading, setLoading] = useState(false);
+const fetchCandidateData = async (candidateId: string, applicationId: string): Promise<CandidateDetails> => {
+    console.log(`Fetching details for candidate: ${candidateId}, application: ${applicationId}`);
 
-  useEffect(() => {
-    if (!enabled || !candidateId || !applicationId) {
-      setDetails({ profile: null, userProfile: null, assessments: [], application: null });
-      setLoading(false);
-      return;
+    const profileRes = await supabase.from('candidate_profiles').select('*').eq('user_id', candidateId).maybeSingle();
+    if (profileRes.error) {
+        console.error('Error fetching candidate profile:', profileRes.error);
+        toast.error("Erreur lors de la récupération du profil du candidat.");
     }
 
-    const fetchCandidateData = async () => {
-      setLoading(true);
-      try {
-        const [profileRes, userProfileRes, assessmentsRes, applicationRes] = await Promise.all([
-          supabase.from('candidate_profiles').select('*').eq('user_id', candidateId!).maybeSingle(),
-          supabase.from('profiles').select('*').eq('id', candidateId!).maybeSingle(),
-          supabase.from('candidate_assessments').select('*').eq('user_id', candidateId!).eq('status', 'completed').order('completed_at', { ascending: false }),
-          supabase.from('applications').select('*').eq('id', applicationId!).maybeSingle(),
-        ]);
+    const userProfileRes = await supabase.from('profiles').select('*').eq('id', candidateId).maybeSingle();
+    if (userProfileRes.error) {
+        console.error('Error fetching user profile:', userProfileRes.error);
+        toast.error("Erreur lors de la récupération du profil utilisateur.");
+    }
 
-        if (profileRes.error) throw profileRes.error;
-        if (userProfileRes.error) throw userProfileRes.error;
-        if (assessmentsRes.error) throw assessmentsRes.error;
-        if (applicationRes.error) throw applicationRes.error;
+    const assessmentsRes = await supabase.from('candidate_assessments').select('*').eq('user_id', candidateId).eq('status', 'completed').order('completed_at', { ascending: false });
+    if (assessmentsRes.error) {
+        console.error('Error fetching assessments:', assessmentsRes.error);
+        toast.error("Erreur lors de la récupération des évaluations.");
+    }
 
-        setDetails({
-          profile: profileRes.data,
-          userProfile: userProfileRes.data,
-          assessments: assessmentsRes.data || [],
-          application: applicationRes.data,
-        });
+    const applicationRes = await supabase.from('applications').select('*').eq('id', applicationId).maybeSingle();
+    if (applicationRes.error) {
+        console.error('Error fetching application:', applicationRes.error);
+        toast.error("Erreur lors de la récupération de la candidature.");
+    }
 
-      } catch (err) {
-        console.error('Error fetching candidate data:', err);
-        toast.error('Erreur lors du chargement des données du candidat');
-      } finally {
-        setLoading(false);
-      }
+    return {
+        profile: profileRes.data || null,
+        userProfile: userProfileRes.data || null,
+        assessments: assessmentsRes.data || [],
+        application: applicationRes.data || null,
     };
+};
 
-    fetchCandidateData();
-  }, [candidateId, applicationId, enabled]);
+export const useCandidateDetails = (candidateId: string | null, applicationId: string | null, enabled: boolean) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['candidateDetails', candidateId, applicationId],
+    queryFn: () => {
+        if (!candidateId || !applicationId) {
+            return Promise.resolve({
+                profile: null,
+                userProfile: null,
+                assessments: [],
+                application: null,
+            });
+        }
+        return fetchCandidateData(candidateId, applicationId);
+    },
+    enabled: enabled && !!candidateId && !!applicationId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false, // Don't retry on error, we are showing toasts
+  });
 
-  return { ...details, loading };
+  return { 
+      profile: data?.profile ?? null,
+      userProfile: data?.userProfile ?? null,
+      assessments: data?.assessments ?? [],
+      application: data?.application ?? null,
+      loading: isLoading 
+  };
 };
