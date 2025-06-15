@@ -7,7 +7,7 @@ const AnimatedAssistant = () => {
 
   return (
     <div
-      className="absolute bottom-8 right-4 md:right-8 z-20 group cursor-pointer animate-fade-in"
+      className="fixed bottom-8 right-4 md:right-8 z-50 group cursor-pointer animate-fade-in"
       onClick={openChat}
       aria-label="Ouvrir le chat avec l'assistant"
       style={{ animationDelay: '1s' }}
@@ -18,7 +18,7 @@ const AnimatedAssistant = () => {
             Besoin d'aide ?
           </div>
         </div>
-        <div className="w-16 h-16 bg-eemploi-primary rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+        <div className="w-16 h-16 bg-eemploi-primary rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 animate-pulse">
           <Bot className="w-8 h-8 text-white" />
         </div>
       </div>

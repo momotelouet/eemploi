@@ -1,5 +1,4 @@
 
-import AnimatedAssistant from '@/components/footer/AnimatedAssistant';
 import FooterBrand from '@/components/footer/FooterBrand';
 import FooterLinks from '@/components/footer/FooterLinks';
 import Newsletter from '@/components/footer/Newsletter';
@@ -15,8 +14,6 @@ const Footer = () => {
       <div className="absolute top-10 left-10 w-32 h-32 bg-eemploi-primary/10 rounded-full animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
       <div className="absolute bottom-20 right-20 w-24 h-24 bg-eemploi-secondary/10 rounded-full animate-bounce-gentle" style={{ animationDelay: '3s' }}></div>
       <div className="absolute top-1/2 right-10 w-16 h-16 bg-eemploi-accent/10 rounded-full animate-bounce-gentle" style={{ animationDelay: '4s' }}></div>
-
-      <AnimatedAssistant />
 
       <div className="container mx-auto px-4 py-16 relative z-10">
         {/* Main Footer Content */}
