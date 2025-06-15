@@ -1,8 +1,6 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -16,13 +14,13 @@ import {
   Globe,
   User,
   Calendar,
-  Info
+  Info,
+  Award,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCandidateDetails } from '@/hooks/useCandidateDetails';
 import { CandidateDetailHeader } from './candidate-detail/CandidateDetailHeader';
-import { AssessmentsInfoTab } from './candidate-detail/AssessmentsInfoTab';
-import { DocumentsInfoTab } from './candidate-detail/DocumentsInfoTab';
 
 interface CandidateDetailModalProps {
   isOpen: boolean;
@@ -45,6 +43,14 @@ const getStatusBadge = (status: string | undefined | null) => {
     default:
       return <Badge variant="secondary">{status}</Badge>;
   }
+};
+
+const getScoreFromJson = (jsonData: any): number => {
+  if (!jsonData) return 0;
+  if (typeof jsonData === 'object' && jsonData.score !== undefined) {
+    return Number(jsonData.score) || 0;
+  }
+  return 0;
 };
 
 const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId, applicationStatus, onStatusUpdate }: CandidateDetailModalProps) => {
@@ -119,14 +125,8 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId, app
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Profil détaillé du candidat</span>
-            {profile?.cv_file_url && (
-              <Button onClick={handleDownloadCV} variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Télécharger CV
-              </Button>
-            )}
+          <DialogTitle>
+            Profil détaillé du candidat
           </DialogTitle>
         </DialogHeader>
 
@@ -134,7 +134,7 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId, app
           <CandidateDetailHeader fullName={fullName} profile={profile} />
           <Separator />
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -218,16 +218,90 @@ const CandidateDetailModal = ({ isOpen, onClose, candidateId, applicationId, app
                 )}
               </CardContent>
             </Card>
-          </div>
 
-          <Tabs defaultValue="assessments" className="w-full pt-6 border-t">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="assessments">Évaluations</TabsTrigger>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
-            </TabsList>
-            <TabsContent value="assessments" className="mt-4"><AssessmentsInfoTab assessments={assessments} onDownloadCertificate={handleDownloadCertificate} /></TabsContent>
-            <TabsContent value="documents" className="mt-4"><DocumentsInfoTab application={application} profile={profile} assessments={assessments} onDownloadCV={handleDownloadCV} onDownloadCertificate={handleDownloadCertificate} /></TabsContent>
-          </Tabs>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg"><Award className="w-5 h-5 mr-2" />Évaluations</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                {assessments && assessments.length > 0 ? (
+                  <div className="space-y-4">
+                    {assessments.map((assessment) => (
+                      <Card key={assessment.id} className="bg-muted/40">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="flex items-center justify-between text-base">
+                              <span className="text-muted-foreground">Évaluation complétée le {new Date(assessment.completed_at!).toLocaleDateString('fr-FR')}</span>
+                              {assessment.certificate_url && (
+                                <Button variant="outline" size="sm" onClick={() => handleDownloadCertificate(assessment.certificate_url!)}>
+                                  <Download className="w-4 h-4 mr-2" />Certificat
+                                </Button>
+                              )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap items-center justify-around gap-4 rounded-lg bg-background p-4 border text-center">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Score Total</p>
+                              <p className="text-2xl font-bold text-eemploi-primary">{assessment.total_score}</p>
+                            </div>
+                            <Separator orientation="vertical" className="h-12 hidden md:block" />
+                             <div>
+                              <p className="text-sm text-muted-foreground">Personnalité</p>
+                              <p className="text-xl font-semibold">{getScoreFromJson(assessment.personality_score)}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Compétences</p>
+                              <p className="text-xl font-semibold">{getScoreFromJson(assessment.skills_score)}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Qualités</p>
+                              <p className="text-xl font-semibold">{getScoreFromJson(assessment.qualities_score)}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Award className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <p className="text-muted-foreground">Aucune évaluation complétée.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg"><FileText className="w-5 h-5 mr-2" />Documents</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="space-y-2">
+                    {profile?.cv_file_url ? (
+                        <div className="flex items-center justify-between p-3 rounded-md border bg-muted/40">
+                            <span className="font-medium">{profile.cv_file_name || "CV du candidat"}</span>
+                            <Button variant="outline" size="sm" onClick={handleDownloadCV}><Download className="w-4 h-4 mr-2" /> Télécharger</Button>
+                        </div>
+                    ) : null}
+
+                    {assessments?.filter(a => a.certificate_url).map((assessment, index) => (
+                        <div key={assessment.id} className="flex items-center justify-between p-3 rounded-md border bg-muted/40">
+                            <span className="font-medium">Certificat d'évaluation #{index + 1}</span>
+                            <Button variant="outline" size="sm" onClick={() => handleDownloadCertificate(assessment.certificate_url!)}><Download className="w-4 h-4 mr-2" /> Télécharger</Button>
+                        </div>
+                    ))}
+                    
+                    {!profile?.cv_file_url && (!assessments || assessments.filter(a => a.certificate_url).length === 0) && (
+                         <div className="text-center py-8">
+                            <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                            <p className="text-muted-foreground">Aucun document disponible.</p>
+                        </div>
+                    )}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
         </div>
         
         <DialogFooter className="mt-auto pt-4 border-t">
