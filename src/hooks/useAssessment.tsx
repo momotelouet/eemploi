@@ -198,10 +198,10 @@ export const useSubmitAssessmentResponse = () => {
       if (updatedAssessment) {
         const certResult = await generateAndStoreCertificate(updatedAssessment);
         if (certResult?.publicUrl) {
-          console.log('Certificate automatically generated and stored:', certResult.publicUrl);
+          console.log('Certificate PDF automatically generated and stored:', certResult.publicUrl);
         } else {
-          console.warn('Failed to auto-generate certificate for assessment:', assessmentId);
-          toast.warning("L'évaluation est complétée, mais la génération automatique du certificat a échoué. Vous pourrez le regénérer plus tard depuis votre dashboard.");
+          console.warn('Failed to auto-generate PDF certificate for assessment:', assessmentId);
+          toast.warning("L'évaluation est complétée, mais la génération automatique du certificat PDF a échoué. Vous pourrez le regénérer plus tard depuis votre dashboard.");
         }
       }
 
@@ -213,7 +213,7 @@ export const useSubmitAssessmentResponse = () => {
       if (user?.id) {
         queryClient.invalidateQueries({ queryKey: ['candidate-profile', user.id] });
       }
-      toast.success('Évaluation complétée avec succès ! Votre certificat est maintenant disponible.');
+      toast.success('Évaluation complétée avec succès ! Votre certificat PDF est maintenant disponible.');
     },
     onError: (error) => {
       toast.error('Erreur lors de la soumission de l\'évaluation');

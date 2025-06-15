@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,26 +21,26 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Handler : ouvrir le certificat HTML (si déjà présent), sinon le générer puis ouvrir
+  // Handler : ouvrir le certificat PDF (si déjà présent), sinon le générer puis ouvrir
   const handleOpenCertificate = async () => {
-    if (assessment.certificate_url) {
+    if (assessment.certificate_url && assessment.certificate_url.endsWith('.pdf')) {
       window.open(assessment.certificate_url, '_blank', 'noopener,noreferrer');
       return;
     }
     setIsGenerating(true);
-    const toastId = toast.loading('Génération du certificat HTML...');
+    const toastId = toast.loading('Génération du certificat PDF...');
     try {
       const result = await generateAndStoreCertificate(assessment);
       if (result?.publicUrl) {
-        toast.success('Certificat généré ! Ouverture...', { id: toastId });
+        toast.success('Certificat PDF généré ! Ouverture...', { id: toastId });
         await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
         window.open(result.publicUrl, '_blank', 'noopener,noreferrer');
       } else {
-        toast.error("Impossible de générer le certificat", { id: toastId });
+        toast.error("Impossible de générer le certificat PDF", { id: toastId });
       }
     } catch (error) {
-      toast.error("Erreur lors de la génération du certificat", { id: toastId });
-      console.error("Erreur certificat HTML:", error);
+      toast.error("Erreur lors de la génération du certificat PDF", { id: toastId });
+      console.error("Erreur certificat PDF:", error);
     }
     setIsGenerating(false);
   };
@@ -132,9 +131,9 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 <span>
-                  {assessment.certificate_url
-                    ? "Voir le certificat HTML"
-                    : isGenerating ? "Génération…" : "Générer & Ouvrir le HTML"}
+                  {assessment.certificate_url && assessment.certificate_url.endsWith('.pdf')
+                    ? "Voir le certificat PDF"
+                    : isGenerating ? "Génération…" : "Générer & Ouvrir le PDF"}
                 </span>
               </Button>
               <Button
