@@ -23,6 +23,9 @@ import { useJobApplications } from "@/hooks/useJobApplications";
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
@@ -30,6 +33,7 @@ const RecruiterDashboard = () => {
   const { applications } = useJobApplications();
   const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Calculate stats
   const totalJobs = jobs.length;
@@ -67,6 +71,28 @@ const RecruiterDashboard = () => {
       color: "text-yellow-600"
     }
   ];
+
+  const updateApplicationStatus = async (applicationId: string, newStatus: 'accepted' | 'rejected') => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ status: newStatus })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
+      toast.success('Statut mis à jour', {
+        description: `La candidature a été ${newStatus === 'accepted' ? 'acceptée' : 'refusée'}.`,
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ['jobApplications', user?.id] });
+    } catch (error: any) {
+      console.error('Erreur lors de la mise à jour:', error);
+      toast.error('Erreur', {
+        description: error.message || 'Impossible de mettre à jour le statut de la candidature.',
+      });
+    }
+  };
 
   const getCandidateName = (application: any) => {
     if (application.candidate_profiles?.profiles) {
@@ -257,11 +283,21 @@ const RecruiterDashboard = () => {
                                 <div className="flex space-x-2">
                                   {application.status === 'pending' && (
                                     <>
-                                      <Button size="sm" variant="outline" className="text-green-600">
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="text-green-600"
+                                        onClick={() => updateApplicationStatus(application.id, 'accepted')}
+                                      >
                                         <CheckCircle className="w-4 h-4 mr-2" />
                                         Accepter
                                       </Button>
-                                      <Button size="sm" variant="outline" className="text-red-600">
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="text-red-600"
+                                        onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                                      >
                                         <XCircle className="w-4 h-4 mr-2" />
                                         Refuser
                                       </Button>
