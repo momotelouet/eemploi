@@ -22,6 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useJobApplication } from "@/hooks/useJobApplication";
 
 type JobWithCompany = Tables<'jobs'> & {
   companies?: Tables<'companies'> | null;
@@ -35,6 +36,7 @@ const JobDetails = () => {
   const [similarJobs, setSimilarJobs] = useState<JobWithCompany[]>([]);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const { applyToJob } = useJobApplication();
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -90,14 +92,6 @@ const JobDetails = () => {
 
     fetchJob();
   }, [id, user]);
-
-  const handleQuickApply = async () => {
-    if (!job) return;
-    const success = await applyToJob(job.id);
-    if (success) {
-      setHasApplied(true);
-    }
-  };
 
   const handleApplicationSubmit = () => {
     setHasApplied(true);
