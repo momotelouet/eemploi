@@ -26,14 +26,16 @@ import {
   Search,
   Info,
   Phone,
-  Wrench
+  Wrench,
+  LayoutDashboard,
+  Users,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationsDropdown } from './Notifications';
 
 const AuthenticatedHeader = () => {
-  const { user, logout } = useAuth();
+  const { user, userType, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const notificationsHookData = useNotifications();
@@ -156,33 +158,68 @@ const AuthenticatedHeader = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link 
-                    to="/dashboard/candidat" 
-                    className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    Mon profil
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link 
-                    to="/dashboard/candidat" 
-                    className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Mes CV
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link 
-                    to="/dashboard/candidat" 
-                    className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                  >
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    Mes candidatures
-                  </Link>
-                </DropdownMenuItem>
+                {userType === 'candidat' && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        to="/dashboard/candidat" 
+                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Mon profil
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        to="/dashboard/candidat" 
+                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Mes CV
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        to="/dashboard/candidat" 
+                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+                      >
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Mes candidatures
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {userType === 'recruteur' && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        to="/dashboard/recruteur" 
+                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+                      >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Tableau de bord
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        to="/recruteur/hub" 
+                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+                      >
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Hub Recruteur
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        to="/recruteur/candidatures" 
+                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Candidatures
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuItem className="hover:bg-eemploi-primary/10 transition-colors duration-300">
                   <Settings className="mr-2 h-4 w-4" />
                   Paramètres
@@ -230,22 +267,75 @@ const AuthenticatedHeader = () => {
               ))}
               
               <div className="pt-4 space-y-2 border-t border-border">
-                <Link
-                  to="/dashboard/candidat"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: '0.6s' }}
-                >
-                  <User className="w-4 h-4" />
-                  <span>Mon profil</span>
-                </Link>
+                {userType === 'candidat' && (
+                  <>
+                    <Link
+                      to="/dashboard/candidat"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
+                      style={{ animationDelay: '0.6s' }}
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Mon profil</span>
+                    </Link>
+                    <Link
+                      to="/dashboard/candidat"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
+                      style={{ animationDelay: '0.7s' }}
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>Mes CV</span>
+                    </Link>
+                    <Link
+                      to="/dashboard/candidat"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
+                      style={{ animationDelay: '0.8s' }}
+                    >
+                      <Briefcase className="w-4 h-4" />
+                      <span>Mes candidatures</span>
+                    </Link>
+                  </>
+                )}
+                {userType === 'recruteur' && (
+                  <>
+                    <Link
+                      to="/dashboard/recruteur"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
+                      style={{ animationDelay: '0.6s' }}
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span>Tableau de bord</span>
+                    </Link>
+                    <Link
+                      to="/recruteur/hub"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
+                      style={{ animationDelay: '0.7s' }}
+                    >
+                      <Briefcase className="w-4 h-4" />
+                      <span>Hub Recruteur</span>
+                    </Link>
+                     <Link
+                      to="/recruteur/candidatures"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
+                      style={{ animationDelay: '0.8s' }}
+                    >
+                      <Users className="w-4 h-4" />
+                      <span>Candidatures</span>
+                    </Link>
+                  </>
+                )}
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
                     handleLogout();
                   }}
                   className="flex items-center space-x-3 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: '0.7s' }}
+                  style={{ animationDelay: '0.9s' }}
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Déconnexion</span>
