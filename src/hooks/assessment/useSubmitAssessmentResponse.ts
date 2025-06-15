@@ -1,0 +1,127 @@
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { generateAndStoreCertificate } from '@/lib/assessmentUtils';
+import type { Assessment, AssessmentResponse } from './types';
+
+export const useSubmitAssessmentResponse = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ 
+      assessmentId, 
+      responses 
+    }: { 
+      assessmentId: string; 
+      responses: AssessmentResponse[] 
+    }) => {
+      console.log('Submitting responses:', responses);
+
+      // Insérer toutes les réponses
+      const { error: responsesError } = await supabase
+        .from('assessment_responses')
+        .insert(
+          responses.map(response => ({
+            assessment_id: assessmentId,
+            question_id: response.question_id,
+            response_value: response.response_value,
+            score: response.score
+          }))
+        );
+
+      if (responsesError) {
+        console.error('Error inserting responses:', responsesError);
+        throw responsesError;
+      }
+
+      // Récupérer les questions pour connaître leurs catégories
+      const { data: questions, error: questionsError } = await supabase
+        .from('assessment_questions')
+        .select('id, category')
+        .in('id', responses.map(r => r.question_id));
+
+      if (questionsError) {
+        console.error('Error fetching questions:', questionsError);
+        throw questionsError;
+      }
+
+      // Créer un map pour associer question_id à catégorie
+      const questionCategories = questions.reduce((acc, question) => {
+        acc[question.id] = question.category;
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Calculer les scores par catégorie en utilisant les vraies catégories
+      const personalityScore = responses
+        .filter(r => questionCategories[r.question_id] === 'personality')
+        .reduce((sum, r) => sum + r.score, 0);
+      
+      const skillsScore = responses
+        .filter(r => questionCategories[r.question_id] === 'skills')
+        .reduce((sum, r) => sum + r.score, 0);
+      
+      const qualitiesScore = responses
+        .filter(r => questionCategories[r.question_id] === 'qualities')
+        .reduce((sum, r) => sum + r.score, 0);
+
+      const totalScore = personalityScore + skillsScore + qualitiesScore;
+
+      console.log('Calculated scores:', {
+        personality: personalityScore,
+        skills: skillsScore,
+        qualities: qualitiesScore,
+        total: totalScore
+      });
+
+      // Mettre à jour l'évaluation avec les scores
+      const { data: updatedAssessment, error } = await supabase
+        .from('candidate_assessments')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          total_score: totalScore,
+          personality_score: { score: personalityScore },
+          skills_score: { score: skillsScore },
+          qualities_score: { score: qualitiesScore }
+        })
+        .eq('id', assessmentId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating assessment:', error);
+        throw error;
+      }
+
+      console.log('Updated assessment:', updatedAssessment);
+
+      // Automatically generate and store the certificate
+      if (updatedAssessment) {
+        const certResult = await generateAndStoreCertificate(updatedAssessment);
+        if (certResult?.publicUrl) {
+          console.log('Certificate PDF automatically generated and stored:', certResult.publicUrl);
+        } else {
+          console.warn('Failed to auto-generate PDF certificate for assessment:', assessmentId);
+          toast.warning("L'évaluation est complétée, mais la génération automatique du certificat PDF a échoué. Vous pourrez le regénérer plus tard depuis votre dashboard.");
+        }
+      }
+
+      return updatedAssessment as Assessment;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-assessments'] });
+      // Invalidate the candidate profile to pick up the new certificate_url
+      if (user?.id) {
+        queryClient.invalidateQueries({ queryKey: ['candidate-profile', user.id] });
+      }
+      toast.success('Évaluation complétée avec succès ! Votre certificat PDF est maintenant disponible.');
+    },
+    onError: (error) => {
+      toast.error('Erreur lors de la soumission de l\'évaluation');
+      console.error('Error submitting assessment:', error);
+    },
+  });
+};
