@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,18 +35,36 @@ const CandidateProfileManager = () => {
   const [uploading, setUploading] = useState(false);
 
   const [formData, setFormData] = useState({
-    phone: profile?.phone || '',
-    address: profile?.address || '',
-    city: profile?.city || '',
-    country: profile?.country || '',
-    linkedin_url: profile?.linkedin_url || '',
-    portfolio_url: profile?.portfolio_url || '',
-    bio: profile?.bio || '',
-    experience_years: profile?.experience_years || 0,
-    education: profile?.education || '',
-    skills: profile?.skills || [],
-    languages: profile?.languages || []
+    phone: '',
+    address: '',
+    city: '',
+    country: '',
+    linkedin_url: '',
+    portfolio_url: '',
+    bio: '',
+    experience_years: 0,
+    education: '',
+    skills: [] as string[],
+    languages: [] as string[]
   });
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        phone: profile.phone || '',
+        address: profile.address || '',
+        city: profile.city || '',
+        country: profile.country || '',
+        linkedin_url: profile.linkedin_url || '',
+        portfolio_url: profile.portfolio_url || '',
+        bio: profile.bio || '',
+        experience_years: profile.experience_years || 0,
+        education: profile.education || '',
+        skills: profile.skills || [],
+        languages: profile.languages || []
+      });
+    }
+  }, [profile]);
 
   const handleSave = async () => {
     try {
