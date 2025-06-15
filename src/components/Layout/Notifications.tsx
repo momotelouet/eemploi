@@ -1,5 +1,5 @@
 
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications, type Notification } from '@/hooks/useNotifications';
 import { Bell, CheckCheck } from 'lucide-react';
 import {
   DropdownMenuContent,
@@ -12,7 +12,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
-import { Notification } from '@/hooks/useNotifications';
 
 const NotificationItem = ({ notification, onNotificationClick }: { notification: Notification, onNotificationClick: (id: string) => void }) => {
     return (
@@ -38,9 +37,7 @@ const NotificationItem = ({ notification, onNotificationClick }: { notification:
     );
 }
 
-export const NotificationsDropdown = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading } = useNotifications();
-
+export const NotificationsDropdown = ({ notifications, unreadCount, markAsRead, markAllAsRead, isLoading }: ReturnType<typeof useNotifications>) => {
   return (
     <DropdownMenuContent className="w-80 md:w-96" align="end">
       <DropdownMenuLabel className="flex items-center justify-between p-3">

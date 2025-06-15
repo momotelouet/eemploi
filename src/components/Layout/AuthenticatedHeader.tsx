@@ -36,7 +36,8 @@ const AuthenticatedHeader = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { unreadCount } = useNotifications();
+  const notificationsHookData = useNotifications();
+  const { unreadCount } = notificationsHookData;
 
   const handleLogout = async () => {
     await logout();
@@ -126,7 +127,7 @@ const AuthenticatedHeader = () => {
                    <span className="sr-only">Ouvrir les notifications</span>
                 </Button>
               </DropdownMenuTrigger>
-              <NotificationsDropdown />
+              <NotificationsDropdown {...notificationsHookData} />
             </DropdownMenu>
 
             {/* User Menu */}
