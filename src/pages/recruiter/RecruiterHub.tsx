@@ -1,6 +1,7 @@
+
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useRecruiterJobs } from "@/hooks/useRecruiterJobs";
 import { useJobApplications } from "@/hooks/useJobApplications";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,16 +14,24 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const RecruiterHub = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
   
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (location.state?.activeTab) {
-      setActiveTab(location.state.activeTab);
+    const state = location.state || {};
+    if (state.activeTab) {
+      setActiveTab(state.activeTab);
     }
-  }, [location.state]);
+    if (state.openCreateJobModal) {
+      openCreateJobModal();
+      // Clean the state to avoid re-triggering
+      const { openCreateJobModal: _, ...restState } = state;
+      navigate(location.pathname, { replace: true, state: restState });
+    }
+  }, [location.state, navigate]);
   
   const { user } = useAuth();
   const { jobs } = useRecruiterJobs();

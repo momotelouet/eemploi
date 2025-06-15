@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -51,6 +50,15 @@ const AuthenticatedHeader = () => {
       return user.email.substring(0, 2).toUpperCase();
     }
     return 'U';
+  };
+
+  const handleCreateClick = () => {
+    if (userType === 'recruteur') {
+      navigate('/recruteur/hub', { state: { openCreateJobModal: true } });
+    } else {
+      // Future: Add navigation for candidate to create CV for example
+      // navigate('/dashboard/candidat/cv');
+    }
   };
 
   const navigationItems = [
@@ -106,6 +114,7 @@ const AuthenticatedHeader = () => {
               size="sm" 
               className="bg-eemploi-primary hover:bg-eemploi-primary/90 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-fade-in"
               style={{ animationDelay: '0.6s' }}
+              onClick={handleCreateClick}
             >
               <Plus className="w-4 h-4 mr-2" />
               Créer
