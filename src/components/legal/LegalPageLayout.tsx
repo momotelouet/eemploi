@@ -9,17 +9,17 @@ interface LegalPageLayoutProps {
 
 const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({ title, lastUpdated, children }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-secondary">
       <div className="py-12 sm:py-16">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-lg animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+          <div className="max-w-4xl mx-auto bg-card p-8 md:p-12 rounded-2xl shadow-xl animate-fade-in border-t-8 border-eemploi-primary">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-eemploi-dark mb-4 tracking-tight">
               {title}
             </h1>
-            <p className="text-sm text-gray-500 mb-8">
+            <p className="text-sm text-muted-foreground mb-8">
               Dernière mise à jour : {lastUpdated}
             </p>
-            <div className="space-y-6 text-gray-700 leading-relaxed">
+            <div className="legal-content space-y-6 text-slate-700 dark:text-slate-300 leading-relaxed">
               {children}
             </div>
           </div>
