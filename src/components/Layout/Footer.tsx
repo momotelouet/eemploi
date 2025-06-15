@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin, Heart, MessageSquare } from 'lucide-react';
 import { useChat } from '@/contexts/ChatContext';
@@ -76,7 +77,7 @@ const Footer = () => {
                 </div>
             </div>
             <img
-                src="https://cdn.dribbble.com/users/242398/screenshots/2895689/bot.gif"
+                src="https://i.gifer.com/origin/3b/3b4d4b1a451e04313b652a9d885a733e_w200.gif"
                 alt="Chatbot assistant"
                 className="w-full h-auto transition-transform duration-300 group-hover:scale-110"
             />
