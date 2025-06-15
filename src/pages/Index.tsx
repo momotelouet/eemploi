@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,14 +102,18 @@ const Index = () => {
               <span className="font-bold text-yellow-300"> 15,000+ offres</span> d'emploi vérifiées.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button size="lg" className="btn-primary text-lg px-12 py-6 shadow-2xl hover:shadow-3xl">
-                <Search className="w-6 h-6 mr-3" />
-                Rechercher un emploi
-              </Button>
-              <Button size="lg" variant="outline" className="btn-secondary text-lg px-12 py-6">
-                Publier une offre
-                <ArrowRight className="w-6 h-6 ml-3" />
-              </Button>
+              <Link to="/emplois">
+                <Button size="lg" className="bg-white text-eemploi-primary hover:bg-gray-100 text-lg px-12 py-6 shadow-2xl hover:shadow-3xl">
+                  <Search className="w-6 h-6 mr-3" />
+                  Rechercher un emploi
+                </Button>
+              </Link>
+              <Link to="/recruteur/hub">
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-eemploi-primary text-lg px-12 py-6">
+                  Publier une offre
+                  <ArrowRight className="w-6 h-6 ml-3" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
