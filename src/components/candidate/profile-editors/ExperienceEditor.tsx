@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,8 +21,8 @@ type Experience = {
 };
 
 interface ExperienceEditorProps {
-    profile: CandidateProfile & { experience?: Experience[] };
-    onUpdate: (updates: Partial<CandidateProfile> & { experience?: Experience[] }) => Promise<any>;
+    profile: CandidateProfile;
+    onUpdate: (updates: Partial<CandidateProfile>) => Promise<any>;
 }
 
 const ExperienceForm = ({ experience, onSave, onCancel }: { experience?: Experience | null, onSave: (exp: Experience) => void, onCancel: () => void }) => {
@@ -88,7 +87,7 @@ const ExperienceEditor = ({ profile, onUpdate }: ExperienceEditorProps) => {
     };
 
     const addOrUpdateExperience = (exp: Experience) => {
-        const currentExperiences = profile.experience || [];
+        const currentExperiences = (profile.experience as Experience[] | null) || [];
         const existingIndex = currentExperiences.findIndex(e => e.id === exp.id);
         if (existingIndex > -1) {
             const updated = [...currentExperiences];
@@ -100,7 +99,7 @@ const ExperienceEditor = ({ profile, onUpdate }: ExperienceEditorProps) => {
     };
 
     const deleteExperience = (id: string) => {
-        const currentExperiences = profile.experience || [];
+        const currentExperiences = (profile.experience as Experience[] | null) || [];
         const updated = currentExperiences.filter(e => e.id !== id);
         handleSave(updated);
     };
@@ -126,8 +125,8 @@ const ExperienceEditor = ({ profile, onUpdate }: ExperienceEditorProps) => {
                 </Dialog>
             </CardHeader>
             <CardContent className="space-y-4">
-                {(profile.experience || []).length > 0 ? (
-                    (profile.experience || []).map(exp => (
+                {((profile.experience as Experience[] | null) || []).length > 0 ? (
+                    ((profile.experience as Experience[] | null) || []).map(exp => (
                         <div key={exp.id} className="p-4 border rounded-md flex justify-between items-start">
                             <div>
                                 <h4 className="font-bold">{exp.title}</h4>

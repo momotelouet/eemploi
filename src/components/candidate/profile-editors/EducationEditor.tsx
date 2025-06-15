@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,8 +21,8 @@ type Education = {
 };
 
 interface EducationEditorProps {
-    profile: CandidateProfile & { education_structured?: Education[] };
-    onUpdate: (updates: Partial<CandidateProfile> & { education_structured?: Education[] }) => Promise<any>;
+    profile: CandidateProfile;
+    onUpdate: (updates: Partial<CandidateProfile>) => Promise<any>;
 }
 
 const EducationForm = ({ education, onSave, onCancel }: { education?: Education | null, onSave: (edu: Education) => void, onCancel: () => void }) => {
@@ -90,7 +89,7 @@ const EducationEditor = ({ profile, onUpdate }: EducationEditorProps) => {
     };
 
     const addOrUpdate = (edu: Education) => {
-        const current = profile.education_structured || [];
+        const current = (profile.education_structured as Education[] | null) || [];
         const existingIndex = current.findIndex(e => e.id === edu.id);
         const updated = [...current];
         if (existingIndex > -1) {
@@ -102,7 +101,7 @@ const EducationEditor = ({ profile, onUpdate }: EducationEditorProps) => {
     };
 
     const deleteItem = (id: string) => {
-        const current = profile.education_structured || [];
+        const current = (profile.education_structured as Education[] | null) || [];
         const updated = current.filter(e => e.id !== id);
         handleSave(updated);
     };
@@ -128,7 +127,7 @@ const EducationEditor = ({ profile, onUpdate }: EducationEditorProps) => {
                 </Dialog>
             </CardHeader>
             <CardContent className="space-y-4">
-                {(profile.education_structured || []).map(edu => (
+                {((profile.education_structured as Education[] | null) || []).map(edu => (
                     <div key={edu.id} className="p-4 border rounded-md flex justify-between items-start">
                         <div>
                             <h4 className="font-bold">{edu.degree}</h4>

@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,8 +18,8 @@ type Project = {
 };
 
 interface ProjectsEditorProps {
-    profile: CandidateProfile & { projects?: Project[] };
-    onUpdate: (updates: Partial<CandidateProfile> & { projects?: Project[] }) => Promise<any>;
+    profile: CandidateProfile;
+    onUpdate: (updates: Partial<CandidateProfile>) => Promise<any>;
 }
 
 const ProjectForm = ({ item, onSave, onCancel }: { item?: Project | null, onSave: (item: Project) => void, onCancel: () => void }) => {
@@ -67,7 +66,7 @@ const ProjectsEditor = ({ profile, onUpdate }: ProjectsEditorProps) => {
     };
 
     const addOrUpdate = (item: Project) => {
-        const current = profile.projects || [];
+        const current = (profile.projects as Project[] | null) || [];
         const existingIndex = current.findIndex(i => i.id === item.id);
         const updated = [...current];
         if (existingIndex > -1) updated[existingIndex] = item;
@@ -76,7 +75,7 @@ const ProjectsEditor = ({ profile, onUpdate }: ProjectsEditorProps) => {
     };
 
     const deleteItem = (id: string) => {
-        const updated = (profile.projects || []).filter(i => i.id !== id);
+        const updated = ((profile.projects as Project[] | null) || []).filter(i => i.id !== id);
         handleSave(updated);
     };
 
@@ -93,7 +92,7 @@ const ProjectsEditor = ({ profile, onUpdate }: ProjectsEditorProps) => {
                 </Dialog>
             </CardHeader>
             <CardContent className="space-y-4">
-                {(profile.projects || []).map(item => (
+                {((profile.projects as Project[] | null) || []).map(item => (
                     <div key={item.id} className="p-4 border rounded-md flex justify-between items-start">
                         <div>
                             <h4 className="font-bold">{item.name}</h4>

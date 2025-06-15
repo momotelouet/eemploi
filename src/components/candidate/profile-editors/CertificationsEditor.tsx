@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { CandidateProfile } from '@/hooks/useCandidateProfile';
@@ -18,8 +17,8 @@ type Certification = {
 };
 
 interface CertificationsEditorProps {
-    profile: CandidateProfile & { certifications?: Certification[] };
-    onUpdate: (updates: Partial<CandidateProfile> & { certifications?: Certification[] }) => Promise<any>;
+    profile: CandidateProfile;
+    onUpdate: (updates: Partial<CandidateProfile>) => Promise<any>;
 }
 
 const CertificationForm = ({ item, onSave, onCancel }: { item?: Certification | null, onSave: (item: Certification) => void, onCancel: () => void }) => {
@@ -66,7 +65,7 @@ const CertificationsEditor = ({ profile, onUpdate }: CertificationsEditorProps) 
     };
 
     const addOrUpdate = (item: Certification) => {
-        const current = profile.certifications || [];
+        const current = (profile.certifications as Certification[] | null) || [];
         const existingIndex = current.findIndex(i => i.id === item.id);
         const updated = [...current];
         if (existingIndex > -1) updated[existingIndex] = item;
@@ -75,7 +74,7 @@ const CertificationsEditor = ({ profile, onUpdate }: CertificationsEditorProps) 
     };
 
     const deleteItem = (id: string) => {
-        const updated = (profile.certifications || []).filter(i => i.id !== id);
+        const updated = ((profile.certifications as Certification[] | null) || []).filter(i => i.id !== id);
         handleSave(updated);
     };
 
@@ -92,7 +91,7 @@ const CertificationsEditor = ({ profile, onUpdate }: CertificationsEditorProps) 
                 </Dialog>
             </CardHeader>
             <CardContent className="space-y-4">
-                {(profile.certifications || []).map(item => (
+                {((profile.certifications as Certification[] | null) || []).map(item => (
                     <div key={item.id} className="p-4 border rounded-md flex justify-between items-start">
                         <div>
                             <h4 className="font-bold">{item.name}</h4>
