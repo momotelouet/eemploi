@@ -1,6 +1,5 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import 'https://deno.land/x/xhr@0.1.0/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,48 +14,18 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { messages } = await req.json()
+    // For debugging purposes, we'll log the body and return a mocked response.
+    const body = await req.json().catch(() => ({}))
+    console.log('Live chat function invoked. Body:', JSON.stringify(body))
 
-    const openrouterApiKey = Deno.env.get('OPENROUTER_API_KEY')
-    if (!openrouterApiKey) {
-      throw new Error('OPENROUTER_API_KEY is not set')
-    }
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${openrouterApiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: "mistralai/mistral-7b-instruct:free", // A good free model on OpenRouter
-            messages: [
-              { role: 'system', content: "You are a helpful customer support agent for eemploi, a job board website. Be friendly and concise. Respond in French." },
-              ...messages
-            ],
-        })
-    });
-
-    const chatCompletion = await response.json();
-
-    if (!response.ok) {
-      console.error('Error from OpenRouter:', chatCompletion);
-      throw new Error(chatCompletion.error?.message || 'Failed to get response from AI service.');
-    }
-
-    const assistantResponse = chatCompletion.choices?.[0]?.message?.content;
-
-    if (!assistantResponse) {
-      console.error('Invalid response structure from OpenRouter:', chatCompletion);
-      throw new Error('Invalid response from AI service.');
-    }
+    const assistantResponse = "Ceci est une réponse de test pour le débogage."
 
     return new Response(JSON.stringify({ response: assistantResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error(error)
+    console.error('Error in live-chat function:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
