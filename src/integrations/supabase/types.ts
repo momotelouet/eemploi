@@ -387,7 +387,9 @@ export type Database = {
           id: string
           job_type: string | null
           location: string | null
+          paid: boolean
           posted_by: string
+          price: number
           requirements: string | null
           salary_max: number | null
           salary_min: number | null
@@ -405,7 +407,9 @@ export type Database = {
           id?: string
           job_type?: string | null
           location?: string | null
+          paid?: boolean
           posted_by: string
+          price?: number
           requirements?: string | null
           salary_max?: number | null
           salary_min?: number | null
@@ -423,7 +427,9 @@ export type Database = {
           id?: string
           job_type?: string | null
           location?: string | null
+          paid?: boolean
           posted_by?: string
+          price?: number
           requirements?: string | null
           salary_max?: number | null
           salary_min?: number | null
@@ -472,6 +478,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string | null
+          recruiter_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string | null
+          recruiter_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string | null
+          recruiter_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -506,6 +542,8 @@ export type Database = {
           company_website: string | null
           created_at: string
           id: string
+          status: string
+          unpaid_balance: number
           updated_at: string
           user_id: string
         }
@@ -515,6 +553,8 @@ export type Database = {
           company_website?: string | null
           created_at?: string
           id?: string
+          status?: string
+          unpaid_balance?: number
           updated_at?: string
           user_id: string
         }
@@ -524,6 +564,8 @@ export type Database = {
           company_website?: string | null
           created_at?: string
           id?: string
+          status?: string
+          unpaid_balance?: number
           updated_at?: string
           user_id?: string
         }
@@ -571,6 +613,10 @@ export type Database = {
     Functions: {
       award_points: {
         Args: { user_id: string; points_amount: number; reason?: string }
+        Returns: undefined
+      }
+      handle_new_job_posting: {
+        Args: { recruiter_user_id: string; job_price: number }
         Returns: undefined
       }
       increment_job_views: {

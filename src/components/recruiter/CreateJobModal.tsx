@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { X } from 'lucide-react';
+import { useRecruiterProfile } from '@/hooks/useRecruiterProfile';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CreateJobModalProps {
   open: boolean;
@@ -15,8 +17,13 @@ interface CreateJobModalProps {
   onJobCreated?: () => void;
 }
 
+const PUBLICATION_PRICE = 99;
+const UNPAID_THRESHOLD = 500;
+
 const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProps) => {
   const { user } = useAuth();
+  const { profile } = useRecruiterProfile(user?.id ?? null);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,9 +38,19 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
     company_id: ''
   });
 
+  const isPublicationBlocked = profile?.status === 'suspended' || (profile?.unpaid_balance ?? 0) >= UNPAID_THRESHOLD;
+  const blockReason = profile?.status === 'suspended' 
+    ? "Votre compte est suspendu. Veuillez contacter le support." 
+    : `Votre solde impayé de ${profile?.unpaid_balance} DH a atteint le seuil de ${UNPAID_THRESHOLD} DH. Veuillez le régler pour continuer.`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isPublicationBlocked) return;
+
+    const isConfirmed = window.confirm(`Cette offre sera facturée ${PUBLICATION_PRICE} DH. Elle sera visible immédiatement, et vous pourrez payer plus tard.`);
+    if (!isConfirmed) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -54,7 +71,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         companyId = company.id;
       }
 
-      const { error } = await supabase
+      const { data: job, error } = await supabase
         .from('jobs')
         .insert({
           title: formData.title,
@@ -67,16 +84,36 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
           salary_max: formData.salary_max ? parseInt(formData.salary_max) : null,
           company_id: companyId,
           posted_by: user.id,
-          status: 'active'
-        });
+          status: 'active',
+          price: PUBLICATION_PRICE,
+          paid: false
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+      if (!job) throw new Error("La création de l'offre a échoué.");
 
-      toast({
-        title: 'Offre d\'emploi créée',
-        description: 'Votre offre d\'emploi a été publiée avec succès.',
+      // Incrémenter le solde impayé via la fonction RPC
+      const { error: rpcError } = await supabase.rpc('handle_new_job_posting', {
+        recruiter_user_id: user.id,
+        job_price: PUBLICATION_PRICE
       });
 
+      if (rpcError) {
+        console.error('Failed to update unpaid balance:', rpcError);
+        toast({
+          title: 'Offre créée mais avec un souci',
+          description: 'L\'offre a été publiée, mais la mise à jour de votre solde a échoué. Veuillez contacter le support.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Offre d\'emploi créée',
+          description: `Votre offre a été publiée. ${PUBLICATION_PRICE} DH ont été ajoutés à votre solde.`,
+        });
+      }
+      
       // Réinitialiser le formulaire
       setFormData({
         title: '',
@@ -240,11 +277,14 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
             <Button
               type="submit"
               className="bg-eemploi-primary hover:bg-eemploi-primary/90"
-              disabled={loading}
+              disabled={loading || isPublicationBlocked}
             >
               {loading ? 'Création en cours...' : 'Publier l\'offre'}
             </Button>
           </div>
+          {isPublicationBlocked && (
+            <p className="text-sm text-destructive mt-2 text-center">{blockReason}</p>
+          )}
         </form>
       </DialogContent>
     </Dialog>

@@ -1,4 +1,3 @@
-
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -10,12 +9,15 @@ import RecruiterHubHeader from "@/components/recruiter/hub/RecruiterHubHeader";
 import QuickActions from "@/components/recruiter/hub/QuickActions";
 import QuickStats from "@/components/recruiter/hub/QuickStats";
 import RecruiterHubTabs from "@/components/recruiter/hub/RecruiterHubTabs";
+import { useQueryClient } from "@tanstack/react-query";
 
 const RecruiterHub = () => {
   const location = useLocation();
   const [isCreateJobModalOpen, setIsCreateJobModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
   
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
@@ -28,6 +30,11 @@ const RecruiterHub = () => {
   const { profile } = useRecruiterProfile(user?.id ?? null);
 
   const openCreateJobModal = () => setIsCreateJobModalOpen(true);
+
+  const handleJobCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['recruiterJobs', user?.id] });
+    queryClient.invalidateQueries({ queryKey: ['recruiter-profile', user?.id] });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,6 +64,7 @@ const RecruiterHub = () => {
       <CreateJobModal 
         open={isCreateJobModalOpen}
         onOpenChange={setIsCreateJobModalOpen}
+        onJobCreated={handleJobCreated}
       />
     </div>
   );
