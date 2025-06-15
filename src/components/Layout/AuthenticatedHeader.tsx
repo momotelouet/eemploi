@@ -2,37 +2,24 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { 
   DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { 
   Menu, 
   X, 
-  User, 
-  LogOut, 
-  Settings, 
-  Briefcase, 
-  Building, 
-  FileText,
   Bell,
   Plus,
   Search,
-  Info,
-  Phone,
-  Wrench,
-  LayoutDashboard,
-  Users,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationsDropdown } from './Notifications';
+import UserMenu from './UserMenu';
+import HeaderNavigation from './HeaderNavigation';
+import MobileMenu from './MobileMenu';
 
 const AuthenticatedHeader = () => {
   const { user, userType, logout } = useAuth();
@@ -62,14 +49,6 @@ const AuthenticatedHeader = () => {
     }
   };
 
-  const navigationItems = [
-    { label: 'Emplois', href: '/emplois', icon: <Briefcase className="w-4 h-4" /> },
-    { label: 'Entreprises', href: '/entreprises', icon: <Building className="w-4 h-4" /> },
-    { label: 'Outils', href: '/outils', icon: <Wrench className="w-4 h-4" /> },
-    { label: 'À propos', href: '/about', icon: <Info className="w-4 h-4" /> },
-    { label: 'Contact', href: '/contact', icon: <Phone className="w-4 h-4" /> },
-  ];
-
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4">
@@ -84,19 +63,7 @@ const AuthenticatedHeader = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {navigationItems.map((item, index) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className="px-4 py-2 text-sm font-medium text-foreground hover:text-eemploi-primary transition-all duration-300 rounded-lg hover:bg-eemploi-primary/10 hover:scale-105 flex items-center space-x-2 animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
+          <HeaderNavigation />
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-3">
@@ -143,107 +110,12 @@ const AuthenticatedHeader = () => {
             </DropdownMenu>
 
             {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="relative h-10 w-10 rounded-full hover:scale-110 transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: '0.8s' }}
-                >
-                  <Avatar className="h-10 w-10 ring-2 ring-eemploi-primary/20 hover:ring-eemploi-primary/40 transition-all duration-300">
-                    <AvatarImage src="" alt="Avatar" />
-                    <AvatarFallback className="bg-eemploi-primary text-white">
-                      {getUserInitials()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Mon compte</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {userType === 'candidat' && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/dashboard/candidat?tab=profile" 
-                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        Mon profil
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/dashboard/candidat?tab=cv" 
-                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                      >
-                        <FileText className="mr-2 h-4 w-4" />
-                        Mes CV
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/dashboard/candidat?tab=applications" 
-                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                      >
-                        <Briefcase className="mr-2 h-4 w-4" />
-                        Mes candidatures
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-                {userType === 'recruteur' && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/dashboard/recruteur" 
-                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                      >
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Tableau de bord
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/recruteur/hub" 
-                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                      >
-                        <Briefcase className="mr-2 h-4 w-4" />
-                        Hub Recruteur
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/recruteur/candidatures" 
-                        className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
-                      >
-                        <Users className="mr-2 h-4 w-4" />
-                        Candidatures
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-                <DropdownMenuItem className="hover:bg-eemploi-primary/10 transition-colors duration-300">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Paramètres
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={handleLogout}
-                  className="hover:bg-red-50 hover:text-red-600 transition-colors duration-300"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Déconnexion
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <UserMenu 
+              user={user} 
+              userType={userType} 
+              handleLogout={handleLogout} 
+              getUserInitials={getUserInitials}
+            />
           </div>
 
           {/* Mobile Menu Button */}
@@ -261,98 +133,11 @@ const AuthenticatedHeader = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border animate-slide-in">
-            <nav className="space-y-2">
-              {navigationItems.map((item, index) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-              
-              <div className="pt-4 space-y-2 border-t border-border">
-                {userType === 'candidat' && (
-                  <>
-                    <Link
-                      to="/dashboard/candidat?tab=profile"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                      style={{ animationDelay: '0.6s' }}
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Mon profil</span>
-                    </Link>
-                    <Link
-                      to="/dashboard/candidat?tab=cv"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                      style={{ animationDelay: '0.7s' }}
-                    >
-                      <FileText className="w-4 h-4" />
-                      <span>Mes CV</span>
-                    </Link>
-                    <Link
-                      to="/dashboard/candidat?tab=applications"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                      style={{ animationDelay: '0.8s' }}
-                    >
-                      <Briefcase className="w-4 h-4" />
-                      <span>Mes candidatures</span>
-                    </Link>
-                  </>
-                )}
-                {userType === 'recruteur' && (
-                  <>
-                    <Link
-                      to="/dashboard/recruteur"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                      style={{ animationDelay: '0.6s' }}
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      <span>Tableau de bord</span>
-                    </Link>
-                    <Link
-                      to="/recruteur/hub"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                      style={{ animationDelay: '0.7s' }}
-                    >
-                      <Briefcase className="w-4 h-4" />
-                      <span>Hub Recruteur</span>
-                    </Link>
-                     <Link
-                      to="/recruteur/candidatures"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                      style={{ animationDelay: '0.8s' }}
-                    >
-                      <Users className="w-4 h-4" />
-                      <span>Candidatures</span>
-                    </Link>
-                  </>
-                )}
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    handleLogout();
-                  }}
-                  className="flex items-center space-x-3 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: '0.9s' }}
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Déconnexion</span>
-                </button>
-              </div>
-            </nav>
-          </div>
+          <MobileMenu 
+            userType={userType} 
+            handleLogout={handleLogout}
+            closeMenu={() => setIsMenuOpen(false)} 
+          />
         )}
       </div>
     </header>
