@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -44,8 +43,7 @@ const AuthenticatedHeader = () => {
     if (userType === 'recruteur') {
       navigate('/recruteur/hub', { state: { openCreateJobModal: true } });
     } else {
-      // Future: Add navigation for candidate to create CV for example
-      // navigate('/dashboard/candidat/cv');
+      navigate('/dashboard/candidat?tab=cv', { state: { openCreateCVModal: true } });
     }
   };
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApplications } from '@/hooks/useApplications';
@@ -29,10 +30,20 @@ const CandidateDashboard = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const activeTab = searchParams.get('tab') || 'cv';
   const [showCreateCV, setShowCreateCV] = useState(false);
   const [showInterviewSimulator, setShowInterviewSimulator] = useState(false);
   const [showAssessmentTest, setShowAssessmentTest] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.openCreateCVModal) {
+      setShowCreateCV(true);
+      // Clear location state to prevent modal from re-opening on refresh
+      const { state, ...rest } = location;
+      navigate(rest, { replace: true });
+    }
+  }, [location, navigate]);
 
   if (loading) {
     return (
