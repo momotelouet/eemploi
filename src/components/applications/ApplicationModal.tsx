@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -65,13 +66,15 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
       return;
     }
 
+    const certificateUrlToAttach = attachCertificate ? latestCertificate?.certificate_url : undefined;
+
     const success = await applyToJob(
       jobId, 
       coverLetter,
       platformCVUrl,
       uploadedCVFile,
       selectedCVProfileId,
-      attachCertificate
+      certificateUrlToAttach
     );
     
     if (success) {
