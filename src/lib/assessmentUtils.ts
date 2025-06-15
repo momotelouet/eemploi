@@ -5,15 +5,15 @@ import type { Assessment } from '@/hooks/useAssessment';
 export const generateAndStoreCertificate = async (
   assessment: Pick<Assessment, 'id' | 'user_id' | 'certificate_url'>
 ): Promise<{ publicUrl: string; htmlContent: string } | null> => {
-  // If URL already exists, we could fetch it, but let's regenerate to ensure it's fresh.
-  // This function is for creating/downloading, so fresh data is better.
-
   try {
+    // 1. Générer le HTML depuis la edge function
     const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-certificate', {
       body: { assessmentId: assessment.id },
     });
-
-    if (functionError) throw functionError;
+    if (functionError) {
+      console.error('[Certificate] Edge function error:', functionError);
+      throw functionError;
+    }
 
     if (functionData?.html) {
       const htmlContent = `
@@ -30,41 +30,60 @@ export const generateAndStoreCertificate = async (
         </html>
       `;
 
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const file = new File([blob], `certificat-${assessment.id}.html`, { type: 'text/html' });
-
+      // 2. Préparer le fichier HTML pour storage
+      const file = new File([htmlContent], `certificat-${assessment.id}.html`, { type: 'text/html' });
       const filePath = `${assessment.user_id}/certificates/${file.name}`;
+
+      // 3. Upload du certificat (upsert pour remplacement si existe déjà)
       const { error: uploadError } = await supabase.storage
         .from('candidate-files')
         .upload(filePath, file, { upsert: true, contentType: 'text/html' });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('[Certificate] Storage upload error:', uploadError);
+        throw uploadError;
+      } else {
+        console.log('[Certificate] Fichier uploadé avec succès dans storage:', filePath);
+      }
 
-      const { data: { publicUrl } } = supabase.storage
+      // 4. Récupération de l'URL publique
+      const { data: urlData, error: urlError } = supabase.storage
         .from('candidate-files')
         .getPublicUrl(filePath);
 
-      if (!publicUrl) {
-        throw new Error("Impossible de récupérer l'URL publique du certificat.");
+      if (urlError) {
+        console.error('[Certificate] Erreur lors de getPublicUrl:', urlError);
       }
 
-      // 1. Update the specific assessment entry
+      const publicUrl = urlData?.publicUrl;
+      if (!publicUrl) {
+        console.error('[Certificate] Impossible de récupérer l\'URL publique du certificat');
+        throw new Error("Impossible de récupérer l'URL publique du certificat.");
+      } else {
+        console.log('[Certificate] URL publique obtenue:', publicUrl);
+      }
+
+      // 5. Mise à jour de la colonne certificate_url dans candidate_assessments
       const { error: updateError } = await supabase
         .from('candidate_assessments')
         .update({ certificate_url: publicUrl, updated_at: new Date().toISOString() })
         .eq('id', assessment.id);
 
-      if (updateError) throw updateError;
-      
-      // 2. Also update the main candidate profile with this new certificate URL
+      if (updateError) {
+        console.error('[Certificate] Erreur lors update candidate_assessments:', updateError);
+        throw updateError;
+      } else {
+        console.log('[Certificate] Champ certificate_url mis à jour dans candidate_assessments');
+      }
+
+      // 6. Mise à jour du champ certificat de candidate_profiles aussi (non bloquant)
       const { error: profileUpdateError } = await supabase
         .from('candidate_profiles')
         .update({ certificate_url: publicUrl })
         .eq('user_id', assessment.user_id);
 
       if (profileUpdateError) {
-        // We log this as a warning but don't stop the process
-        console.warn("Le profil du candidat n'a pas pu être mis à jour avec l'URL du certificat:", profileUpdateError);
+        console.warn("[Certificate] Le profil du candidat n'a pas pu être mis à jour avec l'URL du certificat:", profileUpdateError);
       }
 
       return { publicUrl, htmlContent };
