@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin, Heart } from 'lucide-react';
 
@@ -68,7 +67,7 @@ const Footer = () => {
           <div className="lg:col-span-2 animate-fade-in">
             <Link to="/" className="flex items-center space-x-2 mb-6 group">
               <img 
-                src="/lovable-uploads/83a720d8-9a18-49c0-853f-30c38bd13835.png" 
+                src="/lovable-uploads/0fbb8218-73e4-4b7b-bdfd-4c239752a7b4.png" 
                 alt="eemploi logo" 
                 className="h-10 w-auto group-hover:scale-105 transition-transform duration-300"
               />

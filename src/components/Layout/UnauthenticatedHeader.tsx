@@ -22,7 +22,7 @@ const UnauthenticatedHeader = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group animate-fade-in">
             <img 
-              src="/lovable-uploads/14356a73-41bf-4180-92fc-93e01ceec4b5.png" 
+              src="/lovable-uploads/79fb5607-6b8b-41b6-97e5-20f16492e405.png" 
               alt="eemploi logo" 
               className="h-8 w-auto group-hover:scale-105 transition-transform duration-300"
             />
