@@ -46,16 +46,12 @@ export const generateAndStoreCertificate = async (
         console.log('[Certificate] Fichier uploadé avec succès dans storage:', filePath);
       }
 
-      // 4. Récupération de l'URL publique
-      const { data: urlData, error: urlError } = supabase.storage
+      // 4. Récupération de l'URL publique (CORRIGÉ)
+      const { data: urlData } = supabase.storage
         .from('candidate-files')
         .getPublicUrl(filePath);
 
-      if (urlError) {
-        console.error('[Certificate] Erreur lors de getPublicUrl:', urlError);
-      }
-
-      const publicUrl = urlData?.publicUrl;
+      const publicUrl = urlData.publicUrl;
       if (!publicUrl) {
         console.error('[Certificate] Impossible de récupérer l\'URL publique du certificat');
         throw new Error("Impossible de récupérer l'URL publique du certificat.");
