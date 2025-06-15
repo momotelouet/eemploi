@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import ProfessionalProfileManager from '@/components/cv/ProfessionalProfileManag
 import CoverLetterGenerator from '@/components/cover-letter/CoverLetterGenerator';
 import SalarySimulator from '@/components/tools/SalarySimulator';
 import InterviewSimulator from '@/components/tools/InterviewSimulator';
+import { Link } from 'react-router-dom';
 
 const Tools = () => {
   return (
@@ -118,8 +120,8 @@ const Tools = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Accédez à encore plus de templates exclusifs et fonctionnalités avancées
               </p>
-              <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-yellow-900">
-                Découvrir Premium
+              <Button asChild className="w-full bg-yellow-500 hover:bg-yellow-600 text-yellow-900">
+                <Link to="/contact">Découvrir Premium</Link>
               </Button>
             </CardContent>
           </Card>
@@ -135,8 +137,8 @@ const Tools = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Consultez nos guides pour optimiser votre CV et lettre de motivation
               </p>
-              <Button variant="outline" className="w-full">
-                Voir les guides
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/about">Voir les guides</Link>
               </Button>
             </CardContent>
           </Card>
@@ -152,8 +154,8 @@ const Tools = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Besoin d'aide ? Notre équipe est là pour vous accompagner
               </p>
-              <Button variant="outline" className="w-full">
-                Contacter le support
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/contact">Contacter le support</Link>
               </Button>
             </CardContent>
           </Card>
