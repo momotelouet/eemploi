@@ -33,7 +33,7 @@ export const generateAndStoreCertificate = async (
       const blob = new Blob([htmlContent], { type: 'text/html' });
       const file = new File([blob], `certificat-${assessment.id}.html`, { type: 'text/html' });
 
-      const filePath = `certificates/${assessment.user_id}/${file.name}`;
+      const filePath = `${assessment.user_id}/certificates/${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from('candidate-files')
         .upload(filePath, file, { upsert: true });

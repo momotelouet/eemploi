@@ -228,6 +228,18 @@ export const useDeleteAssessment = () => {
 
   return useMutation({
     mutationFn: async (assessmentId: string) => {
+      // First, delete related responses to avoid foreign key constraint errors
+      const { error: responsesError } = await supabase
+        .from('assessment_responses')
+        .delete()
+        .eq('assessment_id', assessmentId);
+
+      if (responsesError) {
+        console.error('Error deleting assessment responses:', responsesError);
+        throw responsesError;
+      }
+
+      // Then, delete the assessment itself
       const { error } = await supabase
         .from('candidate_assessments')
         .delete()
@@ -242,8 +254,8 @@ export const useDeleteAssessment = () => {
       queryClient.invalidateQueries({ queryKey: ['user-assessments', user?.id] });
       toast.success('Évaluation supprimée avec succès.');
     },
-    onError: (error) => {
-      toast.error("Erreur lors de la suppression de l'évaluation.");
+    onError: (error: Error) => {
+      toast.error(`Erreur lors de la suppression : ${error.message}`);
       console.error('Error deleting assessment:', error);
     },
   });
