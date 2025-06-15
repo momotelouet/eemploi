@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  userType: string | null;
   signUp: (email: string, password: string, userData: { first_name: string; last_name: string; user_type: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -26,6 +26,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,14 +36,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
+        setUserType(session?.user?.user_metadata?.user_type ?? null);
         setLoading(false);
-        
-        // Ne plus faire de redirection automatique ici pour éviter les conflits
-        if (event === 'SIGNED_IN' && session?.user) {
-          const userType = session.user.user_metadata?.user_type || "candidat";
-          console.log('User type detected:', userType);
-          // La redirection sera gérée par ProtectedRoute ou Login
-        }
       }
     );
 
@@ -50,6 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setUserType(session?.user?.user_metadata?.user_type ?? null);
       setLoading(false);
     });
 
@@ -108,6 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     loading,
+    userType,
     signUp,
     signIn,
     signOut,
