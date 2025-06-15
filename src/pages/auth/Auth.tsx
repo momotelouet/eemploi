@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -130,7 +131,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/lovable-uploads/c4a981c3-aebd-4354-aba4-83bdc73d810b.png"
+            src="/lovable-uploads/e970d517-de31-48ac-9453-42ac090eef27.png"
             alt="eemploi logo"
             className="h-12 w-auto mx-auto mb-4"
           />
