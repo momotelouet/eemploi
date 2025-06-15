@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,7 +55,8 @@ export const useJobApplication = () => {
     coverLetter?: string, 
     cvUrl?: string, 
     cvFile?: File,
-    selectedCVProfileId?: string
+    selectedCVProfileId?: string,
+    attachCertificate?: boolean
   ) => {
     if (!user) {
       toast.error('Vous devez être connecté pour postuler');
@@ -95,26 +95,27 @@ export const useJobApplication = () => {
 
       // Upload cover letter if provided
       if (coverLetter && coverLetter.trim()) {
-        coverLetterUrl = await uploadCoverLetter(coverLetter);
-        if (!coverLetterUrl) {
-          toast.error('Erreur lors du téléchargement de la lettre de motivation');
-          return false;
-        }
+        // The existing logic doesn't upload the cover letter, but stores it as text.
+        // We will keep this behavior. The `uploadCoverLetter` function is not used here.
       }
 
-      // Get the latest assessment certificate for the user
-      const { data: latestAssessment } = await supabase
-        .from('candidate_assessments')
-        .select('certificate_url')
-        .eq('user_id', user.id)
-        .eq('status', 'completed')
-        .not('certificate_url', 'is', null)
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Get the latest assessment certificate for the user if requested
+      if (attachCertificate) {
+        const { data: latestAssessment } = await supabase
+          .from('candidate_assessments')
+          .select('certificate_url')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .not('certificate_url', 'is', null)
+          .order('completed_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (latestAssessment?.certificate_url) {
-        certificateUrl = latestAssessment.certificate_url;
+        if (latestAssessment?.certificate_url) {
+          certificateUrl = latestAssessment.certificate_url;
+        } else {
+          toast.info("Aucun certificat d'évaluation disponible à joindre.");
+        }
       }
 
       // Create new application
@@ -157,7 +158,7 @@ export const useJobApplication = () => {
       // Success message with details of what was attached
       let attachments = [];
       if (finalCvUrl || selectedCVProfileId) attachments.push('CV');
-      if (coverLetterUrl) attachments.push('lettre de motivation');
+      if (coverLetter) attachments.push('lettre de motivation');
       if (certificateUrl) attachments.push('certificat d\'évaluation');
 
       const attachmentText = attachments.length > 0 

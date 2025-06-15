@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { toast } from 'sonner';
 import { FileText, Award, CheckCircle } from 'lucide-react';
 import CVSelector from './CVSelector';
 import CoverLetterGenerator from '@/components/cover-letter/CoverLetterGenerator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -28,6 +28,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
   const [platformCVUrl, setPlatformCVUrl] = useState<string | undefined>();
   const [uploadedCVFile, setUploadedCVFile] = useState<File | undefined>();
   const [selectedCVProfileId, setSelectedCVProfileId] = useState<string | undefined>();
+  const [attachCertificate, setAttachCertificate] = useState(true);
 
   const { applyToJob, isApplying } = useJobApplication();
   const { data: assessments } = useUserAssessments();
@@ -69,7 +70,8 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
       coverLetter,
       platformCVUrl,
       uploadedCVFile,
-      selectedCVProfileId
+      selectedCVProfileId,
+      attachCertificate
     );
     
     if (success) {
@@ -84,6 +86,7 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
     setUploadedCVFile(undefined);
     setSelectedCVProfileId(undefined);
     setSelectedCVOption('platform');
+    setAttachCertificate(true);
   };
 
   return (
@@ -121,10 +124,20 @@ const ApplicationModal = ({ isOpen, onClose, jobId, jobTitle, companyName }: App
                 )}
                 
                 {latestCertificate ? (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Award className="w-4 h-4 text-yellow-600" />
-                    <span>Certificat d'évaluation</span>
-                    <CheckCircle className="w-4 h-4 text-green-600 ml-2" />
+                  <div className="flex items-center space-x-3 text-sm">
+                    <Checkbox
+                      id="attach-certificate"
+                      checked={attachCertificate}
+                      onCheckedChange={(checked) => setAttachCertificate(Boolean(checked))}
+                      className="peer"
+                    />
+                    <label htmlFor="attach-certificate" className="flex items-center space-x-2 cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-grow">
+                      <Award className="w-4 h-4 text-yellow-600" />
+                      <span>Certificat d'évaluation</span>
+                    </label>
+                    {attachCertificate && (
+                      <CheckCircle className="w-4 h-4 text-green-600 ml-auto" />
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
