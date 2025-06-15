@@ -36,7 +36,7 @@ export const generateAndStoreCertificate = async (
       const filePath = `${assessment.user_id}/certificates/${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from('candidate-files')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, file, { upsert: true, contentType: 'text/html' });
 
       if (uploadError) throw uploadError;
 

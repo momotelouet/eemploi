@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,33 +21,19 @@ const AssessmentCard: React.FC<AssessmentCardProps> = ({ assessment, onStartNewA
   const queryClient = useQueryClient();
 
   const downloadCertificate = async (assessment: Assessment) => {
-    if (assessment.certificate_url) {
-      window.open(assessment.certificate_url, '_blank');
-      toast.info("Le certificat s'ouvre dans un nouvel onglet.");
-      return;
-    }
-
     const toastId = toast.loading('Génération de votre certificat...');
 
     try {
       const result = await generateAndStoreCertificate(assessment);
 
       if (result) {
-        const { htmlContent } = result;
+        const { publicUrl } = result;
         
         await queryClient.invalidateQueries({ queryKey: ['user-assessments', assessment.user_id] });
 
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `certificat-evaluation-${assessment.id.slice(0, 8)}.html`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        window.open(publicUrl, '_blank');
         
-        toast.success('Certificat téléchargé et sauvegardé sur votre profil !', { id: toastId });
+        toast.success("Certificat généré ! Il s'ouvre dans un nouvel onglet et est sauvegardé sur votre profil.", { id: toastId });
       } else {
         toast.error('Erreur lors de la génération du certificat', { id: toastId });
       }
