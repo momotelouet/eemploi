@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
@@ -147,13 +146,13 @@ function generateCertificateHTML(assessment: any): string {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Certificat d'Évaluation Professionnelle</title>
+        <title>Certificat d'Évaluation Professionnelle - eemploi.com</title>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap');
             
             @media print {
-                body { margin: 0; }
-                .certificate { box-shadow: none; }
+                body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                .certificate { box-shadow: none; border: none; margin: 0; max-width: 100%; border-radius: 0; }
                 .print-button { display: none; }
             }
             
@@ -161,132 +160,87 @@ function generateCertificateHTML(assessment: any): string {
                 font-family: 'Inter', sans-serif;
                 margin: 0;
                 padding: 20px;
-                background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%);
+                background-color: #f0f9ff;
                 min-height: 100vh;
-                color: #333;
+                color: #1e293b;
             }
             
             .certificate {
                 max-width: 900px;
-                margin: 0 auto;
+                margin: 20px auto;
                 background: white;
-                border-radius: 20px;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 153, 204, 0.15);
                 position: relative;
                 overflow: hidden;
-            }
-            
-            .moroccan-border {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: 
-                    radial-gradient(circle at 20px 20px, #dc2626 2px, transparent 2px),
-                    radial-gradient(circle at 60px 20px, #1e3a8a 2px, transparent 2px),
-                    radial-gradient(circle at 20px 60px, #1e3a8a 2px, transparent 2px),
-                    radial-gradient(circle at 60px 60px, #dc2626 2px, transparent 2px);
-                background-size: 80px 80px;
-                opacity: 0.1;
-                pointer-events: none;
+                border: 1px solid #e2e8f0;
             }
             
             .header {
-                background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%);
+                background: linear-gradient(135deg, #0cc0df 0%, #0099cc 100%);
                 color: white;
-                padding: 40px 60px;
+                padding: 40px 50px;
                 text-align: center;
                 position: relative;
             }
             
-            .header::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="star" patternUnits="userSpaceOnUse" width="20" height="20"><polygon points="10,1 6,19 20,8 0,8 14,19" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23star)"/></svg>');
-                opacity: 0.3;
-            }
-            
             .header h1 {
-                font-family: 'Playfair Display', serif;
-                font-size: 36px;
-                margin: 0 0 10px 0;
+                font-family: 'Inter', sans-serif;
                 font-weight: 700;
-                position: relative;
-                z-index: 1;
+                font-size: 28px;
+                margin: 0 0 5px 0;
+                letter-spacing: 1px;
             }
             
             .header p {
                 font-size: 16px;
                 margin: 0;
                 opacity: 0.9;
-                position: relative;
-                z-index: 1;
             }
             
             .content {
-                padding: 60px;
-                position: relative;
-                z-index: 1;
+                padding: 40px 50px;
             }
             
             .title-section {
                 text-align: center;
-                margin-bottom: 50px;
+                margin-bottom: 30px;
             }
             
             .title-section h2 {
                 font-family: 'Playfair Display', serif;
-                font-size: 32px;
-                color: #1e3a8a;
-                margin: 0 0 15px 0;
-                text-transform: uppercase;
-                letter-spacing: 3px;
+                font-size: 36px;
+                color: #0099cc;
+                margin: 0 0 10px 0;
             }
             
             .title-section p {
-                color: #666;
-                font-size: 18px;
+                color: #475569;
+                font-size: 16px;
                 margin: 0;
             }
             
             .candidate-section {
                 text-align: center;
-                margin: 50px 0;
-                padding: 40px;
-                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-                border-radius: 15px;
-                border: 3px solid #dc2626;
+                margin: 40px 0;
+                padding: 30px;
+                background-color: #e0f2fe;
+                border-radius: 10px;
+                border: 2px solid #0cc0df;
                 position: relative;
-            }
-            
-            .candidate-section::before {
-                content: '✦';
-                position: absolute;
-                top: -15px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: white;
-                color: #dc2626;
-                font-size: 30px;
-                padding: 0 20px;
             }
             
             .candidate-section h3 {
                 font-family: 'Playfair Display', serif;
                 font-size: 28px;
-                color: #1e3a8a;
-                margin: 0 0 15px 0;
+                color: #003d4d;
+                margin: 0 0 10px 0;
             }
             
             .candidate-section p {
-                color: #666;
+                color: #005f73;
                 margin: 0;
-                font-size: 18px;
+                font-size: 16px;
                 font-weight: 500;
             }
             
@@ -294,41 +248,45 @@ function generateCertificateHTML(assessment: any): string {
                 text-align: center;
                 margin: 40px 0;
                 padding: 30px;
-                background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%);
+                background: linear-gradient(135deg, #003d4d 0%, #005f73 100%);
                 color: white;
-                border-radius: 15px;
-                position: relative;
+                border-radius: 10px;
             }
             
             .global-score h3 {
-                font-family: 'Playfair Display', serif;
-                font-size: 24px;
+                font-family: 'Inter', sans-serif;
+                font-size: 20px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 2px;
                 margin: 0 0 10px 0;
+                opacity: 0.8;
             }
             
             .global-score .score-value {
                 font-size: 48px;
                 font-weight: 700;
                 margin: 0;
+                line-height: 1;
             }
             
             .categories-grid {
                 display: grid;
                 grid-template-columns: 1fr;
-                gap: 40px;
-                margin: 50px 0;
+                gap: 30px;
+                margin: 40px 0;
             }
             
             .category-section {
-                border: 2px solid #e5e7eb;
-                border-radius: 15px;
+                border-radius: 10px;
                 overflow: hidden;
-                background: white;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                background: #f8fafc;
+                box-shadow: 0 4px 12px rgba(0, 153, 204, 0.08);
+                border: 1px solid #e2e8f0;
             }
             
             .category-header {
-                padding: 20px 30px;
+                padding: 15px 25px;
                 font-weight: 600;
                 color: white;
                 font-size: 18px;
@@ -338,77 +296,69 @@ function generateCertificateHTML(assessment: any): string {
             }
             
             .category-header.personality {
-                background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+                background: linear-gradient(135deg, #0cc0df 0%, #0099cc 100%);
             }
             
             .category-header.skills {
-                background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             }
             
             .category-header.qualities {
-                background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             }
             
             .category-score {
-                font-size: 24px;
+                font-size: 20px;
                 font-weight: 700;
             }
             
             .responses-list {
-                padding: 30px;
+                padding: 25px;
             }
             
             .response-item {
-                margin-bottom: 25px;
-                padding: 20px;
-                background: #f9fafb;
-                border-radius: 10px;
-                border-left: 4px solid #e5e7eb;
+                margin-bottom: 15px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #e2e8f0;
             }
-            
-            .response-item.personality {
-                border-left-color: #1e3a8a;
-            }
-            
-            .response-item.skills {
-                border-left-color: #059669;
-            }
-            
-            .response-item.qualities {
-                border-left-color: #7c3aed;
+
+            .response-item:last-child {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
             }
             
             .response-question {
                 font-weight: 600;
-                color: #374151;
-                margin-bottom: 8px;
-                font-size: 16px;
-            }
-            
-            .response-answer {
-                color: #6b7280;
-                margin-bottom: 8px;
+                color: #1e293b;
+                margin-bottom: 6px;
                 font-size: 15px;
             }
             
+            .response-answer {
+                color: #475569;
+                margin-bottom: 6px;
+                font-size: 14px;
+            }
+            
             .response-score {
-                color: #1f2937;
+                color: #0099cc;
                 font-weight: 600;
                 font-size: 14px;
             }
             
             .footer {
                 text-align: center;
-                margin-top: 50px;
-                padding: 40px 0;
-                border-top: 3px solid #dc2626;
-                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                margin-top: 40px;
+                padding: 30px 20px;
+                border-top: 3px solid #0cc0df;
+                background-color: #e0f2fe;
             }
             
             .footer p {
-                color: #374151;
-                font-size: 16px;
-                margin: 8px 0;
+                color: #005f73;
+                font-size: 14px;
+                margin: 5px 0;
                 font-weight: 500;
             }
             
@@ -416,79 +366,42 @@ function generateCertificateHTML(assessment: any): string {
                 margin-top: 30px;
                 text-align: center;
                 font-size: 12px;
-                color: #6b7280;
-                border-top: 1px solid #e5e7eb;
+                color: #64748b;
+                border-top: 1px solid #e2e8f0;
                 padding-top: 20px;
             }
             
             .validation p {
-                margin: 5px 0;
+                margin: 4px 0;
             }
             
             .print-button {
                 position: fixed;
-                top: 30px;
-                right: 30px;
-                background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%);
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #0cc0df 0%, #0099cc 100%);
                 color: white;
                 border: none;
-                padding: 12px 24px;
+                padding: 10px 20px;
                 border-radius: 8px;
                 cursor: pointer;
                 font-size: 16px;
                 font-weight: 600;
                 z-index: 1000;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                transition: transform 0.2s;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                transition: all 0.2s ease-in-out;
             }
             
             .print-button:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            }
-            
-            .moroccan-pattern {
-                position: absolute;
-                width: 60px;
-                height: 60px;
-                opacity: 0.1;
-            }
-            
-            .pattern-1 {
-                top: 20px;
-                left: 20px;
-                background: radial-gradient(circle, #dc2626 30%, transparent 30%);
-            }
-            
-            .pattern-2 {
-                top: 20px;
-                right: 20px;
-                background: radial-gradient(circle, #1e3a8a 30%, transparent 30%);
-            }
-            
-            .pattern-3 {
-                bottom: 20px;
-                left: 20px;
-                background: radial-gradient(circle, #1e3a8a 30%, transparent 30%);
-            }
-            
-            .pattern-4 {
-                bottom: 20px;
-                right: 20px;
-                background: radial-gradient(circle, #dc2626 30%, transparent 30%);
+                box-shadow: 0 6px 15px rgba(0,0,0,0.15);
             }
         </style>
     </head>
     <body>
-        <button class="print-button" onclick="window.print()">📄 Imprimer en PDF</button>
+        <button class="print-button" onclick="window.print()">📄 Imprimer ou Sauvegarder</button>
         
         <div class="certificate">
-            <div class="moroccan-border"></div>
-            <div class="moroccan-pattern pattern-1"></div>
-            <div class="moroccan-pattern pattern-2"></div>
-            <div class="moroccan-pattern pattern-3"></div>
-            <div class="moroccan-pattern pattern-4"></div>
-            
             <div class="header">
                 <h1>🇲🇦 eemploi.com</h1>
                 <p>Plateforme de Recrutement Professionnelle du Maroc</p>
@@ -497,30 +410,30 @@ function generateCertificateHTML(assessment: any): string {
             <div class="content">
                 <div class="title-section">
                     <h2>Certificat d'Évaluation</h2>
-                    <p>Évaluation Complète de Personnalité • Compétences • Qualités Professionnelles</p>
+                    <p>Personnalité • Compétences • Qualités Professionnelles</p>
                 </div>
                 
                 <div class="candidate-section">
                     <h3>${candidateName}</h3>
-                    <p>a réussi avec succès l'évaluation professionnelle complète</p>
+                    <p>a complété avec succès l'évaluation professionnelle</p>
                 </div>
                 
                 <div class="global-score">
                     <h3>Score Global</h3>
-                    <div class="score-value">${assessment.total_score} pts</div>
+                    <p class="score-value">${assessment.total_score} pts</p>
                 </div>
                 
                 <div class="categories-grid">
                     <div class="category-section">
                         <div class="category-header personality">
-                            <span>🧠 Évaluation de Personnalité</span>
+                            <span>🧠 Personnalité</span>
                             <span class="category-score">${personalityScore} pts</span>
                         </div>
                         <div class="responses-list">
                             ${responsesByCategory.personality.map(response => {
                               const formatted = formatResponse(response);
                               return `
-                                <div class="response-item personality">
+                                <div class="response-item">
                                     <div class="response-question">${formatted.text}</div>
                                     <div class="response-answer">Réponse: ${formatted.display}</div>
                                     <div class="response-score">Score: ${formatted.score} points</div>
@@ -532,14 +445,14 @@ function generateCertificateHTML(assessment: any): string {
                     
                     <div class="category-section">
                         <div class="category-header skills">
-                            <span>🎯 Évaluation des Compétences</span>
+                            <span>🎯 Compétences</span>
                             <span class="category-score">${skillsScore} pts</span>
                         </div>
                         <div class="responses-list">
                             ${responsesByCategory.skills.map(response => {
                               const formatted = formatResponse(response);
                               return `
-                                <div class="response-item skills">
+                                <div class="response-item">
                                     <div class="response-question">${formatted.text}</div>
                                     <div class="response-answer">Réponse: ${formatted.display}</div>
                                     <div class="response-score">Score: ${formatted.score} points</div>
@@ -551,14 +464,14 @@ function generateCertificateHTML(assessment: any): string {
                     
                     <div class="category-section">
                         <div class="category-header qualities">
-                            <span>⭐ Évaluation des Qualités</span>
+                            <span>⭐ Qualités</span>
                             <span class="category-score">${qualitiesScore} pts</span>
                         </div>
                         <div class="responses-list">
                             ${responsesByCategory.qualities.map(response => {
                               const formatted = formatResponse(response);
                               return `
-                                <div class="response-item qualities">
+                                <div class="response-item">
                                     <div class="response-question">${formatted.text}</div>
                                     <div class="response-answer">Réponse: ${formatted.display}</div>
                                     <div class="response-score">Score: ${formatted.score} points</div>
@@ -569,17 +482,16 @@ function generateCertificateHTML(assessment: any): string {
                     </div>
                 </div>
                 
-                <div class="footer">
-                    <p><strong>✦ Évaluation complétée le ${completedDate} ✦</strong></p>
-                    <p>Ce certificat atteste de la participation complète et des résultats obtenus</p>
-                    <p>lors de l'évaluation professionnelle sur la plateforme eemploi.com</p>
-                </div>
-                
                 <div class="validation">
                     <p>Certificat ID: ${assessment.id}</p>
-                    <p>Généré par eemploi.com • Plateforme Certifiée du Royaume du Maroc</p>
-                    <p>Ce document peut être vérifié sur notre plateforme officielle</p>
+                    <p>Date d'émission: ${completedDate}</p>
+                    <p>Ce document est généré par eemploi.com et peut être vérifié sur notre plateforme.</p>
                 </div>
+            </div>
+
+            <div class="footer">
+                <p><strong>eemploi.com</strong></p>
+                <p>Votre passerelle vers l'emploi au Maroc</p>
             </div>
         </div>
     </body>
