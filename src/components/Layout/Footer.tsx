@@ -62,6 +62,27 @@ const Footer = () => {
       <div className="absolute bottom-20 right-20 w-24 h-24 bg-eemploi-secondary/10 rounded-full animate-bounce-gentle" style={{ animationDelay: '3s' }}></div>
       <div className="absolute top-1/2 right-10 w-16 h-16 bg-eemploi-accent/10 rounded-full animate-bounce-gentle" style={{ animationDelay: '4s' }}></div>
 
+      {/* Animated Robot Assistant */}
+      <div
+        className="absolute bottom-0 right-4 md:right-8 z-20 group cursor-pointer animate-fade-in"
+        onClick={openChat}
+        aria-label="Ouvrir le chat avec l'assistant"
+        style={{ animationDelay: '1s' }}
+      >
+        <div className="relative w-24 md:w-28">
+            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-2 whitespace-nowrap">
+                <div className="bg-white text-gray-800 text-xs font-semibold px-3 py-2 rounded-lg shadow-lg">
+                    Besoin d'aide ?
+                </div>
+            </div>
+            <img
+                src="https://cdn.dribbble.com/users/242398/screenshots/2895689/bot.gif"
+                alt="Chatbot assistant"
+                className="w-full h-auto transition-transform duration-300 group-hover:scale-110"
+            />
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-16 relative z-10">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
