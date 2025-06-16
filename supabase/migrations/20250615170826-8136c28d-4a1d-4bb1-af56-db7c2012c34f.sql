@@ -1,7 +1,6 @@
-
 -- Add price and payment status to the jobs table
 ALTER TABLE public.jobs
-ADD COLUMN price NUMERIC NOT NULL DEFAULT 99,
+ADD COLUMN price NUMERIC NOT NULL DEFAULT 249,
 ADD COLUMN paid BOOLEAN NOT NULL DEFAULT false;
 
 -- Add unpaid balance and status to recruiter profiles

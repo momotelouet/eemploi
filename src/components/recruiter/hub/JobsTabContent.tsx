@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +11,7 @@ interface JobsTabContentProps {
   onPublishOfferClick: () => void;
 }
 
-const UNPAID_THRESHOLD = 500;
+const UNPAID_THRESHOLD = 1000;
 
 const JobsTabContent = ({ jobs, onPublishOfferClick }: JobsTabContentProps) => {
   const { user } = useAuth();
@@ -34,7 +33,7 @@ const JobsTabContent = ({ jobs, onPublishOfferClick }: JobsTabContentProps) => {
             className="bg-eemploi-primary hover:bg-eemploi-primary/90"
             onClick={onPublishOfferClick}
             disabled={isPublicationBlocked}
-            title={isPublicationBlocked ? `Publication bloquée (solde > ${UNPAID_THRESHOLD} DH)` : "Publier une nouvelle offre"}
+            title={isPublicationBlocked ? `Publication bloquée (solde ≥ ${UNPAID_THRESHOLD} DH)` : "Publier une nouvelle offre"}
           >
             <Plus className="w-4 h-4 mr-2" />
             Nouvelle offre
@@ -53,7 +52,7 @@ const JobsTabContent = ({ jobs, onPublishOfferClick }: JobsTabContentProps) => {
             className="bg-eemploi-primary hover:bg-eemploi-primary/90"
             onClick={onPublishOfferClick}
             disabled={isPublicationBlocked}
-            title={isPublicationBlocked ? `Publication bloquée (solde > ${UNPAID_THRESHOLD} DH)` : "Publier une nouvelle offre"}
+            title={isPublicationBlocked ? `Publication bloquée (solde ≥ ${UNPAID_THRESHOLD} DH)` : "Publier une nouvelle offre"}
           >
             <Plus className="w-4 h-4 mr-2" />
             Publier ma première offre
@@ -80,10 +79,10 @@ const JobsTabContent = ({ jobs, onPublishOfferClick }: JobsTabContentProps) => {
                     </p>
                   </div>
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" disabled={isPublicationBlocked} title={isPublicationBlocked ? `Action désactivée (solde ≥ ${UNPAID_THRESHOLD} DH)` : 'Modifier cette offre'}>
                       Modifier
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" disabled={isPublicationBlocked} title={isPublicationBlocked ? `Action désactivée (solde ≥ ${UNPAID_THRESHOLD} DH)` : 'Voir les candidatures'}>
                       Candidatures
                     </Button>
                   </div>

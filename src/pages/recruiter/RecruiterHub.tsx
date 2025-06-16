@@ -1,4 +1,3 @@
-
 import CreateJobModal from "@/components/recruiter/CreateJobModal";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -11,6 +10,8 @@ import QuickActions from "@/components/recruiter/hub/QuickActions";
 import QuickStats from "@/components/recruiter/hub/QuickStats";
 import RecruiterHubTabs from "@/components/recruiter/hub/RecruiterHubTabs";
 import { useQueryClient } from "@tanstack/react-query";
+
+const UNPAID_THRESHOLD = 1000;
 
 const RecruiterHub = () => {
   const location = useLocation();
@@ -37,6 +38,7 @@ const RecruiterHub = () => {
   const { jobs } = useRecruiterJobs();
   const { applications } = useJobApplications();
   const { profile } = useRecruiterProfile(user?.id ?? null);
+  const isPublicationBlocked = profile?.status === 'suspended' || (profile?.unpaid_balance ?? 0) >= UNPAID_THRESHOLD;
 
   const openCreateJobModal = () => setIsCreateJobModalOpen(true);
 
@@ -48,11 +50,13 @@ const RecruiterHub = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <RecruiterHubHeader onPublishOfferClick={openCreateJobModal} />
+        <RecruiterHubHeader onPublishOfferClick={openCreateJobModal} isPublicationBlocked={isPublicationBlocked} profile={profile} />
         
         <QuickActions 
           onPublishOfferClick={openCreateJobModal}
           onTabChange={setActiveTab}
+          isPublicationBlocked={isPublicationBlocked}
+          profile={profile}
         />
 
         <QuickStats 

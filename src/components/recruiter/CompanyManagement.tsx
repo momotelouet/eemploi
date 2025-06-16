@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -169,6 +168,45 @@ const CompanyManagement = () => {
     }
   };
 
+  // Nouvelle fonction pour upload le logo
+  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setSaving(true);
+    try {
+      // Correction du chemin d'upload : pas de sous-dossier redondant
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const { error: uploadError, data: uploadData } = await supabase.storage.from('company-logos').upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+      if (uploadError) {
+        toast({ title: 'Erreur', description: `Erreur lors de l'upload du logo : ${uploadError.message}`, variant: 'destructive' });
+        return;
+      }
+      // Vérification d'accessibilité du logo après upload
+      const publicUrl = `${supabase.storageUrl}/object/public/company-logos/${fileName}`;
+      // Teste l'accessibilité du logo
+      try {
+        const res = await fetch(publicUrl, { method: 'HEAD' });
+        if (!res.ok) {
+          toast({ title: 'Erreur', description: `Le logo a été uploadé mais n'est pas accessible publiquement (code ${res.status}). Vérifiez les règles du bucket Supabase.`, variant: 'destructive' });
+          return;
+        }
+      } catch (err) {
+        toast({ title: 'Erreur', description: `Le logo a été uploadé mais n'est pas accessible (erreur réseau).`, variant: 'destructive' });
+        return;
+      }
+      setCompany({ ...company, logo_url: publicUrl });
+      toast({ title: 'Logo importé', description: 'Votre logo a été importé avec succès.' });
+    } catch (error) {
+      toast({ title: 'Erreur', description: 'Erreur lors de l\'upload du logo', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleLogoUpload = () => {
     toast({
       title: 'Fonctionnalité à venir',
@@ -260,9 +298,12 @@ const CompanyManagement = () => {
                     <Building className="w-8 h-8 text-gray-400" />
                   )}
                 </div>
-                <Button variant="outline" onClick={handleLogoUpload}>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Changer le logo
+                <Button asChild variant="outline">
+                  <label htmlFor="logo-upload" className="flex items-center cursor-pointer">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Changer le logo
+                    <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoFileChange} />
+                  </label>
                 </Button>
               </div>
 

@@ -140,6 +140,28 @@ export const useJobApplication = () => {
         : '';
 
       toast.success(`Votre candidature a été envoyée avec succès${attachmentText} !`);
+
+      // Notifier le recruteur de la candidature
+      try {
+        // Récupérer l'offre pour trouver le recruteur
+        const { data: job, error: jobError } = await supabase
+          .from('jobs')
+          .select('id, title, posted_by')
+          .eq('id', jobId)
+          .single();
+        if (!jobError && job?.posted_by) {
+          await supabase.from('notifications').insert({
+            user_id: job.posted_by,
+            title: 'Nouvelle candidature reçue',
+            message: `Un candidat vient de postuler à votre offre "${job.title}".`,
+            type: 'application_received',
+            read: false
+          });
+        }
+      } catch (notifError) {
+        console.error('Erreur lors de la notification du recruteur :', notifError);
+      }
+
       return true;
     } catch (error) {
       console.error('Error applying to job:', error);

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -17,8 +16,8 @@ interface CreateJobModalProps {
   onJobCreated?: () => void;
 }
 
-const PUBLICATION_PRICE = 99;
-const UNPAID_THRESHOLD = 500;
+const PUBLICATION_PRICE = 249;
+const UNPAID_THRESHOLD = 1000;
 
 const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProps) => {
   const { user } = useAuth();
@@ -93,6 +92,46 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
 
       if (error) throw error;
       if (!job) throw new Error("La création de l'offre a échoué.");
+
+      // Notifier les candidats dont le profil correspond à l'offre
+      try {
+        // Récupérer tous les profils candidats
+        const { data: candidates, error: candidatesError } = await supabase
+          .from('candidate_profiles')
+          .select('user_id, skills, location, experience_years');
+        if (candidatesError) throw candidatesError;
+        // Matching amélioré : compétences, localisation, expérience
+        const jobSkills = (formData.requirements || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().split(/[ ,;]+/).filter(Boolean);
+        const jobLocation = (formData.location || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+        const jobExp = formData.experience_level;
+        const matchedCandidates = candidates.filter((c: any) => {
+          const candidateSkills = (c.skills || []).map((s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase());
+          const hasSkill = jobSkills.length > 0 && candidateSkills.some((s: string) => jobSkills.includes(s));
+          const hasLocation = jobLocation && c.location && c.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === jobLocation;
+          // Optionnel : expérience
+          // const hasExp = !jobExp || (c.experience_years && c.experience_years >= parseInt(jobExp));
+          return hasSkill || hasLocation;
+        });
+        if (matchedCandidates.length > 0) {
+          for (const c of matchedCandidates) {
+            const candidateSkills = (c.skills || []).map((s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase());
+            const commonSkills = jobSkills.filter((s) => candidateSkills.includes(s));
+            const msgParts = [];
+            if (commonSkills.length > 0) msgParts.push(`compétences : ${commonSkills.join(', ')}`);
+            if (jobLocation && c.location && c.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === jobLocation) msgParts.push(`localisation : ${formData.location}`);
+            const message = `L’offre « ${formData.title} » correspond à votre profil (${msgParts.join(' et ')}). Découvrez-la et postulez si elle vous intéresse !`;
+            await supabase.from('notifications').insert({
+              user_id: c.user_id,
+              title: 'Nouvelle offre qui correspond à votre profil !',
+              message,
+              type: 'job_match',
+              read: false
+            });
+          }
+        }
+      } catch (notifError) {
+        console.error('Erreur lors de la notification des candidats :', notifError);
+      }
 
       // Incrémenter le solde impayé via la fonction RPC
       const { error: rpcError } = await supabase.rpc('handle_new_job_posting', {

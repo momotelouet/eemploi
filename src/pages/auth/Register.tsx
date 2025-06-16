@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { supabase } from '@/integrations/supabase/client';
 
 const Register = () => {
   const { user, signUp, loading } = useAuth();
@@ -44,25 +45,36 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
     if (formData.password !== formData.confirmPassword) {
       setError('Les mots de passe ne correspondent pas');
       return;
     }
-
     if (formData.password.length < 6) {
       setError('Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
-    
     try {
-      const { error } = await signUp(formData.email, formData.password, {
+      const { error, user: newUser } = await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName,
         user_type: formData.userType
       });
       if (error) {
         setError('Erreur lors de l\'inscription. Veuillez réessayer.');
+        return;
+      }
+      // Création automatique d'une nouvelle entreprise si recruteur
+      if (formData.userType === 'recruteur' && newUser) {
+        await supabase.from('companies').insert({
+          name: `${formData.firstName} ${formData.lastName} - Entreprise`,
+          owner_id: newUser.id,
+          logo_url: '',
+          description: '',
+          website: '',
+          location: '',
+          industry: '',
+          size: ''
+        });
       }
     } catch (err) {
       setError('Erreur lors de l\'inscription. Veuillez réessayer.');

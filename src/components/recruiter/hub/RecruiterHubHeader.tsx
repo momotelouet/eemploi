@@ -1,12 +1,15 @@
-
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 interface RecruiterHubHeaderProps {
   onPublishOfferClick: () => void;
+  isPublicationBlocked?: boolean;
+  profile?: any;
 }
 
-const RecruiterHubHeader = ({ onPublishOfferClick }: RecruiterHubHeaderProps) => {
+const UNPAID_THRESHOLD = 1000;
+
+const RecruiterHubHeader = ({ onPublishOfferClick, isPublicationBlocked, profile }: RecruiterHubHeaderProps) => {
   return (
     <div className="flex items-center justify-between mb-8">
       <div>
@@ -18,6 +21,8 @@ const RecruiterHubHeader = ({ onPublishOfferClick }: RecruiterHubHeaderProps) =>
       <Button 
         className="bg-eemploi-primary hover:bg-eemploi-primary/90"
         onClick={onPublishOfferClick}
+        disabled={isPublicationBlocked}
+        title={isPublicationBlocked ? (profile?.status === 'suspended' ? 'Votre compte est suspendu. Veuillez contacter le support.' : `Votre solde impayé de ${profile?.unpaid_balance} DH a atteint le seuil de ${UNPAID_THRESHOLD} DH. Veuillez le régler pour continuer.`) : 'Publier une offre'}
       >
         <Plus className="w-4 h-4 mr-2" />
         Publier une offre

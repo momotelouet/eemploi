@@ -19,9 +19,13 @@ import { NotificationsDropdown } from './Notifications';
 import UserMenu from './UserMenu';
 import HeaderNavigation from './HeaderNavigation';
 import MobileMenu from './MobileMenu';
+import { useRecruiterProfile } from '@/hooks/useRecruiterProfile';
+
+const UNPAID_THRESHOLD = 1000;
 
 const AuthenticatedHeader = () => {
   const { user, userType, logout } = useAuth();
+  const { profile: recruiterProfile, isLoading: recruiterLoading } = useRecruiterProfile(userType === 'recruteur' ? user?.id ?? null : null);
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const notificationsHookData = useNotifications();
@@ -46,6 +50,8 @@ const AuthenticatedHeader = () => {
       navigate('/dashboard/candidat?tab=cv', { state: { openCreateCVModal: true } });
     }
   };
+
+  const isRecruiterBlocked = userType === 'recruteur' && ((recruiterProfile?.status === 'suspended') || ((recruiterProfile?.unpaid_balance ?? 0) >= UNPAID_THRESHOLD));
 
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50 shadow-sm">
@@ -81,6 +87,8 @@ const AuthenticatedHeader = () => {
               className="bg-eemploi-primary hover:bg-eemploi-primary/90 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-fade-in"
               style={{ animationDelay: '0.6s' }}
               onClick={handleCreateClick}
+              disabled={isRecruiterBlocked || recruiterLoading}
+              title={isRecruiterBlocked ? (recruiterProfile?.status === 'suspended' ? 'Votre compte est suspendu. Veuillez contacter le support.' : `Votre solde impayé de ${recruiterProfile?.unpaid_balance} DH a atteint le seuil de ${UNPAID_THRESHOLD} DH. Veuillez le régler pour continuer.`) : 'Créer une offre ou un CV'}
             >
               <Plus className="w-4 h-4 mr-2" />
               Créer
