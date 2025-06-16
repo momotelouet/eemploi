@@ -1,8 +1,8 @@
-
 import { useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { useUserType } from '@/hooks/useUserType';
 
 interface ProtectedRouteProps {
   requiredUserType?: string;
@@ -10,6 +10,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredUserType }) => {
   const { user, loading } = useAuth();
+  const { userType, loading: userTypeLoading } = useUserType();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,9 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredUserType }) => 
       return;
     }
 
-    if (user && !loading) {
-      const userType = user.user_metadata?.user_type || "candidat";
-      
+    if (user && !loading && !userTypeLoading) {
       // Si on accède à une route protégée générale (sans type requis)
       // Rediriger vers le dashboard approprié selon le type d'utilisateur
       if (!requiredUserType) {
@@ -59,9 +58,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredUserType }) => 
         }
       }
     }
-  }, [user, loading, requiredUserType, navigate]);
+  }, [user, loading, requiredUserType, navigate, userType, userTypeLoading]);
 
-  if (loading) {
+  if (loading || userTypeLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

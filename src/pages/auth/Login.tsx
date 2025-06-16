@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserType } from '@/hooks/useUserType';
 
 const Login = () => {
   const { user, signIn, loading } = useAuth();
+  const { userType, loading: userTypeLoading } = useUserType();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,8 +19,7 @@ const Login = () => {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   // Rediriger selon le type d'utilisateur si déjà connecté
-  if (user && !loading) {
-    const userType = user.user_metadata?.user_type || "candidat";
+  if (user && !loading && !userTypeLoading) {
     switch (userType) {
       case "recruteur":
         return <Navigate to="/dashboard/recruteur" replace />;

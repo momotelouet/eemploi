@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +12,13 @@ import {
   Activity,
   AlertTriangle
 } from "lucide-react";
+import UsersManager from '@/components/admin/UsersManager';
+import JobsManager from '@/components/admin/JobsManager';
+import CompaniesManager from '@/components/admin/CompaniesManager';
+import ReportsManager from '@/components/admin/ReportsManager';
+import AdminSettings from '@/components/admin/AdminSettings';
+import AdminLogs from '@/components/admin/AdminLogs';
+import { useRef } from 'react';
 
 const AdminDashboard = () => {
   const stats = [
@@ -45,6 +51,18 @@ const AdminDashboard = () => {
       color: "text-yellow-600"
     }
   ];
+
+  const tabsRef = useRef<any>(null);
+
+  // Fonction pour changer d'onglet depuis la sidebar
+  const goToTab = (tab: string) => {
+    const tabs = document.querySelectorAll('[role="tab"]');
+    tabs.forEach((el: any) => {
+      if (el.getAttribute('data-state') !== undefined && el.getAttribute('data-value') === tab) {
+        el.click();
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,55 +117,19 @@ const AdminDashboard = () => {
                   </div>
 
                   <TabsContent value="users" className="p-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-lg">Gestion des utilisateurs</h3>
-                      <div className="text-center py-8">
-                        <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="font-medium mb-2">Gestion des utilisateurs</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Interface de gestion des utilisateurs à développer
-                        </p>
-                      </div>
-                    </div>
+                    <UsersManager />
                   </TabsContent>
 
                   <TabsContent value="jobs" className="p-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-lg">Modération des emplois</h3>
-                      <div className="text-center py-8">
-                        <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="font-medium mb-2">Modération des emplois</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Interface de modération des offres d'emploi à développer
-                        </p>
-                      </div>
-                    </div>
+                    <JobsManager />
                   </TabsContent>
 
                   <TabsContent value="companies" className="p-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-lg">Gestion des entreprises</h3>
-                      <div className="text-center py-8">
-                        <Building className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="font-medium mb-2">Gestion des entreprises</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Interface de gestion des entreprises à développer
-                        </p>
-                      </div>
-                    </div>
+                    <CompaniesManager />
                   </TabsContent>
 
                   <TabsContent value="reports" className="p-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-lg">Rapports et analytiques</h3>
-                      <div className="text-center py-8">
-                        <TrendingUp className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="font-medium mb-2">Rapports détaillés</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Tableau de bord analytique avancé à développer
-                        </p>
-                      </div>
-                    </div>
+                    <ReportsManager />
                   </TabsContent>
                 </Tabs>
               </CardContent>
@@ -164,18 +146,12 @@ const AdminDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => goToTab('users')}>
                   <Users className="w-4 h-4 mr-2" />
                   Gérer les utilisateurs
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Configuration système
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Logs d'activité
-                </Button>
+                <AdminSettings />
+                <AdminLogs />
               </CardContent>
             </Card>
 

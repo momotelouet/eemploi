@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -105,6 +104,55 @@ const UserMenu = ({ user, userType, handleLogout, getUserInitials }: UserMenuPro
               >
                 <Users className="mr-2 h-4 w-4" />
                 Candidatures
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+        {userType === 'admin' && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link 
+                to="/dashboard/admin" 
+                className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+              >
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Tableau de bord admin
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link 
+                to="/dashboard/admin?tab=users" 
+                className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Gérer les utilisateurs
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link 
+                to="/dashboard/admin?tab=jobs" 
+                className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+              >
+                <Briefcase className="mr-2 h-4 w-4" />
+                Modération des emplois
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link 
+                to="/dashboard/admin?tab=companies" 
+                className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Gestion des entreprises
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link 
+                to="/dashboard/admin?tab=reports" 
+                className="flex items-center hover:bg-eemploi-primary/10 transition-colors duration-300"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Rapports & Statistiques
               </Link>
             </DropdownMenuItem>
           </>
