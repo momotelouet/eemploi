@@ -32,39 +32,50 @@ const CompanyManagement = () => {
   });
 
   useEffect(() => {
-    fetchCompanyData();
+    if (!user) return;
+    const fetchLastCompany = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('*')
+          .eq('posted_by', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error && error.code !== 'PGRST116') throw error;
+        if (data) {
+          setCompany(data);
+        } else {
+          setCompany({
+            id: '',
+            name: '',
+            description: '',
+            website: '',
+            location: '',
+            industry: '',
+            size: '',
+            logo_url: ''
+          });
+        }
+      } catch (error) {
+        setCompany({
+          id: '',
+          name: '',
+          description: '',
+          website: '',
+          location: '',
+          industry: '',
+          size: '',
+          logo_url: ''
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLastCompany();
     fetchCompanyStats();
   }, [user]);
-
-  const fetchCompanyData = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (data) {
-        setCompany(data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'entreprise:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les informations de l\'entreprise',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchCompanyStats = async () => {
     if (!user) return;
@@ -128,11 +139,13 @@ const CompanyManagement = () => {
         location: company.location?.trim() || '',
         industry: company.industry || '',
         size: company.size || '',
-        logo_url: company.logo_url?.trim() || ''
+        logo_url: company.logo_url?.trim() || '',
+        posted_by: user.id // Lien avec le recruteur
       };
 
       let result;
       if (company.id) {
+        // Si la société existe déjà pour ce recruteur, on met à jour
         result = await supabase
           .from('companies')
           .update(companyData)
@@ -140,6 +153,7 @@ const CompanyManagement = () => {
           .select()
           .single();
       } else {
+        // Sinon, on insère une nouvelle société
         result = await supabase
           .from('companies')
           .insert(companyData)
@@ -153,7 +167,7 @@ const CompanyManagement = () => {
         setCompany(result.data);
         toast({
           title: 'Entreprise sauvegardée',
-          description: 'Les informations de votre entreprise ont été mises à jour avec succès',
+          description: 'Les informations de votre entreprise ont été enregistrées avec succès',
         });
       }
     } catch (error) {
@@ -199,6 +213,16 @@ const CompanyManagement = () => {
         return;
       }
       setCompany({ ...company, logo_url: publicUrl });
+      // Sauvegarde automatique du logo si la société existe déjà
+      if (company.id) {
+        const { error: updateError } = await supabase
+          .from('companies')
+          .update({ logo_url: publicUrl })
+          .eq('id', company.id);
+        if (updateError) {
+          toast({ title: 'Erreur', description: `Le logo a été uploadé mais n'a pas pu être sauvegardé en base : ${updateError.message}`, variant: 'destructive' });
+        }
+      }
       toast({ title: 'Logo importé', description: 'Votre logo a été importé avec succès.' });
     } catch (error) {
       toast({ title: 'Erreur', description: 'Erreur lors de l\'upload du logo', variant: 'destructive' });
@@ -421,7 +445,16 @@ const CompanyManagement = () => {
 
           {/* Actions */}
           <div className="flex justify-end space-x-4 pt-6 border-t">
-            <Button variant="outline" onClick={() => fetchCompanyData()}>
+            <Button variant="outline" onClick={() => setCompany({
+              id: '',
+              name: '',
+              description: '',
+              website: '',
+              location: '',
+              industry: '',
+              size: '',
+              logo_url: ''
+            })}>
               Annuler
             </Button>
             <Button 
