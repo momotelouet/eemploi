@@ -30,14 +30,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Fonction utilitaire pour récupérer le userType depuis la table 'profiles' si besoin
+    const fetchUserTypeFromProfile = async (userId: string) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', userId)
+        .single();
+      if (!error && data && data.user_type) {
+        setUserType(data.user_type);
+      } else {
+        setUserType(null);
+      }
+      setLoading(false);
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
-        setUserType(session?.user?.user_metadata?.user_type ?? null);
-        setLoading(false);
+        const metaType = session?.user?.user_metadata?.user_type;
+        if (metaType) {
+          setUserType(metaType);
+          setLoading(false);
+        } else if (session?.user?.id) {
+          fetchUserTypeFromProfile(session.user.id);
+        } else {
+          setUserType(null);
+          setLoading(false);
+        }
       }
     );
 
@@ -45,8 +67,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setUserType(session?.user?.user_metadata?.user_type ?? null);
-      setLoading(false);
+      const metaType = session?.user?.user_metadata?.user_type;
+      if (metaType) {
+        setUserType(metaType);
+        setLoading(false);
+      } else if (session?.user?.id) {
+        fetchUserTypeFromProfile(session.user.id);
+      } else {
+        setUserType(null);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
