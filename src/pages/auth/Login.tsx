@@ -113,6 +113,11 @@ const Login = () => {
                   )}
                 </Button>
               </div>
+              <div className="text-right mt-1">
+                <Link to="/auth/forgot-password" className="text-eemploi-primary hover:underline text-sm font-medium">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
             </div>
             
             <Button 

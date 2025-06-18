@@ -1,17 +1,26 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe, Mail, Phone, Star } from "lucide-react";
+import { useCompanies } from '@/hooks/useCompanies';
+import { useParams } from 'react-router-dom';
 
 type CompanySidebarProps = {
   company: {
     website: string;
     phone: string;
     email: string;
+    sector: string;
   };
 };
 
 const CompanySidebar = ({ company }: CompanySidebarProps) => {
+    const { id } = useParams();
+    const { companies, loading } = useCompanies();
+    // Exclure l'entreprise courante et prendre les 3 premières similaires (même secteur si possible)
+    const similarCompanies = companies
+        .filter(c => c.id !== id && c.industry === company.sector)
+        .slice(0, 3);
+
     return (
         <div className="space-y-6">
             <Card>
@@ -55,17 +64,21 @@ const CompanySidebar = ({ company }: CompanySidebarProps) => {
                     <CardTitle className="text-lg">Entreprises similaires</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {[1, 2, 3].map((item) => (
-                        <div key={item} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                    {loading ? (
+                        <div>Chargement...</div>
+                    ) : similarCompanies.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">Aucune entreprise similaire trouvée.</div>
+                    ) : similarCompanies.map((item) => (
+                        <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                             <div className="w-10 h-10 bg-gradient-to-br from-eemploi-primary to-eemploi-secondary rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                                T
+                                {item.name[0]}
                             </div>
                             <div className="flex-1">
-                                <h4 className="font-medium text-sm">TechStart Innovation</h4>
-                                <p className="text-xs text-muted-foreground">Technologie • Rabat</p>
+                                <h4 className="font-medium text-sm">{item.name}</h4>
+                                <p className="text-xs text-muted-foreground">{item.industry} • {item.location}</p>
                                 <div className="flex items-center mt-1">
                                     <Star className="w-3 h-3 text-yellow-500 mr-1" />
-                                    <span className="text-xs">4.6</span>
+                                    <span className="text-xs">{item.rating ? item.rating : '4.0'}</span>
                                 </div>
                             </div>
                         </div>
