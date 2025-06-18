@@ -41,7 +41,14 @@ const CandidateDashboard = () => {
       const { state, ...rest } = location;
       navigate(rest, { replace: true });
     }
-  }, [location, navigate]);
+    // Ouvre le popup du test de personnalité si le paramètre est présent
+    if (searchParams.get('openPersonalityTest') === '1') {
+      setShowAssessmentTest(true);
+    }
+    if (searchParams.get('openInterviewSimulator') === '1') {
+      setShowInterviewSimulator(true);
+    }
+  }, [location, navigate, searchParams]);
 
   if (loading) {
     return (

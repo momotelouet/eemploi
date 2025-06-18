@@ -22,6 +22,8 @@ import RecruiterDashboard from '@/pages/dashboard/RecruiterDashboard';
 import AdminDashboard from '@/pages/dashboard/AdminDashboard';
 import RecruiterHub from '@/pages/recruiter/RecruiterHub';
 import ApplicationsManager from '@/pages/recruiter/ApplicationsManager';
+import InterviewSimulator from '@/pages/dashboard/InterviewSimulator';
+import PersonalityTest from '@/pages/dashboard/PersonalityTest';
 
 import Tools from "@/pages/Tools";
 import LiveChatWidget from './components/chat/LiveChatWidget';
@@ -70,7 +72,12 @@ function App() {
 
                 {/* Protected Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute />}>
-                  <Route path="candidat" element={<CandidateDashboard />} />
+                  <Route path="candidat" element={<ProtectedRoute requiredUserType="candidat" />}>
+                    <Route index element={<CandidateDashboard />} />
+                    <Route path="job-search" element={<Jobs />} />
+                    <Route path="interview-simulator" element={<InterviewSimulator />} />
+                    <Route path="personality-test" element={<PersonalityTest />} />
+                  </Route>
                   <Route path="recruteur" element={<RecruiterDashboard />} />
                   <Route path="admin" element={<AdminDashboard />} />
                 </Route>
