@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -18,6 +16,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import JobCard from '@/components/JobCard';
 
 const Jobs = () => {
   const { jobs, loading } = useJobs();
@@ -134,121 +133,33 @@ const Jobs = () => {
             </div>
           </div>
           
-          {filteredJobs.length === 0 ? (
-            <div className="text-center py-16 animate-fade-in">
-              <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Aucune offre trouvée</h3>
-              <p className="text-muted-foreground mb-4">
-                Essayez de modifier vos critères de recherche
-              </p>
-              <Button 
-                variant="default"
-                onClick={() => {
-                  setSearchTerm('');
-                  setLocationFilter('');
-                  setContractFilter('');
-                }}
-                className="hover:scale-105 transition-all duration-300"
-              >
-                Réinitialiser les filtres
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6">
-              {filteredJobs.map((job, index) => (
-                <Card 
-                  key={job.id} 
-                  className="hover-lift group animate-fade-in hover:shadow-xl transition-all duration-300 border-l-4 border-l-transparent hover:border-l-eemploi-primary"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+          <div>
+            {filteredJobs.length === 0 ? (
+              <div className="text-center py-16 animate-fade-in">
+                <h3 className="text-xl font-semibold mb-2">Aucune offre trouvée</h3>
+                <p className="text-muted-foreground mb-4">
+                  Essayez de modifier vos critères de recherche
+                </p>
+                <Button 
+                  variant="default"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setLocationFilter('');
+                    setContractFilter('');
+                  }}
+                  className="hover:scale-105 transition-all duration-300"
                 >
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="text-xl font-semibold mb-2 group-hover:text-eemploi-primary transition-colors duration-300">
-                              {job.title}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-                              <div className="flex items-center">
-                                <Building className="w-4 h-4 mr-2" />
-                                {job.companies?.name || 'Entreprise confidentielle'}
-                              </div>
-                              <div className="flex items-center">
-                                <MapPin className="w-4 h-4 mr-2" />
-                                {job.location || 'Maroc'}
-                              </div>
-                              <div className="flex items-center">
-                                <Clock className="w-4 h-4 mr-2" />
-                                {job.job_type || 'Non spécifié'}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end gap-2">
-                            {job.salary_min && job.salary_max && (
-                              <Badge className="bg-eemploi-primary/10 text-eemploi-primary group-hover:bg-eemploi-primary group-hover:text-white transition-all duration-300">
-                                {job.salary_min} - {job.salary_max} MAD
-                              </Badge>
-                            )}
-                            <Badge variant="outline" className="group-hover:border-eemploi-primary transition-colors duration-300">
-                              {job.job_type || 'Temps plein'}
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        {job.description && (
-                          <p className="text-muted-foreground mb-4 line-clamp-2">
-                            {job.description.length > 150 
-                              ? `${job.description.substring(0, 150)}...`
-                              : job.description
-                            }
-                          </p>
-                        )}
-                        
-                        {job.requirements && (
-                          <div className="flex flex-wrap gap-2">
-                            {job.requirements.split(',').slice(0, 3).map((skill, skillIndex) => (
-                              <Badge 
-                                key={skillIndex} 
-                                variant="secondary" 
-                                className="group-hover:bg-eemploi-primary/10 transition-colors duration-300"
-                              >
-                                {skill.trim()}
-                              </Badge>
-                            ))}
-                            {job.requirements.split(',').length > 3 && (
-                              <Badge variant="secondary">
-                                +{job.requirements.split(',').length - 3} autres
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex flex-col gap-2 lg:min-w-[200px]">
-                        <Link to={`/emplois/${job.id}`}>
-                          <Button 
-                            variant="default" 
-                            className="w-full group-hover:scale-105 transition-all duration-300"
-                          >
-                            Voir l'offre
-                            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          className="w-full transition-all duration-300"
-                        >
-                          <Star className="w-4 h-4 mr-2" />
-                          Sauvegarder
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6">
+                {filteredJobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </div>
