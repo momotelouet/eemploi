@@ -24,6 +24,7 @@ import { useJobs } from '@/hooks/useJobs';
 import { useCompanies } from '@/hooks/useCompanies';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import JobMatchingAIWidget from '@/components/ai/JobMatchingAIWidget';
+import JobCard from '@/components/JobCard';
 
 const Index = () => {
   // Suppression des données fictives, utilisation des hooks pour les vraies données
@@ -198,51 +199,8 @@ const Index = () => {
             </div>
           ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {filteredJobs.map((job, index) => (
-              <Card key={job.id} className="group hover:scale-105 border-0 shadow-lg hover:shadow-2xl transition-transform duration-300 bg-white relative overflow-hidden">
-                <div className="absolute -top-6 right-6 z-10">
-                  {job.companies?.logo_url && (
-                    <img src={job.companies.logo_url} alt={job.companies.name} className="h-14 w-14 object-contain rounded-xl shadow bg-white border border-gray-100" />
-                  )}
-                </div>
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between mb-4">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 shadow-md">
-                      ⭐ Premium
-                    </Badge>
-                    <Badge variant="outline" className="border-eemploi-primary text-eemploi-primary">
-                      {job.job_type || 'CDI'}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-xl group-hover:text-eemploi-primary transition-colors duration-300">
-                    {job.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center text-gray-600">
-                      {job.companies?.logo_url ? (
-                        <img src={job.companies.logo_url} alt={job.companies.name} className="h-7 w-7 object-contain rounded-lg mr-3 bg-white border border-gray-100" />
-                      ) : (
-                        <Building className="w-5 h-5 mr-3 text-eemploi-primary" />
-                      )}
-                      {job.companies?.name || 'Entreprise confidentielle'}
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="w-5 h-5 mr-3 text-eemploi-primary" />
-                      {job.location}
-                    </div>
-                    <div className="flex items-center text-eemploi-primary font-bold text-lg">
-                      <TrendingUp className="w-5 h-5 mr-3" />
-                      {job.salary_min && job.salary_max ? `${job.salary_min} - ${job.salary_max} MAD` : 'Salaire non communiqué'}
-                    </div>
-                  </div>
-                  <Button className="w-full btn-primary group-hover:shadow-xl rounded-full font-semibold">
-                    Voir l'offre
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Button>
-                </CardContent>
-              </Card>
+            {filteredJobs.map((job) => (
+              <JobCard key={job.id} job={job} />
             ))}
           </div>
           )}
