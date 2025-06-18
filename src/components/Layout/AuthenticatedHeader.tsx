@@ -92,7 +92,7 @@ const AuthenticatedHeader = () => {
               </DropdownMenuTrigger>
               <NotificationsDropdown {...notificationsHookData} />
             </DropdownMenu>
-            <UserMenu user={user} onLogout={handleLogout} />
+            <UserMenu user={user} userType={userType} handleLogout={handleLogout} getUserInitials={getUserInitials} />
           </div>
 
           {/* Mobile Menu Button */}
