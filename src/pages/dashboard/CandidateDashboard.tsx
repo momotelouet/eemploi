@@ -1,6 +1,4 @@
-
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,7 +17,7 @@ import CandidateDashboardHeader from './CandidateDashboardHeader';
 import CandidateQuickStats from './CandidateQuickStats';
 import CandidateQuickActions from './CandidateQuickActions';
 import CandidateDialogs from './CandidateDialogs';
-import { Award, Bot, Briefcase, FileText, Search, Star, TrendingUp, User } from 'lucide-react';
+import CandidateLayout from '@/components/candidate/CandidateLayout';
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
@@ -116,13 +114,12 @@ const CandidateDashboard = () => {
   ).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <CandidateLayout>
+      <div className="w-full">
         <CandidateDashboardHeader
           firstName={profile?.first_name}
           email={user?.email}
         />
-
         <CandidateQuickStats
           cvCount={cvProfiles.length}
           applicationsCount={applications.length}
@@ -133,72 +130,34 @@ const CandidateDashboard = () => {
           candidateLoading={candidateLoading}
           cvLoading={cvLoading}
         />
-
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className={`w-full ${isMobile ? 'grid-cols-2 h-auto flex-wrap' : 'grid-cols-7'} grid gap-1`}>
-            <TabsTrigger value="cv" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
-              <FileText className="w-4 h-4" />
-              <span className={isMobile ? 'text-xs' : ''}>Mes CV</span>
-            </TabsTrigger>
-            <TabsTrigger value="profile" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
-              <User className="w-4 h-4" />
-              <span className={isMobile ? 'text-xs' : ''}>Mon Profil</span>
-            </TabsTrigger>
-            <TabsTrigger value="applications" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
-              <Briefcase className="w-4 h-4" />
-              <span className={isMobile ? 'text-xs' : ''}>Candidatures</span>
-            </TabsTrigger>
-            <TabsTrigger value="assessment" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
-              <Award className="w-4 h-4" />
-              <span className={isMobile ? 'text-xs' : ''}>Évaluation</span>
-            </TabsTrigger>
-            <TabsTrigger value="job-search" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
-              <Search className="w-4 h-4" />
-              <span className={isMobile ? 'text-xs' : ''}>Recherche IA</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai-optimizer" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
-              <Bot className="w-4 h-4" />
-              <span className={isMobile ? 'text-xs' : ''}>Optimiseur IA</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai-assistant" className={`flex items-center ${isMobile ? 'flex-col space-y-1 p-2' : 'space-x-2'}`}>
-              <Bot className="w-4 h-4" />
-              <span className={isMobile ? 'text-xs' : ''}>Assistant IA</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="cv" className="mt-6">
-            <ProfessionalProfileManager />
-          </TabsContent>
-
-          <TabsContent value="profile" className="mt-6">
-            <DetailedCandidateProfileManager />
-          </TabsContent>
-
-          <TabsContent value="applications" className="mt-6">
-            <ApplicationsList />
-          </TabsContent>
-
-          <TabsContent value="assessment" className="mt-6">
-            <AssessmentResults onStartNewAssessment={handleStartAssessment} />
-          </TabsContent>
-
-          <TabsContent value="job-search" className="mt-6">
-            <JobSearchAI />
-          </TabsContent>
-
-          <TabsContent value="ai-optimizer" className="mt-6">
-            <CVOptimizer />
-          </TabsContent>
-
-          <TabsContent value="ai-assistant" className="mt-6">
+        {/* Affichage du contenu selon l'onglet actif */}
+        {activeTab === 'cv' && (
+          <div className="mt-6"><ProfessionalProfileManager /></div>
+        )}
+        {activeTab === 'profile' && (
+          <div className="mt-6"><DetailedCandidateProfileManager /></div>
+        )}
+        {activeTab === 'applications' && (
+          <div className="mt-6"><ApplicationsList /></div>
+        )}
+        {activeTab === 'assessment' && (
+          <div className="mt-6"><AssessmentResults onStartNewAssessment={handleStartAssessment} /></div>
+        )}
+        {activeTab === 'job-search' && (
+          <div className="mt-6"><JobSearchAI /></div>
+        )}
+        {activeTab === 'ai-optimizer' && (
+          <div className="mt-6"><CVOptimizer /></div>
+        )}
+        {activeTab === 'ai-assistant' && (
+          <div className="mt-6">
             <AIChat
               title="Assistant Carrière IA"
               placeholder="Posez vos questions sur votre carrière, recherche d'emploi, préparation d'entretien..."
               type="interview-prep"
             />
-          </TabsContent>
-        </Tabs>
-
+          </div>
+        )}
         <CandidateQuickActions
           isMobile={isMobile}
           onCreateCV={handleCreateCV}
@@ -206,7 +165,6 @@ const CandidateDashboard = () => {
           onInterviewSimulation={handleInterviewSimulation}
           onStartAssessment={handleStartAssessment}
         />
-
         <CandidateDialogs
           showCreateCV={showCreateCV}
           setShowCreateCV={setShowCreateCV}
@@ -221,7 +179,7 @@ const CandidateDashboard = () => {
           }}
         />
       </div>
-    </div>
+    </CandidateLayout>
   );
 };
 
