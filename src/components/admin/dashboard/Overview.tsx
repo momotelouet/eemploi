@@ -1,14 +1,36 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart2, Users, Briefcase, FileText, CreditCard } from 'lucide-react';
 
 const Overview = () => {
-  // TODO: Récupérer les vraies stats via Supabase
-  const stats = [
-    { label: 'Utilisateurs', value: '12,456', icon: <Users className="w-5 h-5" />, change: '+245 ce mois', color: 'text-blue-600' },
-    { label: "Offres d'emploi", value: '3,892', icon: <Briefcase className="w-5 h-5" />, change: '+89 cette semaine', color: 'text-green-600' },
-    { label: 'Candidatures', value: '45,678', icon: <FileText className="w-5 h-5" />, change: '+1,245 cette semaine', color: 'text-yellow-600' },
-    { label: 'Paiements', value: '1,234', icon: <CreditCard className="w-5 h-5" />, change: '+12 ce mois', color: 'text-purple-600' },
-  ];
+  const [stats, setStats] = useState([
+    { label: 'Utilisateurs', value: '...', icon: <Users className="w-5 h-5" />, change: '', color: 'text-blue-600' },
+    { label: "Offres d'emploi", value: '...', icon: <Briefcase className="w-5 h-5" />, change: '', color: 'text-green-600' },
+    { label: 'Candidatures', value: '...', icon: <FileText className="w-5 h-5" />, change: '', color: 'text-yellow-600' },
+    { label: 'Paiements', value: '...', icon: <CreditCard className="w-5 h-5" />, change: '', color: 'text-purple-600' },
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      // Utilisateurs
+      const { count: usersCount } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
+      // Offres
+      const { count: jobsCount } = await supabase.from('jobs').select('id', { count: 'exact', head: true });
+      // Candidatures
+      const { count: applicationsCount } = await supabase.from('applications').select('id', { count: 'exact', head: true });
+      // Paiements
+      const { count: paymentsCount } = await supabase.from('payments').select('id', { count: 'exact', head: true });
+
+      setStats([
+        { label: 'Utilisateurs', value: usersCount?.toLocaleString() ?? '0', icon: <Users className="w-5 h-5" />, change: '', color: 'text-blue-600' },
+        { label: "Offres d'emploi", value: jobsCount?.toLocaleString() ?? '0', icon: <Briefcase className="w-5 h-5" />, change: '', color: 'text-green-600' },
+        { label: 'Candidatures', value: applicationsCount?.toLocaleString() ?? '0', icon: <FileText className="w-5 h-5" />, change: '', color: 'text-yellow-600' },
+        { label: 'Paiements', value: paymentsCount?.toLocaleString() ?? '0', icon: <CreditCard className="w-5 h-5" />, change: '', color: 'text-purple-600' },
+      ]);
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="space-y-8">

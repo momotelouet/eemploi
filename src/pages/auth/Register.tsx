@@ -23,6 +23,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
@@ -76,6 +77,10 @@ const Register = () => {
           size: ''
         });
       }
+      setSuccess(true);
+      setTimeout(() => {
+        window.location.href = '/auth/login';
+      }, 2500);
     } catch (err) {
       setError('Erreur lors de l\'inscription. Veuillez réessayer.');
     }
@@ -103,6 +108,15 @@ const Register = () => {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {success && (
+              <Alert variant="success">
+                <AlertDescription>
+                  Votre compte a été créé avec succès !<br />
+                  Veuillez vérifier votre email et valider votre compte avant de vous connecter.<br />
+                  Vous allez être redirigé vers la page de connexion...
+                </AlertDescription>
               </Alert>
             )}
             
