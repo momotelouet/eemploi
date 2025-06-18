@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,6 +23,13 @@ const AIChat = ({ title, placeholder, context, type = 'general' }: AIChatProps) 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const { askAI, loading } = useAI();
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, loading]);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -70,7 +76,7 @@ const AIChat = ({ title, placeholder, context, type = 'general' }: AIChatProps) 
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-4">
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+        <div className="flex-1 overflow-y-auto space-y-4 mb-4" style={{ maxHeight: 340 }}>
           {messages.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
               <Bot className="w-12 h-12 mx-auto mb-2 text-eemploi-primary/50" />
@@ -106,6 +112,7 @@ const AIChat = ({ title, placeholder, context, type = 'general' }: AIChatProps) 
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="flex gap-2">

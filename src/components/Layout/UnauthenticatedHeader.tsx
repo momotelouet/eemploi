@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,25 +15,25 @@ const UnauthenticatedHeader = () => {
   ];
 
   return (
-    <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50 shadow-sm">
+    <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-[40px] z-50 shadow-md rounded-b-xl animate-fade-in-down">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
+        <div className="flex items-center justify-between py-4 gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group animate-fade-in">
             <img 
               src="/lovable-uploads/79fb5607-6b8b-41b6-97e5-20f16492e405.png" 
               alt="eemploi logo" 
-              className="h-8 w-auto group-hover:scale-105 transition-transform duration-300"
+              className="h-10 w-auto group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-2 bg-gray-50/60 rounded-xl px-4 py-2 shadow-sm border border-gray-100">
             {navigationItems.map((item, index) => (
               <Link
                 key={item.href}
                 to={item.href}
-                className="px-4 py-2 text-sm font-medium text-foreground hover:text-eemploi-primary transition-all duration-300 rounded-lg hover:bg-eemploi-primary/10 hover:scale-105 flex items-center space-x-2 animate-fade-in"
+                className="px-4 py-2 text-base font-semibold text-foreground hover:text-eemploi-primary transition-all duration-300 rounded-lg hover:bg-eemploi-primary/10 hover:scale-110 flex items-center space-x-2 animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {item.icon}
@@ -48,7 +47,7 @@ const UnauthenticatedHeader = () => {
             <Link to="/auth/login">
               <Button 
                 variant="ghost" 
-                className="hover:bg-eemploi-primary/10 hover:text-eemploi-primary transition-all duration-300 hover:scale-105 animate-fade-in"
+                className="hover:bg-eemploi-primary/10 hover:text-eemploi-primary transition-all duration-300 hover:scale-110 animate-fade-in font-semibold text-base"
                 style={{ animationDelay: '0.6s' }}
               >
                 <LogIn className="w-4 h-4 mr-2" />
@@ -57,7 +56,7 @@ const UnauthenticatedHeader = () => {
             </Link>
             <Link to="/auth/register">
               <Button 
-                className="bg-eemploi-primary hover:bg-eemploi-primary/90 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-fade-in"
+                className="bg-eemploi-primary hover:bg-eemploi-primary/90 hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl animate-fade-in font-semibold text-base"
                 style={{ animationDelay: '0.7s' }}
               >
                 <UserPlus className="w-4 h-4 mr-2" />
@@ -68,56 +67,41 @@ const UnauthenticatedHeader = () => {
 
           {/* Mobile Menu Button */}
           <button
+            className="md:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-110"
+            aria-label="Ouvrir le menu"
           >
-            {isMenuOpen ? (
-              <X className="w-6 h-6 animate-fade-in" />
-            ) : (
-              <Menu className="w-6 h-6 animate-fade-in" />
-            )}
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-slide-in">
-            <nav className="space-y-2">
-              {navigationItems.map((item, index) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-              
-              <div className="pt-4 space-y-2 border-t border-border">
-                <Link
-                  to="/auth/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center space-x-3 px-4 py-3 text-sm font-medium text-foreground hover:text-eemploi-primary hover:bg-eemploi-primary/10 rounded-lg transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: '0.6s' }}
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Connexion</span>
-                </Link>
-                <Link
-                  to="/auth/register"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center space-x-3 px-4 py-3 text-sm font-medium bg-eemploi-primary text-white rounded-lg hover:bg-eemploi-primary/90 transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: '0.7s' }}
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>S'inscrire</span>
-                </Link>
-              </div>
-            </nav>
-          </div>
+          <nav className="md:hidden flex flex-col space-y-2 mt-4 bg-white rounded-xl shadow-lg p-4 animate-fade-in">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-eemploi-primary/10 text-base font-semibold text-foreground hover:text-eemploi-primary transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            ))}
+            <div className="flex space-x-2 mt-4">
+              <Link to="/auth/login" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  Connexion
+                </Button>
+              </Link>
+              <Link to="/auth/register" className="flex-1">
+                <Button className="w-full bg-eemploi-primary text-white">
+                  S'inscrire
+                </Button>
+              </Link>
+            </div>
+          </nav>
         )}
       </div>
     </header>
