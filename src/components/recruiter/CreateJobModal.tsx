@@ -53,21 +53,33 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
 
     setLoading(true);
     try {
-      // Pour maintenant, créer une entreprise par défaut si elle n'existe pas
+      // Chercher une entreprise existante liée au recruteur
       let companyId = formData.company_id;
-      
       if (!companyId) {
-        const { data: company, error: companyError } = await supabase
+        const { data: existingCompany, error: findError } = await supabase
           .from('companies')
-          .insert({
-            name: 'Mon Entreprise',
-            description: 'Description de mon entreprise'
-          })
-          .select()
-          .single();
-
-        if (companyError) throw companyError;
-        companyId = company.id;
+          .select('id')
+          .eq('posted_by', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (findError) throw findError;
+        if (existingCompany && existingCompany.id) {
+          companyId = existingCompany.id;
+        } else {
+          // Créer une nouvelle entreprise liée au recruteur
+          const { data: company, error: companyError } = await supabase
+            .from('companies')
+            .insert({
+              name: 'Mon Entreprise',
+              description: 'Description de mon entreprise',
+              posted_by: user.id
+            })
+            .select()
+            .single();
+          if (companyError) throw companyError;
+          companyId = company.id;
+        }
       }
 
       const { data: job, error } = await supabase
