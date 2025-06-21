@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,25 +43,20 @@ const fetchJobApplications = async (recruiterId: string): Promise<ApplicationWit
   // Récupérer les profils des candidats séparément
   const candidateIds = applicationsData.map(app => app.candidate_id);
   const { data: candidateProfiles, error: profilesError } = await supabase
-    .from('candidate_profiles')
-    .select(`
-      *,
-      profiles (
-        first_name,
-        last_name
-      )
-    `)
-    .in('user_id', candidateIds);
+    .from('profiles')
+    .select('id, first_name, last_name')
+    .in('id', candidateIds);
 
   if (profilesError) {
     console.error('Error fetching candidate profiles:', profilesError);
-    // We don't throw an error here to allow application data to still be displayed.
   }
 
   // Combiner les données
   const applicationsWithProfiles = applicationsData.map(app => ({
     ...app,
-    candidate_profiles: candidateProfiles?.find(profile => profile.user_id === app.candidate_id) || undefined
+    candidate_profiles: {
+      profiles: candidateProfiles?.find(profile => profile.id === app.candidate_id) || undefined
+    }
   }));
 
   return applicationsWithProfiles;
