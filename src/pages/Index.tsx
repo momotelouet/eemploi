@@ -25,6 +25,7 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import JobMatchingAIWidget from '@/components/ai/JobMatchingAIWidget';
 import JobCard from '@/components/JobCard';
+import CandidateCard from '@/components/candidate/CandidateCard';
 
 const Index = () => {
   // Suppression des données fictives, utilisation des hooks pour les vraies données
@@ -263,6 +264,37 @@ const Index = () => {
             ))}
           </div>
           )}
+        </div>
+      </section>
+
+      {/* Talents à la une (candidats LinkedIn style) */}
+      <section className="py-24 bg-gradient-to-br from-blue-50 to-white">
+        <div className="container mx-auto px-6 md:px-8">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-eemploi-primary/10 text-eemploi-primary px-6 py-2 text-lg">
+              Talents à la une
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Candidats en recherche active
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Découvrez les profils les plus attractifs du moment
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {/* MOCK: à remplacer par une vraie requête plus tard */}
+            {[{
+              firstName: 'Sara', lastName: 'El Amrani', professionalTitle: 'Développeuse React', city: 'Casablanca', photoUrl: '',
+            }, {
+              firstName: 'Yassine', lastName: 'Benali', professionalTitle: 'Chef de projet IT', city: 'Rabat', photoUrl: '',
+            }, {
+              firstName: 'Imane', lastName: 'Berrada', professionalTitle: 'Data Analyst', city: 'Marrakech', photoUrl: '',
+            }, {
+              firstName: 'Omar', lastName: 'Kabbaj', professionalTitle: 'UX/UI Designer', city: 'Tanger', photoUrl: '',
+            }].map((cand, i) => (
+              <CandidateCard key={i} {...cand} onViewProfile={() => {}} />
+            ))}
+          </div>
         </div>
       </section>
 

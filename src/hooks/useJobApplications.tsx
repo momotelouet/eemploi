@@ -7,18 +7,15 @@ export type ApplicationWithJobAndProfile = Tables<'applications'> & {
   jobs: Tables<'jobs'> & {
     companies?: Tables<'companies'>;
   };
-  candidate_profiles?: Tables<'candidate_profiles'> & {
-    profiles?: {
-      first_name: string;
-      last_name: string;
-    };
-  };
+  candidate_profile?: {
+    first_name: string;
+    last_name: string;
+  } | null;
 };
 
 const fetchJobApplications = async (recruiterId: string): Promise<ApplicationWithJobAndProfile[]> => {
   console.log('Fetching applications for recruiter:', recruiterId);
-  
-  // Récupérer toutes les candidatures pour les offres du recruteur
+
   const { data: applicationsData, error: applicationsError } = await supabase
     .from('applications')
     .select(`
@@ -40,8 +37,9 @@ const fetchJobApplications = async (recruiterId: string): Promise<ApplicationWit
     return [];
   }
 
-  // Récupérer les profils des candidats séparément
-  const candidateIds = applicationsData.map(app => app.candidate_id);
+  // Éviter doublons
+  const candidateIds = Array.from(new Set(applicationsData.map(app => app.candidate_id)));
+
   const { data: candidateProfiles, error: profilesError } = await supabase
     .from('profiles')
     .select('id, first_name, last_name')
@@ -51,13 +49,19 @@ const fetchJobApplications = async (recruiterId: string): Promise<ApplicationWit
     console.error('Error fetching candidate profiles:', profilesError);
   }
 
-  // Combiner les données
-  const applicationsWithProfiles = applicationsData.map(app => ({
-    ...app,
-    candidate_profiles: {
-      profiles: candidateProfiles?.find(profile => profile.id === app.candidate_id) || undefined
-    }
-  }));
+  // Fusionner les profils dans les candidatures
+  const applicationsWithProfiles: ApplicationWithJobAndProfile[] = applicationsData.map(app => {
+    const profile = candidateProfiles?.find(p => p.id === app.candidate_id) ?? null;
+    return {
+      ...app,
+      candidate_profile: profile
+        ? {
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+          }
+        : null,
+    };
+  });
 
   return applicationsWithProfiles;
 };

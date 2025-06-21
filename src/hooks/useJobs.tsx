@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -29,7 +28,11 @@ export const useJobs = () => {
         }
         
         console.log('Fetched jobs data:', data);
-        setJobs(data || []);
+        // On ne garde que les jobs dont la société est validée
+        const filtered = (data || []).filter(
+          (job: any) => job.companies?.validation_status === 'approved'
+        );
+        setJobs(filtered);
       } catch (err) {
         console.error('Error fetching jobs:', err);
         setJobs([]); // Set empty array on error

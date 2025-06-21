@@ -35,19 +35,24 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
     experience_level: 'mid',
     salary_min: '',
     salary_max: '',
-    company_id: ''
+    expires_at: '', // Correction ici
   });
 
-  const isPublicationBlocked = profile?.status === 'suspended' || (profile?.unpaid_balance ?? 0) >= UNPAID_THRESHOLD;
-  const blockReason = profile?.status === 'suspended' 
-    ? "Votre compte est suspendu. Veuillez contacter le support." 
-    : `Votre solde impayé de ${profile?.unpaid_balance} DH a atteint le seuil de ${UNPAID_THRESHOLD} DH. Veuillez le régler pour continuer.`;
+  const isPublicationBlocked =
+    profile?.status === 'suspended' || (profile?.unpaid_balance ?? 0) >= UNPAID_THRESHOLD;
+
+  const blockReason =
+    profile?.status === 'suspended'
+      ? 'Votre compte est suspendu. Veuillez contacter le support.'
+      : `Votre solde impayé de ${profile?.unpaid_balance} DH a atteint le seuil de ${UNPAID_THRESHOLD} DH. Veuillez le régler pour continuer.`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || isPublicationBlocked) return;
+    if (loading || !user || isPublicationBlocked) return;
 
-    const isConfirmed = window.confirm(`Cette offre sera facturée ${PUBLICATION_PRICE} DH. Elle sera visible immédiatement, et vous pourrez payer plus tard.`);
+    const isConfirmed = window.confirm(
+      `Cette offre sera facturée ${PUBLICATION_PRICE} DH. Elle sera visible immédiatement, et vous pourrez payer plus tard.`
+    );
     if (!isConfirmed) {
       return;
     }
@@ -55,7 +60,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
     setLoading(true);
     try {
       // Chercher une entreprise existante liée au recruteur
-      // @ts-ignore
+      // @ts-ignore Supabase typing workaround
       const { data: existingCompany, error: findError } = await supabase
         .from('companies')
         .select('id')
@@ -63,7 +68,9 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+
       if (findError) throw findError;
+
       let companyId = existingCompany?.id;
 
       if (!companyId) {
@@ -73,14 +80,21 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
           .insert({
             name: 'Mon Entreprise',
             description: 'Description de mon entreprise',
-            posted_by: user.id
+            posted_by: user.id,
           })
           .select()
           .single();
+
         if (companyError) throw companyError;
         companyId = company.id;
+
+        toast({
+          title: 'Entreprise créée',
+          description: 'Une entreprise par défaut a été créée pour vous. Vous pouvez la modifier plus tard.',
+        });
       }
 
+      // Insertion de l'offre d'emploi
       const { data: job, error } = await supabase
         .from('jobs')
         .insert({
@@ -92,54 +106,88 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
           experience_level: formData.experience_level,
           salary_min: formData.salary_min ? parseInt(formData.salary_min) : null,
           salary_max: formData.salary_max ? parseInt(formData.salary_max) : null,
+          expires_at: formData.expires_at || null,
           company_id: companyId,
           posted_by: user.id,
-          status: 'active',
+          status: 'active', // conforme au schéma SQL
           price: PUBLICATION_PRICE,
-          paid: false
+          paid: false,
         })
         .select()
         .single();
 
       if (error) throw error;
-      if (!job) throw new Error("La création de l'offre a échoué.");
+      if (!job) throw new Error('La création de l\'offre a échoué.');
 
-      // Notifier les candidats dont le profil correspond à l'offre
+      // Notification candidats correspondant à l'offre
       try {
-        // Récupérer tous les profils candidats
         const { data: candidates, error: candidatesError } = await supabase
           .from('candidate_profiles')
           .select('user_id, skills, location, experience_years');
+
         if (candidatesError) throw candidatesError;
-        // Filtrer uniquement les objets valides (évite les erreurs TS sur SelectQueryError)
+
         const validCandidates = Array.isArray(candidates)
-          ? candidates.filter((c: any) => c && typeof c === 'object' && 'user_id' in c && Array.isArray(c.skills) && typeof c.location === 'string')
+          ? candidates.filter(
+              (c: any) =>
+                c &&
+                typeof c === 'object' &&
+                'user_id' in c &&
+                Array.isArray(c.skills) &&
+                typeof c.location === 'string'
+            )
           : [];
-        const jobSkills = (formData.requirements || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().split(/[ ,;]+/).filter(Boolean);
-        const jobLocation = (formData.location || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-        const jobExp = formData.experience_level;
+
+        const jobSkills = (formData.requirements || '')
+          .normalize('NFD')
+          .replace(/\p{Diacritic}/gu, '')
+          .toLowerCase()
+          .split(/[ ,;]+/)
+          .filter(Boolean);
+
+        const jobLocation = (formData.location || '')
+          .normalize('NFD')
+          .replace(/\p{Diacritic}/gu, '')
+          .toLowerCase();
+
         const matchedCandidates = validCandidates.filter((c: any) => {
-          const candidateSkills = c.skills.map((s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase());
+          const candidateSkills = c.skills
+            .map((s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase());
+
           const hasSkill = jobSkills.length > 0 && candidateSkills.some((s: string) => jobSkills.includes(s));
-          const hasLocation = jobLocation && c.location && c.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === jobLocation;
-          // Optionnel : expérience
-          // const hasExp = !jobExp || (c.experience_years && c.experience_years >= parseInt(jobExp));
+          const hasLocation =
+            jobLocation &&
+            c.location &&
+            c.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === jobLocation;
+
           return hasSkill || hasLocation;
         });
+
         if (matchedCandidates.length > 0) {
           for (const c of matchedCandidates) {
-            const candidateSkills = (c.skills || []).map((s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase());
+            const candidateSkills = (c.skills || []).map((s: string) =>
+              s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+            );
             const commonSkills = jobSkills.filter((s) => candidateSkills.includes(s));
             const msgParts = [];
             if (commonSkills.length > 0) msgParts.push(`compétences : ${commonSkills.join(', ')}`);
-            if (jobLocation && c.location && c.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === jobLocation) msgParts.push(`localisation : ${formData.location}`);
-            const message = `L’offre « ${formData.title} » correspond à votre profil (${msgParts.join(' et ')}). Découvrez-la et postulez si elle vous intéresse !`;
+            if (
+              jobLocation &&
+              c.location &&
+              c.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === jobLocation
+            )
+              msgParts.push(`localisation : ${formData.location}`);
+
+            const message = `L’offre « ${formData.title} » correspond à votre profil (${msgParts.join(
+              ' et '
+            )}). Découvrez-la et postulez si elle vous intéresse !`;
+
             await supabase.from('notifications').insert({
               user_id: c.user_id,
               title: 'Nouvelle offre qui correspond à votre profil !',
               message,
               type: 'job_match',
-              read: false
+              read: false,
             });
           }
         }
@@ -147,27 +195,28 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         console.error('Erreur lors de la notification des candidats :', notifError);
       }
 
-      // Incrémenter le solde impayé via la fonction RPC
+      // Mise à jour solde impayé via RPC
       const { error: rpcError } = await supabase.rpc('handle_new_job_posting', {
         recruiter_user_id: user.id,
-        job_price: PUBLICATION_PRICE
+        job_price: PUBLICATION_PRICE,
       });
 
       if (rpcError) {
         console.error('Failed to update unpaid balance:', rpcError);
         toast({
           title: 'Offre créée mais avec un souci',
-          description: 'L\'offre a été publiée, mais la mise à jour de votre solde a échoué. Veuillez contacter le support.',
+          description:
+            "L'offre a été publiée, mais la mise à jour de votre solde a échoué. Veuillez contacter le support.",
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Offre d\'emploi créée',
-          description: `Votre offre a été publiée. ${PUBLICATION_PRICE} DH ont été ajoutés à votre solde.`,
+          title: "Offre d'emploi créée",
+          description: `${PUBLICATION_PRICE} DH ont été ajoutés à votre solde.`,
         });
       }
-      
-      // Réinitialiser le formulaire
+
+      // Reset form
       setFormData({
         title: '',
         description: '',
@@ -177,16 +226,19 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         experience_level: 'mid',
         salary_min: '',
         salary_max: '',
-        company_id: ''
+        expires_at: '', // Correction ici
       });
 
       if (onJobCreated) onJobCreated();
-      // Rafraîchir le profil recruteur pour mettre à jour le solde immédiatement
+
+      // Refresh profile cache
       await queryClient.invalidateQueries({ queryKey: ['recruiter-profile', user.id] });
-      toast({ description: "Offre publiée avec succès !", variant: "success" });
+
+      toast({ description: 'Offre publiée avec succès !', variant: 'success' });
+
       onOpenChange(false);
     } catch (err: any) {
-      toast({ description: err.message || "Erreur lors de la création de l'offre", variant: "destructive" });
+      toast({ description: err.message || 'Erreur lors de la création de l\'offre', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -198,12 +250,10 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         <DialogHeader>
           <DialogTitle>Créer une nouvelle offre d'emploi</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Titre du poste *
-            </label>
+            <label className="block text-sm font-medium mb-2">Titre du poste *</label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -213,9 +263,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Description du poste *
-            </label>
+            <label className="block text-sm font-medium mb-2">Description du poste *</label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -226,9 +274,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Exigences et compétences
-            </label>
+            <label className="block text-sm font-medium mb-2">Exigences et compétences</label>
             <Textarea
               value={formData.requirements}
               onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
@@ -239,9 +285,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Localisation
-              </label>
+              <label className="block text-sm font-medium mb-2">Localisation</label>
               <Select
                 value={formData.location}
                 onValueChange={(value) => setFormData({ ...formData, location: value })}
@@ -251,16 +295,16 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
                 </SelectTrigger>
                 <SelectContent>
                   {MOROCCO_CITIES.map((city) => (
-                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Type de contrat
-              </label>
+              <label className="block text-sm font-medium mb-2">Type de contrat</label>
               <Select
                 value={formData.job_type}
                 onValueChange={(value) => setFormData({ ...formData, job_type: value })}
@@ -279,9 +323,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Niveau d'expérience
-            </label>
+            <label className="block text-sm font-medium mb-2">Niveau d'expérience</label>
             <Select
               value={formData.experience_level}
               onValueChange={(value) => setFormData({ ...formData, experience_level: value })}
@@ -300,9 +342,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Salaire minimum (MAD)
-              </label>
+              <label className="block text-sm font-medium mb-2">Salaire minimum (MAD)</label>
               <Input
                 type="number"
                 value={formData.salary_min}
@@ -312,9 +352,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Salaire maximum (MAD)
-              </label>
+              <label className="block text-sm font-medium mb-2">Salaire maximum (MAD)</label>
               <Input
                 type="number"
                 value={formData.salary_max}
@@ -324,12 +362,17 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-2">Date d'expiration (optionnelle)</label>
+            <Input
+              type="date"
+              value={formData.expires_at}
+              onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
+            />
+          </div>
+
           <div className="flex justify-end space-x-4 pt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuler
             </Button>
             <Button
@@ -337,7 +380,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
               className="bg-eemploi-primary hover:bg-eemploi-primary/90"
               disabled={loading || isPublicationBlocked}
             >
-              {loading ? 'Création en cours...' : 'Publier l\'offre'}
+              {loading ? 'Création en cours...' : "Publier l'offre"}
             </Button>
           </div>
           {isPublicationBlocked && (
