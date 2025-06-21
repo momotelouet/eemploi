@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { exportToCSV } from '@/lib/exportCSV';
 import { exportToPDF } from '@/lib/exportPDF';
 
+interface Application {
+  id: string;
+  candidate_id: string;
+  status: string;
+}
+type ApplicationRaw = { id?: string; candidate_id?: string; status?: string };
+
 const statuses = [
 	{ label: 'Tous', value: '' },
 	{ label: 'En cours', value: 'pending' },
@@ -14,12 +21,12 @@ const statuses = [
 ];
 
 const ApplicationMonitoring = () => {
-	const [applications, setApplications] = useState<any[]>([]);
+	const [applications, setApplications] = useState<Application[]>([]);
 	const [status, setStatus] = useState('');
 	const [search, setSearch] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [editApp, setEditApp] = useState<any>(null);
-	const [editForm, setEditForm] = useState<any>({});
+	const [editApp, setEditApp] = useState<Application | null>(null);
+	const [editForm, setEditForm] = useState<{ status?: string }>({});
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
@@ -29,7 +36,11 @@ const ApplicationMonitoring = () => {
 			if (status) query = query.eq('status', status);
 			if (search) query = query.ilike('candidate_id', `%${search}%`);
 			const { data, error } = await query;
-			if (!error && data) setApplications(data);
+			if (!error && data) setApplications((data as ApplicationRaw[]).map(a => ({
+        id: a.id ?? '',
+        candidate_id: a.candidate_id ?? '',
+        status: a.status ?? ''
+      })));
 			setLoading(false);
 		};
 		fetchApplications();
@@ -42,13 +53,13 @@ const ApplicationMonitoring = () => {
 		setApplications(apps => apps.filter(a => a.id !== appId));
 		setLoading(false);
 	};
-	const openEdit = (app: any) => {
+	const openEdit = (app: Application) => {
 		setEditApp(app);
 		setEditForm({ status: app.status });
 	};
 	const closeEdit = () => { setEditApp(null); setEditForm({}); };
-	const handleEditChange = (e: any) => {
-		setEditForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+	const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+		setEditForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 	};
 	const handleEditSave = async () => {
 		setSaving(true);

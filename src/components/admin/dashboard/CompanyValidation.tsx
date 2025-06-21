@@ -12,13 +12,22 @@ const statuses = [
 	{ label: 'Rejeté', value: 'rejected' },
 ];
 
+interface Company {
+  id: string;
+  name: string;
+  validation_status: string;
+  legal_doc_url?: string;
+}
+
+type CompanyRaw = { id?: string; name?: string; validation_status?: string; legal_doc_url?: string };
+
 const CompanyValidation = () => {
-	const [companies, setCompanies] = useState<any[]>([]);
+	const [companies, setCompanies] = useState<Company[]>([]);
 	const [status, setStatus] = useState('');
 	const [search, setSearch] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [editCompany, setEditCompany] = useState<any>(null);
-	const [editForm, setEditForm] = useState<any>({});
+	const [editCompany, setEditCompany] = useState<Company | null>(null);
+	const [editForm, setEditForm] = useState<{ name?: string; validation_status?: string; legal_doc_url?: string }>({});
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
@@ -28,7 +37,12 @@ const CompanyValidation = () => {
 			if (status) query = query.eq('validation_status', status);
 			if (search) query = query.ilike('name', `%${search}%`);
 			const { data, error } = await query;
-			if (!error && data) setCompanies(data);
+			if (!error && data) setCompanies((data as CompanyRaw[]).map(c => ({
+        id: c.id ?? '',
+        name: c.name ?? '',
+        validation_status: c.validation_status ?? '',
+        legal_doc_url: c.legal_doc_url
+      })));
 			setLoading(false);
 		};
 		fetchCompanies();
@@ -41,13 +55,13 @@ const CompanyValidation = () => {
 		setCompanies(companies => companies.filter(c => c.id !== companyId));
 		setLoading(false);
 	};
-	const openEdit = (company: any) => {
+	const openEdit = (company: Company) => {
 		setEditCompany(company);
 		setEditForm({ name: company.name, validation_status: company.validation_status, legal_doc_url: company.legal_doc_url });
 	};
 	const closeEdit = () => { setEditCompany(null); setEditForm({}); };
-	const handleEditChange = (e: any) => {
-		setEditForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+	const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+		setEditForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 	};
 	const handleEditSave = async () => {
 		setSaving(true);
@@ -139,7 +153,7 @@ const CompanyValidation = () => {
 										)}
 									</td>
 									<td className="p-3 flex gap-2">
-										<Button size="sm" variant="success">
+										<Button size="sm" variant="default">
 											Valider
 										</Button>
 										<Button size="sm" variant="destructive" onClick={() => handleDelete(company.id)}>

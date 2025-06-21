@@ -1,54 +1,53 @@
-
 import React from 'react';
-import ContactMethods from "@/components/contact/ContactMethods";
 import ContactForm from "@/components/contact/ContactForm";
-import ContactSidebar from "@/components/contact/ContactSidebar";
+import { Mail, Phone, Clock, Linkedin } from 'lucide-react';
 
 const Contact = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-eemploi-primary via-eemploi-primary to-eemploi-secondary"></div>
-        <div className="absolute inset-0 bg-black/10"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Contactez notre
-              <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
-                équipe d'experts
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-              Notre équipe dédiée est là pour vous accompagner dans votre réussite professionnelle. 
-              Nous répondons à toutes vos questions dans les plus brefs délais.
-            </p>
-          </div>
+    <div className="min-h-screen bg-white">
+      {/* Header pro */}
+      <section className="py-16 border-b bg-gradient-to-r from-blue-50 to-white">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-4">Contactez-nous</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Notre équipe vous répond rapidement pour toute question sur nos services, votre compte ou un accompagnement personnalisé.
+          </p>
         </div>
       </section>
 
-      {/* Contact Methods */}
-      <section className="py-20 relative">
+      {/* Section principale */}
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Plusieurs façons de nous joindre
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Choisissez le canal qui vous convient le mieux pour une réponse rapide et personnalisée
-            </p>
-          </div>
-          
-          <ContactMethods />
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-20">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+            {/* Formulaire de contact */}
+            <div className="bg-white rounded-xl shadow-lg p-8 border">
+              <h2 className="text-2xl font-semibold text-blue-900 mb-6">Envoyer un message</h2>
               <ContactForm />
             </div>
-            
-            <div className="lg:col-span-1">
-              <ContactSidebar />
+            {/* Infos de contact */}
+            <div className="bg-blue-50 rounded-xl shadow p-8 border border-blue-100 flex flex-col gap-6">
+              <h3 className="text-xl font-semibold text-blue-900 mb-2">Nos coordonnées</h3>
+              <div className="flex items-center gap-3 text-blue-900">
+                <Phone className="w-5 h-5" />
+                <span className="font-medium">+212 658844222</span>
+              </div>
+              <div className="flex items-center gap-3 text-blue-900">
+                <Mail className="w-5 h-5" />
+                <span className="font-medium">contact@eemploi.com</span>
+              </div>
+              <div className="flex items-center gap-3 text-blue-900">
+                <Clock className="w-5 h-5" />
+                <span>Lun - Ven : 9h00 - 18h00</span>
+              </div>
+              <div className="flex items-center gap-3 mt-4">
+                <a href="https://www.linkedin.com/company/eemploi" target="_blank" rel="noopener" className="inline-flex items-center px-3 py-2 rounded-md bg-blue-700 text-white hover:bg-blue-800 transition">
+                  <Linkedin className="w-4 h-4 mr-2" />
+                  LinkedIn
+                </a>
+              </div>
+              <div className="text-sm text-gray-500 mt-8">
+                Nous ne partageons jamais vos données. Réponse sous 24h ouvrées.
+              </div>
             </div>
           </div>
         </div>

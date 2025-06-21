@@ -3,8 +3,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+interface User {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  user_type: string;
+  suspended: boolean;
+}
+type UserRaw = { id: string; email?: string; first_name: string; last_name: string; user_type: string; suspended?: boolean };
+
 export default function UsersManager() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,7 +22,14 @@ export default function UsersManager() {
     setLoading(true);
     const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     if (error) setError(error.message);
-    else setUsers(data || []);
+    else setUsers((data || []).map((u: UserRaw) => ({
+      id: u.id,
+      email: u.email ?? '',
+      first_name: u.first_name,
+      last_name: u.last_name,
+      user_type: u.user_type,
+      suspended: u.suspended ?? false
+    })));
     setLoading(false);
   };
 
@@ -24,7 +41,7 @@ export default function UsersManager() {
   };
 
   const handleSuspend = async (id: string, suspended: boolean) => {
-    await supabase.from('profiles').update({ suspended }).eq('id', id);
+    await supabase.from('profiles').update({ suspended } as Partial<User>).eq('id', id);
     fetchUsers();
   };
 

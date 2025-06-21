@@ -5,6 +5,16 @@ import { Button } from '@/components/ui/button';
 import { exportToCSV } from '@/lib/exportCSV';
 import { exportToPDF } from '@/lib/exportPDF';
 
+interface Job {
+  id: string;
+  title: string;
+  company_name: string;
+  validation_status: string;
+  expiration_date?: string;
+}
+
+type JobRaw = { id?: string; title?: string; company_name?: string; validation_status?: string; expiration_date?: string };
+
 const statuses = [
 	{ label: 'Tous', value: '' },
 	{ label: 'Validé', value: 'approved' },
@@ -13,12 +23,12 @@ const statuses = [
 ];
 
 const JobManagement = () => {
-	const [jobs, setJobs] = useState<any[]>([]);
+	const [jobs, setJobs] = useState<Job[]>([]);
 	const [status, setStatus] = useState('');
 	const [search, setSearch] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [editJob, setEditJob] = useState<any>(null);
-	const [editForm, setEditForm] = useState<any>({});
+	const [editJob, setEditJob] = useState<Job | null>(null);
+	const [editForm, setEditForm] = useState<{ title?: string; company_name?: string; validation_status?: string; expiration_date?: string }>({});
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
@@ -28,7 +38,13 @@ const JobManagement = () => {
 			if (status) query = query.eq('validation_status', status);
 			if (search) query = query.ilike('title', `%${search}%`);
 			const { data, error } = await query;
-			if (!error && data) setJobs(data);
+			if (!error && data) setJobs((data as JobRaw[]).map(j => ({
+        id: j.id ?? '',
+        title: j.title ?? '',
+        company_name: j.company_name ?? '',
+        validation_status: j.validation_status ?? '',
+        expiration_date: j.expiration_date
+      })));
 			setLoading(false);
 		};
 		fetchJobs();
@@ -41,13 +57,13 @@ const JobManagement = () => {
 		setJobs(jobs => jobs.filter(j => j.id !== jobId));
 		setLoading(false);
 	};
-	const openEdit = (job: any) => {
+	const openEdit = (job: Job) => {
 		setEditJob(job);
 		setEditForm({ title: job.title, company_name: job.company_name, validation_status: job.validation_status, expiration_date: job.expiration_date });
 	};
 	const closeEdit = () => { setEditJob(null); setEditForm({}); };
-	const handleEditChange = (e: any) => {
-		setEditForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+	const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+		setEditForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 	};
 	const handleEditSave = async () => {
 		setSaving(true);

@@ -85,11 +85,9 @@ const Jobs = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes les villes</SelectItem>
-                <SelectItem value="Casablanca">Casablanca</SelectItem>
-                <SelectItem value="Rabat">Rabat</SelectItem>
-                <SelectItem value="Marrakech">Marrakech</SelectItem>
-                <SelectItem value="Fès">Fès</SelectItem>
-                <SelectItem value="Tanger">Tanger</SelectItem>
+                {[...new Set(jobs.map(j => j.location).filter(Boolean))].map(loc => (
+                  <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             

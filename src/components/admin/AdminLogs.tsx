@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+interface LogEntry {
+  id: number;
+  message: string;
+  date: string;
+}
+
 export default function AdminLogs() {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

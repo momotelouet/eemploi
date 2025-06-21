@@ -16,6 +16,8 @@ import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 import { useState, useEffect } from "react";
 import type { CandidateProfile } from "@/hooks/useCandidateProfile";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../ui/select';
+import { MOROCCO_CITIES } from '../ui/cities';
 
 
 const PersonalInfoEditor = ({ profile, onUpdate, loading }: { profile: CandidateProfile, onUpdate: (updates: Partial<CandidateProfile>) => Promise<any>, loading: boolean }) => {
@@ -86,7 +88,16 @@ const PersonalInfoEditor = ({ profile, onUpdate, loading }: { profile: Candidate
           </div>
           <div className="space-y-2">
             <Label htmlFor="city">Ville</Label>
-            <Input id="city" value={formData.city} onChange={e => handleInputChange('city', e.target.value)} />
+            <Select value={formData.city} onValueChange={value => handleInputChange('city', value)}>
+              <SelectTrigger id="city">
+                <SelectValue placeholder="Votre ville" />
+              </SelectTrigger>
+              <SelectContent>
+                {MOROCCO_CITIES.map((city) => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="country">Pays</Label>

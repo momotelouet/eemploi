@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, HelpCircle, Phone, MessageSquare, AlertCircle } from "lucide-react";
+import { Clock, HelpCircle, Phone, MessageSquare } from "lucide-react";
 
 const ContactSidebar = () => {
   const faqItems = [
@@ -64,29 +63,6 @@ const ContactSidebar = () => {
               <p className="text-sm text-gray-600 leading-relaxed">{item.answer}</p>
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      {/* Emergency Contact */}
-      <Card className="border-0 bg-gradient-to-br from-orange-50 to-red-50 shadow-xl">
-        <CardContent className="p-8">
-          <div className="flex items-center mb-4">
-            <AlertCircle className="w-6 h-6 text-orange-600 mr-3" />
-            <h3 className="font-bold text-xl text-orange-900">Support urgent ?</h3>
-          </div>
-          <p className="text-gray-700 mb-6 leading-relaxed">
-            Pour les questions urgentes, contactez-nous directement par téléphone ou chat en direct.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-              <Phone className="w-4 h-4 mr-2" />
-              Appeler maintenant
-            </Button>
-            <Button variant="outline" size="lg" className="border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white transition-all duration-300">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Chat en direct
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

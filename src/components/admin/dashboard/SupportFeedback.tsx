@@ -5,6 +5,19 @@ import { Button } from '@/components/ui/button';
 import { exportToCSV } from '@/lib/exportCSV';
 import { exportToPDF } from '@/lib/exportPDF';
 
+type SupportTicket = {
+	id: string;
+	user_email: string;
+	subject: string;
+	status: 'open' | 'pending' | 'resolved';
+	created_at?: string;
+};
+
+type EditForm = {
+	subject: string;
+	status: 'open' | 'pending' | 'resolved';
+};
+
 const statuses = [
 	{ label: 'Tous', value: '' },
 	{ label: 'Ouvert', value: 'open' },
@@ -13,22 +26,30 @@ const statuses = [
 ];
 
 const SupportFeedback = () => {
-	const [tickets, setTickets] = useState<any[]>([]);
+	const [tickets, setTickets] = useState<SupportTicket[]>([]);
 	const [status, setStatus] = useState('');
 	const [search, setSearch] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [editTicket, setEditTicket] = useState<any>(null);
-	const [editForm, setEditForm] = useState<any>({});
+	const [editTicket, setEditTicket] = useState<SupportTicket | null>(null);
+	const [editForm, setEditForm] = useState<Partial<EditForm>>({});
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
 		const fetchTickets = async () => {
 			setLoading(true);
+			// @ts-expect-error: Table support_tickets non présente dans les types Supabase générés
 			let query = supabase.from('support_tickets').select('*');
+			// @ts-expect-error: Typage Supabase incomplet, à corriger lors de la régénération des types
 			if (status) query = query.eq('status', status);
 			if (search) query = query.ilike('user_email', `%${search}%`);
 			const { data, error } = await query;
-			if (!error && data) setTickets(data);
+			if (!error && data) {
+				// Filtrage pour ne garder que les objets ayant les propriétés attendues
+				const filtered = (data as any[]).filter(
+					t => t && typeof t.user_email === 'string' && typeof t.subject === 'string' && typeof t.status === 'string'
+				);
+				setTickets(filtered as SupportTicket[]);
+			}
 			setLoading(false);
 		};
 		fetchTickets();
@@ -37,6 +58,7 @@ const SupportFeedback = () => {
 	const handleDelete = async (ticketId: string) => {
 		if (!window.confirm('Confirmer la suppression de ce ticket ?')) return;
 		setLoading(true);
+		// @ts-expect-error: Table support_tickets non présente dans les types Supabase générés
 		await supabase.from('support_tickets').delete().eq('id', ticketId);
 		setTickets(tickets => tickets.filter(t => t.id !== ticketId));
 		setLoading(false);
@@ -51,6 +73,7 @@ const SupportFeedback = () => {
 	};
 	const handleEditSave = async () => {
 		setSaving(true);
+		// @ts-expect-error: Table support_tickets non présente dans les types Supabase générés
 		await supabase.from('support_tickets').update(editForm).eq('id', editTicket.id);
 		setTickets(tickets => tickets.map(t => t.id === editTicket.id ? { ...t, ...editForm } : t));
 		setSaving(false);
@@ -133,7 +156,7 @@ const SupportFeedback = () => {
 									</td>
 									<td className='p-3 flex gap-2'>
 										<Button size="sm" variant="outline" onClick={() => openEdit(ticket)}>Voir</Button>
-										<Button size="sm" variant="success">Résoudre</Button>
+										<Button size="sm" variant="default">Résoudre</Button>
 										<Button size="sm" variant="destructive" onClick={() => handleDelete(ticket.id)}>Supprimer</Button>
 									</td>
 								</tr>
@@ -151,7 +174,7 @@ const SupportFeedback = () => {
 
 			{/* Modale édition ticket support */}
 			<Dialog open={!!editTicket} onClose={closeEdit} className="fixed z-50 inset-0 flex items-center justify-center">
-				<Dialog.Overlay className="fixed inset-0 bg-black/30" />
+				<div className="fixed inset-0 bg-black/30" />
 				<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 w-full max-w-md z-10">
 					<Dialog.Title className="text-lg font-bold mb-4">Éditer ticket support</Dialog.Title>
 					<div className="space-y-3">

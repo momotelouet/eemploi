@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRecruiterProfile } from '@/hooks/useRecruiterProfile';
 import { useQueryClient } from '@tanstack/react-query';
+import { MOROCCO_CITIES } from '@/components/ui/cities';
 
 interface CreateJobModalProps {
   open: boolean;
@@ -54,32 +55,30 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
     setLoading(true);
     try {
       // Chercher une entreprise existante liée au recruteur
-      let companyId = formData.company_id;
+      // @ts-ignore
+      const { data: existingCompany, error: findError } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('posted_by', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (findError) throw findError;
+      let companyId = existingCompany?.id;
+
       if (!companyId) {
-        const { data: existingCompany, error: findError } = await supabase
+        // Créer une nouvelle entreprise liée au recruteur
+        const { data: company, error: companyError } = await supabase
           .from('companies')
-          .select('id')
-          .eq('posted_by', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (findError) throw findError;
-        if (existingCompany && existingCompany.id) {
-          companyId = existingCompany.id;
-        } else {
-          // Créer une nouvelle entreprise liée au recruteur
-          const { data: company, error: companyError } = await supabase
-            .from('companies')
-            .insert({
-              name: 'Mon Entreprise',
-              description: 'Description de mon entreprise',
-              posted_by: user.id
-            })
-            .select()
-            .single();
-          if (companyError) throw companyError;
-          companyId = company.id;
-        }
+          .insert({
+            name: 'Mon Entreprise',
+            description: 'Description de mon entreprise',
+            posted_by: user.id
+          })
+          .select()
+          .single();
+        if (companyError) throw companyError;
+        companyId = company.id;
       }
 
       const { data: job, error } = await supabase
@@ -112,12 +111,15 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
           .from('candidate_profiles')
           .select('user_id, skills, location, experience_years');
         if (candidatesError) throw candidatesError;
-        // Matching amélioré : compétences, localisation, expérience
+        // Filtrer uniquement les objets valides (évite les erreurs TS sur SelectQueryError)
+        const validCandidates = Array.isArray(candidates)
+          ? candidates.filter((c: any) => c && typeof c === 'object' && 'user_id' in c && Array.isArray(c.skills) && typeof c.location === 'string')
+          : [];
         const jobSkills = (formData.requirements || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().split(/[ ,;]+/).filter(Boolean);
         const jobLocation = (formData.location || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
         const jobExp = formData.experience_level;
-        const matchedCandidates = candidates.filter((c: any) => {
-          const candidateSkills = (c.skills || []).map((s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase());
+        const matchedCandidates = validCandidates.filter((c: any) => {
+          const candidateSkills = c.skills.map((s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase());
           const hasSkill = jobSkills.length > 0 && candidateSkills.some((s: string) => jobSkills.includes(s));
           const hasLocation = jobLocation && c.location && c.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === jobLocation;
           // Optionnel : expérience
@@ -178,16 +180,13 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         company_id: ''
       });
 
+      if (onJobCreated) onJobCreated();
+      // Rafraîchir le profil recruteur pour mettre à jour le solde immédiatement
+      await queryClient.invalidateQueries({ queryKey: ['recruiter-profile', user.id] });
+      toast({ description: "Offre publiée avec succès !", variant: "success" });
       onOpenChange(false);
-      onJobCreated?.();
-
-    } catch (error) {
-      console.error('Error creating job:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la création de l\'offre.',
-        variant: 'destructive'
-      });
+    } catch (err: any) {
+      toast({ description: err.message || "Erreur lors de la création de l'offre", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -243,11 +242,19 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
               <label className="block text-sm font-medium mb-2">
                 Localisation
               </label>
-              <Input
+              <Select
                 value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Ex: Casablanca, Maroc"
-              />
+                onValueChange={(value) => setFormData({ ...formData, location: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Ex: Casablanca, Maroc" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MOROCCO_CITIES.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

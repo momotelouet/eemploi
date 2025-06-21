@@ -3,8 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+interface Company {
+  id: string;
+  name: string;
+  suspended: boolean;
+}
+type CompanyRaw = { id: string; name: string; suspended?: boolean };
+
 export default function CompaniesManager() {
-  const [companies, setCompanies] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,14 +19,18 @@ export default function CompaniesManager() {
     setLoading(true);
     const { data, error } = await supabase.from('companies').select('*').order('created_at', { ascending: false });
     if (error) setError(error.message);
-    else setCompanies(data || []);
+    else setCompanies((data || []).map((c: CompanyRaw) => ({
+      id: c.id,
+      name: c.name,
+      suspended: c.suspended ?? false
+    })));
     setLoading(false);
   };
 
   useEffect(() => { fetchCompanies(); }, []);
 
   const handleSuspend = async (id: string, suspended: boolean) => {
-    await supabase.from('companies').update({ suspended }).eq('id', id);
+    await supabase.from('companies').update({ suspended } as Partial<Company>).eq('id', id);
     fetchCompanies();
   };
   const handleDelete = async (id: string) => {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCVImages } from '@/hooks/useCVImages';
 import ProfileAIAssistant from '@/components/ai/ProfileAIAssistant';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { MOROCCO_CITIES } from '@/components/ui/cities';
 
 const AIEnhancedProfileManager = () => {
   const { user } = useAuth();
@@ -236,12 +237,16 @@ const AIEnhancedProfileManager = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">Ville</Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                placeholder="Votre ville"
-              />
+              <Select value={formData.city} onValueChange={value => handleInputChange('city', value)}>
+                <SelectTrigger id="city">
+                  <SelectValue placeholder="Votre ville" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MOROCCO_CITIES.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

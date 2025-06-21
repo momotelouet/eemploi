@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { User, GraduationCap, Briefcase, Save, Plus, Trash2, Award, Languages, Code, MapPin, Globe, Phone, Mail } from 'lucide-react';
+import { MOROCCO_CITIES } from '@/components/ui/cities';
 
 interface PersonalInfo {
   firstName: string;
@@ -430,12 +430,16 @@ const ProfileForm = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="city">Ville</Label>
-                      <Input
-                        id="city"
-                        value={personalInfo.city}
-                        onChange={(e) => handlePersonalInfoChange('city', e.target.value)}
-                        placeholder="Casablanca"
-                      />
+                      <Select value={personalInfo.city} onValueChange={value => handlePersonalInfoChange('city', value)}>
+                        <SelectTrigger id="city">
+                          <SelectValue placeholder="Casablanca" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MOROCCO_CITIES.map((city) => (
+                            <SelectItem key={city} value={city}>{city}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="postalCode">Code postal</Label>

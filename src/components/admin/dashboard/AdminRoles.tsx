@@ -12,13 +12,20 @@ const roles = [
 	{ label: 'Lecture seule', value: 'readonly' },
 ];
 
+interface Admin {
+  id: string;
+  email: string;
+  admin_role: string;
+}
+type AdminRaw = { id?: string; email?: string; admin_role?: string };
+
 const AdminRoles = () => {
-	const [admins, setAdmins] = useState<any[]>([]);
+	const [admins, setAdmins] = useState<Admin[]>([]);
 	const [role, setRole] = useState('');
 	const [search, setSearch] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [editAdmin, setEditAdmin] = useState<any>(null);
-	const [editForm, setEditForm] = useState<any>({});
+	const [editAdmin, setEditAdmin] = useState<Admin | null>(null);
+	const [editForm, setEditForm] = useState<{ email?: string; admin_role?: string }>({});
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
@@ -28,7 +35,11 @@ const AdminRoles = () => {
 			if (role) query = query.eq('admin_role', role);
 			if (search) query = query.ilike('email', `%${search}%`);
 			const { data, error } = await query;
-			if (!error && data) setAdmins(data);
+			if (!error && data) setAdmins((data as AdminRaw[]).map(a => ({
+        id: a.id ?? '',
+        email: a.email ?? '',
+        admin_role: a.admin_role ?? ''
+      })));
 			setLoading(false);
 		};
 		fetchAdmins();
@@ -41,13 +52,13 @@ const AdminRoles = () => {
 		setAdmins(admins => admins.filter(a => a.id !== adminId));
 		setLoading(false);
 	};
-	const openEdit = (admin: any) => {
+	const openEdit = (admin: Admin) => {
 		setEditAdmin(admin);
 		setEditForm({ email: admin.email, admin_role: admin.admin_role });
 	};
 	const closeEdit = () => { setEditAdmin(null); setEditForm({}); };
-	const handleEditChange = (e: any) => {
-		setEditForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+	const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+		setEditForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 	};
 	const handleEditSave = async () => {
 		setSaving(true);

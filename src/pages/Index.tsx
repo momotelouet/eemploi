@@ -167,7 +167,7 @@ const Index = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Toutes localisations</SelectItem>
-                {[...new Set(featuredJobs.map(j => j.location).filter(Boolean))].map(loc => (
+                {[...new Set(jobs.map(j => j.location).filter(Boolean))].map(loc => (
                   <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                 ))}
               </SelectContent>

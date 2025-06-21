@@ -254,12 +254,18 @@ const RecruiterDashboard = () => {
           </div>
           {/* Solde de la balance */}
           <div className="flex items-center justify-center mb-8">
-            <div className="flex items-center gap-4 bg-gradient-to-r from-green-400 to-blue-500 text-white px-8 py-6 rounded-2xl shadow-lg border-4 border-white">
+            <div className="flex items-center gap-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white px-8 py-6 rounded-2xl shadow-xl border-4 border-blue-200 animate-pulse">
               <Wallet className="w-10 h-10 text-yellow-300" />
               <div>
-                <div className="text-3xl font-bold">{balance} DH</div>
-                <div className="text-lg font-semibold">Solde à payer</div>
+                <div className="text-3xl font-extrabold tracking-tight drop-shadow-lg">{balance} DH</div>
+                <div className="text-lg font-semibold opacity-80">Solde à payer</div>
               </div>
+              <Button
+                className="ml-8 bg-gradient-to-r from-green-400 to-green-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-all duration-300 border-2 border-white"
+                onClick={() => {/* TODO: ouvrir modal de paiement ou rediriger vers la page de paiement */}}
+              >
+                Régler
+              </Button>
             </div>
           </div>
           {/* Stats Grid */}

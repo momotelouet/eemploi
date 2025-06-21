@@ -3,8 +3,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+interface Job {
+  id: string;
+  title: string;
+  company_id: string;
+  status: string;
+}
+type JobRaw = { id: string; title: string; company_id: string; status: string };
+
 export default function JobsManager() {
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,7 +20,12 @@ export default function JobsManager() {
     setLoading(true);
     const { data, error } = await supabase.from('jobs').select('*').order('created_at', { ascending: false });
     if (error) setError(error.message);
-    else setJobs(data || []);
+    else setJobs((data || []).map((j: JobRaw) => ({
+      id: j.id,
+      title: j.title,
+      company_id: j.company_id,
+      status: j.status
+    })));
     setLoading(false);
   };
 

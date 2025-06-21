@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+interface Stats {
+  users: number;
+  jobs: number;
+  companies: number;
+  applications: number;
+}
+
 export default function ReportsManager() {
-  const [stats, setStats] = useState<any>({ users: 0, jobs: 0, companies: 0, applications: 0 });
+  const [stats, setStats] = useState<Stats>({ users: 0, jobs: 0, companies: 0, applications: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
