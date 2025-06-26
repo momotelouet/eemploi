@@ -17,6 +17,15 @@ export interface CVTemplate {
 
 const templates: CVTemplate[] = [
   {
+  id: 'framed-canva',
+  name: 'Canva Framed Pastel',
+  description: 'Template inspiré de Canva, cadres blancs modernes sur fond pastel',
+  preview: '/api/placeholder/300/400',
+  color: 'bg-gradient-to-br from-pink-100 to-blue-100',
+  style: 'modern',
+  isPremium: false
+},
+  {
     id: 'modern-blue',
     name: 'Professionnel Moderne',
     description: 'Design épuré avec des accents bleus, parfait pour les métiers du tech',
