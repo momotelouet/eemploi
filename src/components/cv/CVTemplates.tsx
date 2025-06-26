@@ -233,3 +233,4 @@ const CVTemplates: React.FC<CVTemplatesProps> = ({
 };
 
 export default CVTemplates;
+plz improve templates design
