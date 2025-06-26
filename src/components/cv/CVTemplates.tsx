@@ -1,4 +1,9 @@
+
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Check } from 'lucide-react';
 
 export interface CVTemplate {
   id: string;
@@ -102,105 +107,129 @@ interface CVTemplatesProps {
   userIsPremium?: boolean;
 }
 
-const App: React.FC = () => {
-  const [selectedTemplate, setSelectedTemplate] = React.useState<string>('');
-  const [userIsPremium] = React.useState<boolean>(false); // Change to true for testing
-
+const CVTemplates: React.FC<CVTemplatesProps> = ({ 
+  selectedTemplate, 
+  onSelectTemplate, 
+  userIsPremium = false 
+}) => {
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-10">
-        {/* Header */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Choisissez votre Template CV</h2>
-          <p className="mt-2 text-lg text-gray-600">
-            Sélectionnez un design qui correspond à votre secteur d’activité.
-          </p>
-        </div>
-
-        {/* Templates Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className={`relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer ${
-                selectedTemplate === template.id ? 'ring-2 ring-indigo-500' : ''
-              } ${template.isPremium && !userIsPremium ? 'opacity-80' : ''}`}
-              onClick={() => {
-                if (!template.isPremium || userIsPremium) {
-                  setSelectedTemplate(template.id);
-                }
-              }}
-            >
-              {/* Preview Area */}
-              <div className={`h-48 w-full ${template.color} flex items-center justify-center relative group`}>
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity bg-black"></div>
-                <span className="text-white font-semibold z-10 pointer-events-none">Aperçu</span>
-
-                {/* Premium Badge */}
-                {template.isPremium && (
-                  <span className="absolute top-2 right-2 bg-yellow-500 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
-                    Premium
-                  </span>
-                )}
-
-                {/* Selected Checkmark */}
-                {selectedTemplate === template.id && (
-                  <div className="absolute bottom-2 left-2 bg-indigo-600 text-white p-1 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-
-              {/* Content Area */}
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-lg text-gray-800">{template.name}</h3>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
-                    {template.style}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">{template.description}</p>
-
-                <button
-                  className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                    selectedTemplate === template.id
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } ${template.isPremium && !userIsPremium ? 'cursor-not-allowed opacity-70' : ''}`}
-                  disabled={template.isPremium && !userIsPremium}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!template.isPremium || userIsPremium) {
-                      setSelectedTemplate(template.id);
-                    }
-                  }}
-                >
-                  {selectedTemplate === template.id
-                    ? 'Sélectionné'
-                    : template.isPremium && !userIsPremium
-                    ? 'Premium requis'
-                    : 'Choisir ce template'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Premium CTA */}
-        {!userIsPremium && (
-          <div className="rounded-xl bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-100 border border-yellow-200 p-6 text-center shadow-inner">
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Débloquez tous les templates</h3>
-            <p className="text-gray-600 mb-4">Accédez aux templates premium et créez un CV qui se démarque.</p>
-            <button className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 font-medium px-6 py-2 rounded-md transition-colors">
-              Passer à Premium
-            </button>
-          </div>
-        )}
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2">Choisissez votre template CV</h2>
+        <p className="text-muted-foreground">
+          Sélectionnez un design qui correspond à votre secteur d'activité
+        </p>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {templates.map((template) => (
+          <Card 
+            key={template.id}
+            className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+              selectedTemplate === template.id 
+                ? 'ring-2 ring-eemploi-primary border-eemploi-primary' 
+                : 'hover:border-eemploi-primary/50'
+            } ${template.isPremium && !userIsPremium ? 'opacity-75' : ''}`}
+            onClick={() => {
+              if (!template.isPremium || userIsPremium) {
+                onSelectTemplate(template);
+              }
+            }}
+          >
+            <CardContent className="p-4">
+              {/* Template Preview */}
+              <div className="relative mb-4">
+                <div className={`w-full h-48 rounded-lg ${template.color} flex items-center justify-center relative overflow-hidden`}>
+                  {/* Simple preview mockup */}
+                  <div className="absolute inset-0 p-4 text-white">
+                    <div className="space-y-2">
+                      <div className="h-3 bg-white/80 rounded w-3/4"></div>
+                      <div className="h-2 bg-white/60 rounded w-1/2"></div>
+                      <div className="mt-4 space-y-1">
+                        <div className="h-1 bg-white/40 rounded w-full"></div>
+                        <div className="h-1 bg-white/40 rounded w-4/5"></div>
+                        <div className="h-1 bg-white/40 rounded w-3/5"></div>
+                      </div>
+                      <div className="mt-4 space-y-1">
+                        <div className="h-2 bg-white/60 rounded w-2/3"></div>
+                        <div className="h-1 bg-white/40 rounded w-full"></div>
+                        <div className="h-1 bg-white/40 rounded w-5/6"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Premium badge */}
+                  {template.isPremium && (
+                    <Badge className="absolute top-2 right-2 bg-yellow-500 text-yellow-900">
+                      Premium
+                    </Badge>
+                  )}
+                  
+                  {/* Selected indicator */}
+                  {selectedTemplate === template.id && (
+                    <div className="absolute top-2 left-2 bg-eemploi-primary rounded-full p-1">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Template Info */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">{template.name}</h3>
+                  <Badge variant="outline" className="text-xs">
+                    {template.style}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {template.description}
+                </p>
+              </div>
+
+              {/* Action Button */}
+              <Button 
+                className={`w-full mt-4 ${
+                  selectedTemplate === template.id 
+                    ? 'bg-eemploi-primary hover:bg-eemploi-primary/90' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                disabled={template.isPremium && !userIsPremium}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!template.isPremium || userIsPremium) {
+                    onSelectTemplate(template);
+                  }
+                }}
+              >
+                {template.isPremium && !userIsPremium 
+                  ? 'Premium requis' 
+                  : selectedTemplate === template.id 
+                    ? 'Sélectionné' 
+                    : 'Choisir ce template'
+                }
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Premium CTA */}
+      {!userIsPremium && (
+        <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+          <CardContent className="p-6 text-center">
+            <h3 className="font-semibold text-lg mb-2">Débloquez tous les templates</h3>
+            <p className="text-muted-foreground mb-4">
+              Accédez à tous nos templates premium et créez des CV qui se démarquent
+            </p>
+            <Button className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900">
+              Passer à Premium
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
 
-export default App;
+export default CVTemplates;
