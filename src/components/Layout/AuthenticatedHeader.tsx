@@ -58,7 +58,7 @@ const AuthenticatedHeader = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4 gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group animate-fade-in ml-6">
+          <Link to="/" className="flex items-center space-x-2 group animate-fade-in ml-15">
             <img 
               src="/eemploi-logo.png" 
               alt="eemploi logo" 
