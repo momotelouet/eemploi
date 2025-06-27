@@ -62,7 +62,7 @@ const AuthenticatedHeader = () => {
             <img 
               src="/eemploi-logo.png" 
               alt="eemploi logo" 
-              className="h-10 w-auto group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
+              className="h-10 w-auto group-hover:scale-110 transition-transform duration-300"
             />
           </Link>
 
