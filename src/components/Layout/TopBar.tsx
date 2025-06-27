@@ -3,7 +3,6 @@ import { Phone, UserPlus, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const policies = [
-	{ name: 'Confidentialité', path: '/legal/privacy' },
 	{ name: 'Cookies', path: '/legal/cookies' },
 	{ name: 'Conditions', path: '/legal/terms' },
 	{ name: 'Politique de confidentialité', path: '/legal/privacy' }, // à créer si besoin
