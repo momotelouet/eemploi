@@ -3,10 +3,10 @@ import { Phone, UserPlus, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const policies = [
-	{ name: 'Confidentialité', path: '/policies/confidentialite' },
-	{ name: 'Cookies', path: '/policies/cookies' },
-	{ name: 'Conditions', path: '/policies/conditions' },
-	{ name: 'Mentions légales', path: '/policies/mentions-legales' },
+	{ name: 'Confidentialité', path: '/legal/privacy' },
+	{ name: 'Cookies', path: '/legal/cookies' },
+	{ name: 'Conditions', path: '/legal/terms' },
+	{ name: 'Mentions légales', path: '/legal/mentions-legales' }, // à créer si besoin
 ];
 
 const TopBar = () => (
