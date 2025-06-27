@@ -123,7 +123,7 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
         const { data: admins, error: adminError } = await supabase
           .from('profiles') // Remplace par 'users' si nécessaire
           .select('id')
-          .eq('role', 'admin');
+          .eq('user_type', 'admin');
 
         if (adminError) throw adminError;
 
