@@ -6,7 +6,7 @@ const policies = [
 	{ name: 'Confidentialité', path: '/legal/privacy' },
 	{ name: 'Cookies', path: '/legal/cookies' },
 	{ name: 'Conditions', path: '/legal/terms' },
-	{ name: 'Mentions légales', path: '/legal/mentions-legales' }, // à créer si besoin
+	{ name: 'Politique de confidentialité', path: '/legal/mentions-legales' }, // à créer si besoin
 ];
 
 const TopBar = () => (
