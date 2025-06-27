@@ -4,7 +4,7 @@ import { navigationItems } from './navigation.tsx';
 
 const HeaderNavigation = () => {
   return (
-    <nav className="hidden lg:flex items-center space-x-1">
+    <nav className="hidden lg:flex items-center space-x-3">
       {navigationItems.map((item, index) => (
         <Link
           key={item.href}
