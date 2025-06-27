@@ -118,7 +118,27 @@ const CreateJobModal = ({ open, onOpenChange, onJobCreated }: CreateJobModalProp
 
       if (error) throw error;
       if (!job) throw new Error('La création de l\'offre a échoué.');
+ // ✅ Notifier les admins d'une nouvelle offre
+      try {
+        const { data: admins, error: adminError } = await supabase
+          .from('profiles') // Remplace par 'users' si nécessaire
+          .select('id')
+          .eq('role', 'admin');
 
+        if (adminError) throw adminError;
+
+        for (const admin of admins || []) {
+          await supabase.from('notifications').insert({
+            user_id: admin.id,
+            title: 'Nouvelle offre publiée',
+            message: `Le recruteur ${profile?.full_name || user.email} a publié une nouvelle offre : "${formData.title}".`,
+            type: 'job_created',
+            read: false,
+          });
+        }
+      } catch (adminNotifError) {
+        console.error('Erreur lors de la notification de l’admin :', adminNotifError);
+      }
       // Notification candidats correspondant à l'offre
       try {
         const { data: candidates, error: candidatesError } = await supabase
