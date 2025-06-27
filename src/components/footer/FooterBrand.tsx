@@ -7,7 +7,7 @@ const FooterBrand = () => {
     <div className="lg:col-span-2 animate-fade-in">
       <Link to="/" className="flex items-center space-x-2 mb-6 group">
         <img
-          src="/lovable-uploads/0fbb8218-73e4-4b7b-bdfd-4c239752a7b4.png"
+          src="/eemploi-logo-blanc.png"
           alt="eemploi logo"
           className="h-10 w-auto group-hover:scale-105 transition-transform duration-300"
         />
