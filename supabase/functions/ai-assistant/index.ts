@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -7,6 +6,7 @@ const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 serve(async (req) => {
@@ -17,8 +17,15 @@ serve(async (req) => {
   try {
     const { prompt, context, type } = await req.json();
 
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Le champ "prompt" est requis.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     let systemPrompt = '';
-    
+
     switch (type) {
       case 'cv-optimization':
         systemPrompt = 'Tu es un expert en ressources humaines qui aide à optimiser les CV. Donne des conseils précis et pratiques en français.';
@@ -44,8 +51,10 @@ serve(async (req) => {
       headers: {
         'Authorization': `Bearer ${openRouterApiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://eemploi.lovable.app',
+        'Referer': 'https://eemploi.lovable.app',
         'X-Title': 'eemploi AI Assistant',
+        // Optionnel
+        //'User-Agent': 'eemploi-AI-Assistant/1.0',
       },
       body: JSON.stringify({
         model: 'meta-llama/llama-3.1-8b-instruct:free',
@@ -59,11 +68,16 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`OpenRouter API error: ${response.status}`);
+      const errText = await response.text();
+      console.error('OpenRouter API error:', response.status, errText);
+      return new Response(JSON.stringify({ error: `OpenRouter API error: ${response.status}`, details: errText }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices?.[0]?.message?.content ?? 'Aucune réponse reçue';
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
