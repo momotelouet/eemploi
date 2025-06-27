@@ -89,7 +89,7 @@ interface Project {
   url: string;
   startDate: string;
   endDate: string;
-  role: string;
+  user_type: string;
 }
 
 const ProfileForm = () => {
@@ -281,7 +281,7 @@ const ProfileForm = () => {
       url: '',
       startDate: '',
       endDate: '',
-      role: ''
+      user_type: ''
     };
     setProjects(prev => [...prev, newProject]);
   };
