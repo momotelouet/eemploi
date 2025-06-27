@@ -30,22 +30,27 @@ type AdminRaw = {
 
 const AdminRoles = () => {
   const [admins, setAdmins] = useState<Admin[]>([]);
-  const [role, setRole] = useState('');
+  const [adminRoleFilter, setAdminRoleFilter] = useState('');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [editAdmin, setEditAdmin] = useState<Admin | null>(null);
   const [editForm, setEditForm] = useState<{ email?: string; admin_role?: string }>({});
   const [saving, setSaving] = useState(false);
 
-  const fetchAdmins = async (role: string, search: string) => {
+  const fetchAdmins = async (adminRole: string, searchTerm: string) => {
     setLoading(true);
     let query = supabase
       .from('profiles')
       .select('id, email, user_type, admin_role, created_at')
-      .eq('user_type', 'admin');
+      .eq('user_type', 'admin'); // ← On filtre par type de compte "admin"
 
-    if (role) query = query.eq('admin_role', role);
-    if (search) query = query.ilike('email', `%${search}%`);
+    if (adminRole) {
+      query = query.eq('admin_role', adminRole); // ← Filtrage secondaire
+    }
+
+    if (searchTerm) {
+      query = query.ilike('email', `%${searchTerm}%`);
+    }
 
     const { data, error } = await query;
 
@@ -66,8 +71,8 @@ const AdminRoles = () => {
   };
 
   useEffect(() => {
-    fetchAdmins(role, search);
-  }, [role, search]);
+    fetchAdmins(adminRoleFilter, search);
+  }, [adminRoleFilter, search]);
 
   const handleDelete = async (adminId: string) => {
     if (!window.confirm('Confirmer la suppression de cet admin ?')) return;
@@ -121,8 +126,8 @@ const AdminRoles = () => {
       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
         <select
           className="border rounded px-3 py-2"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+          value={adminRoleFilter}
+          onChange={(e) => setAdminRoleFilter(e.target.value)}
         >
           {roles.map((r) => (
             <option key={r.value} value={r.value}>
@@ -168,7 +173,7 @@ const AdminRoles = () => {
               admins.map((admin) => (
                 <tr key={admin.id} className="border-b">
                   <td className="p-3">{admin.email}</td>
-                  <td className="p-3">{admin.admin_role || 'admin'}</td>
+                  <td className="p-3">{admin.admin_role}</td>
                   <td className="p-3">
                     {admin.created_at ? new Date(admin.created_at).toLocaleDateString() : '-'}
                   </td>
@@ -190,7 +195,7 @@ const AdminRoles = () => {
         </table>
       </div>
 
-      {/* Modal édition admin */}
+      {/* Modale d’édition */}
       <Dialog open={!!editAdmin} onClose={closeEdit} className="fixed z-50 inset-0 flex items-center justify-center">
         <div className="fixed inset-0 bg-black/30" />
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 w-full max-w-md z-10">
