@@ -43,7 +43,7 @@ serve(async (req) => {
       const { data: admins } = await supabase
         .from('profiles')
         .select('user_id')
-        .eq('role', 'admin');
+        .eq('user_type', 'admin');
 
       if (admins && job) {
         const notifications = admins.map((admin) => ({
