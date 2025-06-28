@@ -42,10 +42,10 @@ const AdminRoles = () => {
     let query = supabase
       .from('profiles')
       .select('id, email, user_type, admin_role, created_at')
-      .eq('user_type', 'admin'); // ← On filtre par type de compte "admin"
+      .eq('user_type', 'admin');
 
     if (adminRole) {
-      query = query.eq('admin_role', adminRole); // ← Filtrage secondaire
+      query = query.eq('admin_role', adminRole);
     }
 
     if (searchTerm) {
@@ -103,13 +103,28 @@ const AdminRoles = () => {
   const handleEditSave = async () => {
     if (!editAdmin) return;
     setSaving(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({ admin_role: editForm.admin_role })
-      .eq('id', editAdmin.id);
-    if (error) {
-      toast.error("Erreur lors de la mise à jour");
-    } else {
+
+    try {
+      // Met à jour admin_role dans Supabase
+      const { error: supabaseError } = await supabase
+        .from('profiles')
+        .update({ admin_role: editForm.admin_role })
+        .eq('id', editAdmin.id);
+
+      if (supabaseError) throw supabaseError;
+
+      // Met à jour aussi user_type via API (au cas où on souhaite modifier cela plus tard)
+      const res = await fetch('/api/update-user-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: editAdmin.id, userType: 'admin' }),
+      });
+
+      if (!res.ok) {
+        const result = await res.json();
+        throw new Error(result.error || 'Erreur inconnue');
+      }
+
       setAdmins((admins) =>
         admins.map((a) =>
           a.id === editAdmin.id ? { ...a, admin_role: editForm.admin_role || 'admin' } : a
@@ -117,8 +132,12 @@ const AdminRoles = () => {
       );
       toast.success("Admin mis à jour");
       closeEdit();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (
@@ -141,7 +160,9 @@ const AdminRoles = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Button size="sm" variant="default" onClick={() => toast.info("Formulaire de création à implémenter")}>Créer admin</Button>
+        <Button size="sm" variant="default" onClick={() => toast.info("Formulaire de création à implémenter")}>
+          Créer admin
+        </Button>
         <Button size="sm" variant="outline" onClick={() => exportToCSV(admins, 'admins.csv')}>
           Exporter CSV
         </Button>
@@ -154,84 +175,4 @@ const AdminRoles = () => {
         <table className="min-w-full text-sm table-auto">
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-800">
-              <th className="p-3 text-left">Email</th>
-              <th className="p-3 text-left">Rôle</th>
-              <th className="p-3 text-left">Date création</th>
-              <th className="p-3 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="p-4 text-center">Chargement...</td>
-              </tr>
-            ) : admins.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="p-4 text-center">Aucun admin trouvé</td>
-              </tr>
-            ) : (
-              admins.map((admin) => (
-                <tr key={admin.id} className="border-b">
-                  <td className="p-3">{admin.email}</td>
-                  <td className="p-3">{admin.admin_role}</td>
-                  <td className="p-3">
-                    {admin.created_at ? new Date(admin.created_at).toLocaleDateString() : '-'}
-                  </td>
-                  <td className="p-3 flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openEdit(admin)}>
-                      Permissions
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => toast("Pas encore implémenté")}>
-                      Logs
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(admin.id)}>
-                      Supprimer
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modale d’édition */}
-      <Dialog open={!!editAdmin} onClose={closeEdit} className="fixed z-50 inset-0 flex items-center justify-center">
-        <div className="fixed inset-0 bg-black/30" />
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 w-full max-w-md z-10">
-          <Dialog.Title className="text-lg font-bold mb-4">Éditer admin</Dialog.Title>
-          <div className="space-y-3">
-            <input
-              className="border rounded px-3 py-2 w-full"
-              name="email"
-              value={editForm.email || ''}
-              onChange={handleEditChange}
-              placeholder="Email"
-              disabled
-            />
-            <select
-              className="border rounded px-3 py-2 w-full"
-              name="admin_role"
-              value={editForm.admin_role || ''}
-              onChange={handleEditChange}
-            >
-              <option value="superadmin">Super admin</option>
-              <option value="admin">Admin</option>
-              <option value="readonly">Lecture seule</option>
-            </select>
-          </div>
-          <div className="flex gap-2 mt-6">
-            <Button onClick={closeEdit} variant="outline">
-              Annuler
-            </Button>
-            <Button onClick={handleEditSave} disabled={saving}>
-              {saving ? 'Sauvegarde...' : 'Enregistrer'}
-            </Button>
-          </div>
-        </div>
-      </Dialog>
-    </div>
-  );
-};
-
-export default AdminRoles;
+              <th cl
