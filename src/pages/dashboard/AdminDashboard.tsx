@@ -1,11 +1,8 @@
+import { useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import AdminLayout from '@/components/admin/dashboard/AdminLayout';
 import Topbar from '@/components/admin/dashboard/Topbar';
 import Overview from '@/components/admin/dashboard/Overview';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useRef } from 'react';
-import { AlertTriangle } from "lucide-react";
-import { useLocation } from 'react-router-dom';
 import UserManagement from '@/components/admin/dashboard/UserManagement';
 import JobManagement from '@/components/admin/dashboard/JobManagement';
 import ApplicationMonitoring from '@/components/admin/dashboard/ApplicationMonitoring';
@@ -18,6 +15,7 @@ import SystemLogs from '@/components/admin/dashboard/SystemLogs';
 import AdminRoles from '@/components/admin/dashboard/AdminRoles';
 import SiteSettings from '@/components/admin/dashboard/SiteSettings';
 import SupportFeedback from '@/components/admin/dashboard/SupportFeedback';
+import { RequireRole } from '@/components/auth/RequireRole';
 
 const AdminDashboard = () => {
   const stats = [
@@ -56,53 +54,68 @@ const AdminDashboard = () => {
   const params = new URLSearchParams(location.search);
   const tab = params.get('tab');
 
-  let content = <Overview />;
+  let content = <Overview stats={stats} />;
   switch (tab) {
     case 'users':
-      content = <UserManagement />; break;
+      content = <UserManagement />;
+      break;
     case 'jobs':
-      content = <JobManagement />; break;
+      content = <JobManagement />;
+      break;
     case 'applications':
-      content = <ApplicationMonitoring />; break;
+      content = <ApplicationMonitoring />;
+      break;
     case 'companies':
-      content = <CompanyValidation />; break;
+      content = <CompanyValidation />;
+      break;
     case 'payments':
-      content = <PaymentManagement />; break;
+      content = <PaymentManagement />;
+      break;
     case 'plans':
-      content = <PlansManagement />; break;
+      content = <PlansManagement />;
+      break;
     case 'notifications':
-      content = <NotificationsCenter />; break;
+      content = <NotificationsCenter />;
+      break;
     case 'reports':
-      content = <ReportsAnalytics />; break;
+      content = <ReportsAnalytics />;
+      break;
     case 'logs':
-      content = <SystemLogs />; break;
+      content = <SystemLogs />;
+      break;
     case 'roles':
-      content = <AdminRoles />; break;
+      content = <AdminRoles />;
+      break;
     case 'settings':
-      content = <SiteSettings />; break;
+      content = <SiteSettings />;
+      break;
     case 'support':
-      content = <SupportFeedback />; break;
+      content = <SupportFeedback />;
+      break;
     default:
-      content = <Overview />;
+      content = <Overview stats={stats} />;
   }
 
-  // Fonction pour changer d'onglet depuis la sidebar
+  // Permet de changer d'onglet via sidebar ou autres triggers
   const goToTab = (tab: string) => {
     const tabs = document.querySelectorAll('[role="tab"]');
     tabs.forEach((el: any) => {
-      if (el.getAttribute('data-state') !== undefined && el.getAttribute('data-value') === tab) {
+      if (
+        el.getAttribute('data-state') !== undefined &&
+        el.getAttribute('data-value') === tab
+      ) {
         el.click();
       }
     });
   };
 
   return (
-    <AdminLayout>
-      <Topbar />
-      <div className="mt-6">
-        {content}
-      </div>
-    </AdminLayout>
+    <RequireRole role="admin">
+      <AdminLayout>
+        <Topbar />
+        <div className="mt-6">{content}</div>
+      </AdminLayout>
+    </RequireRole>
   );
 };
 
